@@ -1,3 +1,4 @@
+// Copyright (c) MikeNspired. All Rights Reserved.
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 

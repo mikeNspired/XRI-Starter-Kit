@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;

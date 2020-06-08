@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -16,9 +17,10 @@ namespace MikeNspired.UnityXRHandPoser
         private XRGrabInteractable grabInteractable = null;
         private TransformStruct startingParticleOrigin; //Still need to set
         private AudioSource audioSource;
-
+        private Vector3 startingPosition;
         private void Start()
         {
+            startingPosition = transform.position;
             audioSource = GetComponent<AudioSource>();
 
             startingParticleOrigin.position = powerParticleSystem.transform.localPosition;
@@ -57,6 +59,7 @@ namespace MikeNspired.UnityXRHandPoser
             StartCoroutine(SetDefaultPosition());
         }
 
+        public float animationTime;
         private void OnGrab(XRBaseInteractor interactor)
         {
             StopAllCoroutines();
@@ -76,11 +79,13 @@ namespace MikeNspired.UnityXRHandPoser
         private IEnumerator SetDefaultPosition()
         {
             float timer = 0;
-            Vector3 startingRotation = transform.eulerAngles;
+            Quaternion startingRotation = transform.rotation;
             Vector3 endingRotation = new Vector3(0,startingRotation.y,0);
-            while (timer <= 1 + Time.deltaTime)
+            Vector3 currentPosition = transform.position;
+            while (timer <= animationTime + Time.deltaTime)
             {
-                transform.eulerAngles = Vector3.Lerp(startingRotation, endingRotation, timer / 1);
+                transform.rotation = Quaternion.Lerp(startingRotation, Quaternion.Euler(endingRotation), timer / animationTime);
+                transform.position = Vector3.Lerp(currentPosition, startingPosition, timer / animationTime);
                 timer += Time.deltaTime;
                 yield return new WaitForSeconds(Time.deltaTime);
             }

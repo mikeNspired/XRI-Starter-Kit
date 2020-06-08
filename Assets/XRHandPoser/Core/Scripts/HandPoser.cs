@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+using System.Linq;
 using UnityEngine;
 
 namespace MikeNspired.UnityXRHandPoser

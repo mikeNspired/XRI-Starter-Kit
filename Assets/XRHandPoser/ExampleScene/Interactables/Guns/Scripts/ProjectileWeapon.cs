@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -76,6 +77,7 @@ namespace MikeNspired.UnityXRHandPoser
             StopAllCoroutines();
             if (recoilTracker)
                 DestroyImmediate(recoilTracker.gameObject);
+            isRecoiling = false;
         }
 
 
@@ -148,7 +150,7 @@ namespace MikeNspired.UnityXRHandPoser
                 transform.rotation = recoilTracker.rotation;
             }
 
-            
+            timer += Time.deltaTime;
             if (timer > recoilTime)
                 isRecoiling = false;
         }

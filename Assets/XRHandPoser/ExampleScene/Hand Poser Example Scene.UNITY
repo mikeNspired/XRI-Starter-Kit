@@ -25550,6 +25550,11 @@ PrefabInstance:
       propertyPath: DisableHandAttachTransforms
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3626242251110275235, guid: e194716dd6d5fe34a94cd8b853674db0,
+        type: 3}
+      propertyPath: animationTime
+      value: 1.5
+      objectReference: {fileID: 0}
     - target: {fileID: 3626242251110275236, guid: e194716dd6d5fe34a94cd8b853674db0,
         type: 3}
       propertyPath: m_InteractionManager
@@ -26063,7 +26068,7 @@ PrefabInstance:
     - target: {fileID: 3121796479760025327, guid: 8b394e9e63e42304aae8577e9e0a86ca,
         type: 3}
       propertyPath: m_MovementType
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8b394e9e63e42304aae8577e9e0a86ca, type: 3}
@@ -27613,7 +27618,7 @@ PrefabInstance:
     - target: {fileID: 7325907191753210639, guid: bcaa48d9236eebd41b594f4c7d75d247,
         type: 3}
       propertyPath: m_MovementType
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bcaa48d9236eebd41b594f4c7d75d247, type: 3}
@@ -27772,6 +27777,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 233605005}
     m_Modifications:
+    - target: {fileID: 2964244845092896760, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4495444754422721364, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6691239646614904762, guid: ba97101e13c459b49abea1a64a75d60f,
         type: 3}
       propertyPath: note

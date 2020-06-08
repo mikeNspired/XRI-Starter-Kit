@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+using UnityEngine;
 using System.Collections;
 using System;
 using System.Collections.Generic;

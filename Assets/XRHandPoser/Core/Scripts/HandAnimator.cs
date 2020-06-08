@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -386,7 +388,9 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnBeforeRender()
         {
             if (setPosition)
+            {
                 transform.SetPositionAndRotation(handPositionTarget.position, handPositionTarget.rotation);
+            }
         }
 
         #endregion

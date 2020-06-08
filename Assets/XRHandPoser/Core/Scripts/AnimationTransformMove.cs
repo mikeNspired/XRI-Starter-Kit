@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+using System;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
