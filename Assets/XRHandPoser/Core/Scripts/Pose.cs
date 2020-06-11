@@ -26,16 +26,17 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void DrawJoints(Transform joint)
         {
-            if (!joint.name.EndsWith("Ignore"))
+            if (!joint.name.EndsWith("aux"))
                 Gizmos.DrawWireSphere(joint.position, jointDebugSphereSize);
 
             for (int i = 0; i < joint.childCount; ++i)
             {
                 Transform child = joint.GetChild(i);
-                if (child.name.EndsWith("aux"))
-                {
-                    continue;
-                }
+                // if (child.name.EndsWith("aux"))
+                // {
+                //     DrawJoints(child);
+                //     continue;
+                // }
 
                 Gizmos.DrawLine(joint.position, child.position);
                 DrawJoints(child);

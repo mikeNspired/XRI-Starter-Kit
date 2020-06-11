@@ -264,7 +264,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f1e8faec4e68224382b7d609092ad19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isEnabled: 0
+  debugSpheresEnabled: 0
+  jointDebugSphereSize: 0.0045
 --- !u!1 &5147111723417740890
 GameObject:
   m_ObjectHideFlags: 0
@@ -337,7 +338,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9031952885299248878}
   m_Layer: 0
-  m_Name: Middle1_R_Jnt_Ignore
+  m_Name: Middle1_R_Jnt_aux
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -398,7 +399,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1321352594262396210}
   m_Layer: 0
-  m_Name: Ring1_R_Jnt_Ignore
+  m_Name: Ring1_R_Jnt_aux
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -460,7 +461,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4321724390849968035}
   m_Layer: 0
-  m_Name: Pinky1_R_Jnt_Ignore
+  m_Name: Pinky1_R_Jnt_aux
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -552,7 +553,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4408507158499157824}
   m_Layer: 0
-  m_Name: Index1_R_Jnt_Ignore
+  m_Name: Index1_R_Jnt_aux
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

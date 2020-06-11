@@ -24,6 +24,7 @@ namespace MikeNspired.UnityXRHandPoser
             controller = GetComponentInParent<XRBaseControllerInteractor>();
             controller.onSelectEnter.AddListener(DisableColliders);
             controller.onSelectExit.AddListener(EnableColliders);
+            CreateCollider();
         }
 
 
@@ -64,6 +65,7 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 if (child.name.EndsWith("aux") || child.name.EndsWith("Ignore"))
                 {
+                    CreateColliders(child);
                     continue;
                 }
 
@@ -73,7 +75,9 @@ namespace MikeNspired.UnityXRHandPoser
                 newCollider.AddComponent<CapsuleCollider>();
                 newCollider.GetComponent<CapsuleCollider>().radius = .01f;
                 newCollider.GetComponent<CapsuleCollider>().height = .04f;
-                colliders.Add(new JointTest(child, newCollider.transform));
+                var newJointCollider = new JointTest(child, newCollider.transform);
+                newJointCollider.UpdatePosition();
+                colliders.Add(newJointCollider);
 
                 CreateColliders(child);
             }

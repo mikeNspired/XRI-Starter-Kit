@@ -437,7 +437,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void SetJoints(Transform curTransform, List<Transform> joints)
         {
-            joints.Add(curTransform);
+            if (!curTransform.name.EndsWith("Ignore"))
+                joints.Add(curTransform);
             for (int i = 0; i < curTransform.childCount; ++i)
             {
                 Transform child = curTransform.GetChild(i);
