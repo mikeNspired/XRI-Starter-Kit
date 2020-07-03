@@ -4,13 +4,16 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class PlayerRigMovement : MonoBehaviour
 {
-    [SerializeField] private XRNode controllerType;
+    [SerializeField] private XRController controller;
     [SerializeField] private InputAxes TurningInput = InputAxes.Primary2DAxis;
     [SerializeField] private CharacterController characterController;
     private GameObject head;
 
     [Tooltip("How fast or far the player will move")]
     public float MovementSpeed = 1;
+
+    [Tooltip("Acceleration to max movement speed on SmoothMovement")] [SerializeField]
+    private float movementAcceleration;
 
     [Tooltip("How fast or slow you will fall multiplied by physics gravity")]
     public float GravityMultiplier = 1;
@@ -30,6 +33,9 @@ public class PlayerRigMovement : MonoBehaviour
     [SerializeField] [Tooltip("Instead of forward being the head direction, forward will be in the controller direction")]
     private bool moveInControllerDirection;
 
+    [SerializeField] [Tooltip("Instead of forward being the head direction, forward will be in the controller direction")]
+    private bool fadeSpeed;
+
     private enum InputAxes
     {
         Primary2DAxis = 0,
@@ -46,7 +52,7 @@ public class PlayerRigMovement : MonoBehaviour
     private void OnValidate()
     {
         if (!characterController) characterController = GetComponent<CharacterController>();
-        if (!characterController) head = GetComponent<XRRig>().cameraGameObject;
+        if (!head) head = GetComponent<XRRig>().cameraGameObject;
     }
 
     private void Awake() => OnValidate();
@@ -55,7 +61,7 @@ public class PlayerRigMovement : MonoBehaviour
     {
         AdjustCharacterControllerSizeToCamera();
 
-        InputDevices.GetDeviceAtXRNode(controllerType).TryGetFeatureValue(InputAxesToCommonUsage[(int) TurningInput], out Vector2 inputAxis);
+        controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) TurningInput], out Vector2 inputAxis);
 
         if (instantMove)
             TryInstantMovement(inputAxis);
@@ -86,29 +92,37 @@ public class PlayerRigMovement : MonoBehaviour
         isMoving = false;
     }
 
+    private float currentMovementSpeed;
+
     private void TrySmoothMove(Vector2 inputAxis)
     {
         //Used for joysticks that are not zero when not being touched
-        if (!(Mathf.Abs(inputAxis.x) > smoothMoveInputDeadZone) || Mathf.Abs(inputAxis.y) > smoothMoveInputDeadZone) return;
+        if ((Mathf.Abs(inputAxis.x) > smoothMoveInputDeadZone) || (Mathf.Abs(inputAxis.y) > smoothMoveInputDeadZone))
+        {
+            currentMovementSpeed = Mathf.Lerp(currentMovementSpeed, MovementSpeed, Time.deltaTime * movementAcceleration);
 
-        Vector3 moveDirection = GetMoveDirection(inputAxis) * (Time.deltaTime * MovementSpeed);
-
-        if (CheckIfTeleportationGround(moveDirection))
-            characterController.Move(moveDirection);
+            Vector3 moveDirection = GetMoveDirection(inputAxis) * (Time.deltaTime * currentMovementSpeed);
+            if (CheckIfTeleportationGround(moveDirection))
+            {
+                characterController.Move(moveDirection);
+            }
+        }
+        else currentMovementSpeed = 0;
     }
 
     private Vector3 GetMoveDirection(Vector2 position)
     {
         Quaternion direction;
+
         if (moveInControllerDirection)
         {
             //Get controller direction
-            InputDevices.GetDeviceAtXRNode(controllerType).TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion rotation);
-            direction = Quaternion.Euler(0, rotation.eulerAngles.y, 0);
+            direction = Quaternion.Euler(0, controller.transform.eulerAngles.y, 0);
         }
         else //get head direction
             direction = Quaternion.Euler(0, head.transform.eulerAngles.y, 0);
-        
+
+        Debug.Log("Direction:" + direction + "Input: " + position);
         //Multiply direction times input axis to get movement Direction
         return direction * new Vector3(position.x, 0, position.y);
     }
