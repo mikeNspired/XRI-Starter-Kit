@@ -15415,6 +15415,7 @@ MonoBehaviour:
   handMoveToTargetAnimationTime: 0.1
   triggerAnimationValue: 0
   isGrabbed: 0
+  rigidbody: {fileID: 0}
 --- !u!1 &1462244165
 GameObject:
   m_ObjectHideFlags: 0
@@ -28414,6 +28415,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: XRRig -XRHandPoserPrefab
       objectReference: {fileID: 0}
+    - target: {fileID: 8037807108969324667, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: m_TurnUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8037807108969324668, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: activationButton
+      value: 14
+      objectReference: {fileID: 0}
     - target: {fileID: 8037807108969324669, guid: ba97101e13c459b49abea1a64a75d60f,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -28467,6 +28478,11 @@ PrefabInstance:
     - target: {fileID: 8037807108969324669, guid: ba97101e13c459b49abea1a64a75d60f,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8037807108969324671, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: m_MoveUsage
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8037807108993200719, guid: ba97101e13c459b49abea1a64a75d60f,

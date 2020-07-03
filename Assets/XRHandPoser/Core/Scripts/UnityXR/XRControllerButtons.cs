@@ -10,7 +10,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// Temporary class to get the trigger and grip input.
     /// A more robust solution will be released when unity integrates their new input system into UnityXR.
     /// </summary>
-    public class XRControllerTriggerValueEvent : MonoBehaviour
+    public class XRControllerButtons : MonoBehaviour
     {
         public InputDevice inputDevice;
         public XRController xrController;

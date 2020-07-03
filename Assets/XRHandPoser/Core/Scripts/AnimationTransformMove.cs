@@ -24,7 +24,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private XRGrabInteractable interactable = null;
         private TransformStruct startingPosition;
         private InputDevice inputDevice;
-        private XRControllerTriggerValueEvent triggerValueEvent;
+        private XRControllerButtons buttons;
 
 
         private void Start()
@@ -44,21 +44,21 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void RemoveController(XRBaseInteractor controller)
         {
-            triggerValueEvent = null;
+            buttons = null;
         }
 
         private void SetController(XRBaseInteractor controller)
         {
             //Get the trigger from the hand
-            triggerValueEvent = controller.GetComponent<HandReference>().hand.GetComponent<XRControllerTriggerValueEvent>();
+            buttons = controller.GetComponent<HandReference>().hand.GetComponent<XRControllerButtons>();
         }
 
 
         private void Update()
         {
             //If not controller is being grabbed, will stop this update loop
-            if (!triggerValueEvent) return;
-            float value = triggerValueEvent.triggerValue;
+            if (!buttons) return;
+            float value = buttons.triggerValue;
             var newPosition = Vector3.Lerp(startingPosition.position, endPosition.localPosition, value);
             var newRotation = Quaternion.Lerp(startingPosition.rotation, endPosition.localRotation, value);
 

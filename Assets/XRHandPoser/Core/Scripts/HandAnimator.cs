@@ -93,6 +93,7 @@ namespace MikeNspired.UnityXRHandPoser
             triggerAnimationValue = val;
         }
 
+        
         //Animates the the 'SecondButtonPose' typically the grip button when no item is being grabbed
         public void AnimateToSecondPose()
         {
@@ -105,27 +106,22 @@ namespace MikeNspired.UnityXRHandPoser
             if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
 
             SetNewJoints(RootBone, goalPoseJoints);
-            TransformStruct[] oldPose = CopyTransformData(goalPoseJoints);
+            TransformStruct[] oldPoseTransforms = CopyTransformData(goalPoseJoints);
 
             SetNewJoints(SecondButtonPose, goalPoseJoints);
-            TransformStruct[] goalPoseJoints2 = CopyTransformData(goalPoseJoints);
+            TransformStruct[] secondPoseTransforms = CopyTransformData(goalPoseJoints);
 
             if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);
-            AnimateToPoseAnimation = AnimateToPoseOverTime(oldPose, goalPoseJoints2);
+            AnimateToPoseAnimation = AnimateToPoseOverTime(oldPoseTransforms, secondPoseTransforms);
             StartCoroutine(AnimateToPoseAnimation);
         }
 
-        public void Release()
+        public void ReturnToDefaultPosing()
         {
             isGrabbed = false;
             BeginNewPoses(DefaultPose, AnimationPose);
         }
-
-        public void ReleaseSecondaryButtonPose()
-        {
-            if (isGrabbed) return;
-            BeginNewPoses(DefaultPose, AnimationPose);
-        }
+      
 
         public void SetBones() => SetNewJoints(RootBone, currentJoints);
 
@@ -348,6 +344,7 @@ namespace MikeNspired.UnityXRHandPoser
             transform.SetPositionAndRotation(newTransform.position, newTransform.rotation);
         }
 
+        public Rigidbody rigidbody;
         private IEnumerator AnimateHandTransformLocal(float animationLength, TransformStruct newTransform)
         {
             float timer = 0;
@@ -401,7 +398,7 @@ namespace MikeNspired.UnityXRHandPoser
             joint.localEulerAngles = newRotation.eulerAngles;
         }
 
-        private Vector3 InvertLocaPosition(Vector3 vec)
+        private Vector3 InvertLocalPosition(Vector3 vec)
         {
             return new Vector3(vec.x, vec.y, -vec.z);
         }
