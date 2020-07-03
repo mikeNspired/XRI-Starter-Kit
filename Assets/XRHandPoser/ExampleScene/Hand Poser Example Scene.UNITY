@@ -25888,6 +25888,7 @@ GameObject:
   - component: {fileID: 317498777}
   - component: {fileID: 2376172269240295303}
   - component: {fileID: 2376172269240295304}
+  - component: {fileID: 2376172269240295305}
   m_Layer: 0
   m_Name: Knob
   m_TagString: Untagged
@@ -26005,6 +26006,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &2376172269240295305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2376172269240295302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82968030fafeacf4d872a3d8a7c7a1ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ActionTriggerType: 0
 --- !u!65 &2662401562520274119
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -26404,6 +26418,7 @@ GameObject:
   - component: {fileID: 4958860746422353061}
   - component: {fileID: 4958860746422353062}
   - component: {fileID: 4958860746422353063}
+  - component: {fileID: 4958860746422353064}
   m_Layer: 0
   m_Name: Lever - Light Switch
   m_TagString: Untagged
@@ -26553,6 +26568,19 @@ MonoBehaviour:
   - {fileID: 322258156}
   SetStateOnStart: 1
   isActivateAtStart: 1
+--- !u!114 &4958860746422353064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4958860746422353060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82968030fafeacf4d872a3d8a7c7a1ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ActionTriggerType: 0
 --- !u!4 &5050749363738527471
 Transform:
   m_ObjectHideFlags: 0
@@ -26584,6 +26612,7 @@ GameObject:
   - component: {fileID: 2662401562520274119}
   - component: {fileID: 1120697074177953847}
   - component: {fileID: 5105856565186254632}
+  - component: {fileID: 5105856565186254633}
   m_Layer: 0
   m_Name: Drawer
   m_TagString: Untagged
@@ -26687,6 +26716,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &5105856565186254633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5105856565186254631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82968030fafeacf4d872a3d8a7c7a1ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ActionTriggerType: 0
 --- !u!1 &5339554420374234137
 GameObject:
   m_ObjectHideFlags: 0
@@ -27108,6 +27150,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ConnectedAnchor.x
       value: 0.35595936
+      objectReference: {fileID: 0}
+    - target: {fileID: 1845934695164564932, guid: 49476ef37cff9cf4b9e501dd9b720dfe,
+        type: 3}
+      propertyPath: m_ConnectedAnchor.y
+      value: 0.805
+      objectReference: {fileID: 0}
+    - target: {fileID: 1845934695164564932, guid: 49476ef37cff9cf4b9e501dd9b720dfe,
+        type: 3}
+      propertyPath: m_ConnectedAnchor.z
+      value: -6.536
       objectReference: {fileID: 0}
     - target: {fileID: 1845934695164564933, guid: 49476ef37cff9cf4b9e501dd9b720dfe,
         type: 3}
@@ -27881,30 +27933,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 233605005}
     m_Modifications:
-    - target: {fileID: 8037807108835733278, guid: ba97101e13c459b49abea1a64a75d60f,
-        type: 3}
-      propertyPath: m_InteractionManager
-      value: 
-      objectReference: {fileID: 1707976572}
     - target: {fileID: 8037807108969324664, guid: ba97101e13c459b49abea1a64a75d60f,
         type: 3}
       propertyPath: m_Name
       value: XRRig -XRHandPoser
-      objectReference: {fileID: 0}
-    - target: {fileID: 8037807108969324664, guid: ba97101e13c459b49abea1a64a75d60f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8037807108969324667, guid: ba97101e13c459b49abea1a64a75d60f,
-        type: 3}
-      propertyPath: m_TurnUsage
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8037807108969324668, guid: ba97101e13c459b49abea1a64a75d60f,
-        type: 3}
-      propertyPath: activationButton
-      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 8037807108969324669, guid: ba97101e13c459b49abea1a64a75d60f,
         type: 3}
@@ -27961,31 +27993,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8037807108969324671, guid: ba97101e13c459b49abea1a64a75d60f,
-        type: 3}
-      propertyPath: m_MoveUsage
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8037807108993200719, guid: ba97101e13c459b49abea1a64a75d60f,
-        type: 3}
-      propertyPath: m_InteractionManager
-      value: 
-      objectReference: {fileID: 1707976572}
-    - target: {fileID: 8037807109004260655, guid: ba97101e13c459b49abea1a64a75d60f,
-        type: 3}
-      propertyPath: m_InteractionManager
-      value: 
-      objectReference: {fileID: 1707976572}
-    - target: {fileID: 8037807109053755568, guid: ba97101e13c459b49abea1a64a75d60f,
-        type: 3}
-      propertyPath: m_InteractionManager
-      value: 
-      objectReference: {fileID: 1707976572}
-    - target: {fileID: 8037807109381460845, guid: ba97101e13c459b49abea1a64a75d60f,
-        type: 3}
-      propertyPath: m_InteractionManager
-      value: 
-      objectReference: {fileID: 1707976572}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ba97101e13c459b49abea1a64a75d60f, type: 3}
 --- !u!4 &8085482687418508325 stripped

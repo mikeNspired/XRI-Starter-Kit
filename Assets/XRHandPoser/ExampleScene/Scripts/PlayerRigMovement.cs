@@ -36,6 +36,9 @@ public class PlayerRigMovement : MonoBehaviour
     [SerializeField] [Tooltip("Instead of forward being the head direction, forward will be in the controller direction")]
     private bool fadeSpeed;
 
+    [SerializeField] [Tooltip("Moves character only when the pad is clicked instead of touched")]
+    private bool moveOnlyOnPadClick;
+
     private enum InputAxes
     {
         Primary2DAxis = 0,
@@ -46,7 +49,7 @@ public class PlayerRigMovement : MonoBehaviour
     private static readonly InputFeatureUsage<Vector2>[] InputAxesToCommonUsage =
     {
         CommonUsages.primary2DAxis,
-        CommonUsages.secondary2DAxis
+        CommonUsages.secondary2DAxis,
     };
 
     private void OnValidate()
@@ -61,7 +64,7 @@ public class PlayerRigMovement : MonoBehaviour
     {
         AdjustCharacterControllerSizeToCamera();
 
-        controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) TurningInput], out Vector2 inputAxis);
+        Vector2 inputAxis = GetInputAxis();
 
         if (instantMove)
             TryInstantMovement(inputAxis);
@@ -69,6 +72,32 @@ public class PlayerRigMovement : MonoBehaviour
             TrySmoothMove(inputAxis);
 
         ApplyGravity();
+    }
+
+    private Vector2 GetInputAxis()
+    {
+        Vector2 inputAxis = Vector2.zero;
+        
+        if (!moveOnlyOnPadClick)
+        {
+            controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) TurningInput], out inputAxis);
+            return inputAxis;
+        }
+
+        if (InputAxesToCommonUsage[(int) TurningInput] == CommonUsages.primary2DAxis)
+        {
+            controller.inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out bool onClick);
+            if (onClick)
+                controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) TurningInput], out inputAxis);
+        }
+        else if (InputAxesToCommonUsage[(int) TurningInput] == CommonUsages.secondary2DAxis)
+        {
+            controller.inputDevice.TryGetFeatureValue(CommonUsages.secondary2DAxisClick, out bool onClick);
+            if (onClick)
+                controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) TurningInput], out inputAxis);
+        }
+
+        return inputAxis;
     }
 
 

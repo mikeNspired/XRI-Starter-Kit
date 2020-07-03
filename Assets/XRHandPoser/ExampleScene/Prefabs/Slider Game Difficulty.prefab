@@ -1840,6 +1840,7 @@ GameObject:
   - component: {fileID: 5838703705205395593}
   - component: {fileID: 2820405889466278043}
   - component: {fileID: 8252389914699286791}
+  - component: {fileID: 8597198176579317506}
   m_Layer: 0
   m_Name: Grabbable Lever
   m_TagString: Untagged
@@ -2118,6 +2119,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &8597198176579317506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8252389914699286790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82968030fafeacf4d872a3d8a7c7a1ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ActionTriggerType: 0
 --- !u!1001 &2820405889875472478
 PrefabInstance:
   m_ObjectHideFlags: 0
