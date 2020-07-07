@@ -4,7 +4,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class PlayerRigMovement : MonoBehaviour
 {
-    [SerializeField] private XRController controller;
+    [SerializeField] private XRController controller =null;
     [SerializeField] private InputAxes TurningInput = InputAxes.Primary2DAxis;
     [SerializeField] private CharacterController characterController;
     private GameObject head;
@@ -25,16 +25,16 @@ public class PlayerRigMovement : MonoBehaviour
     private float smoothMoveInputDeadZone = 0.15f;
 
     [SerializeField] [Tooltip("Disables smooth locomotion and provides small instant movements dependant on MovementSpeed")]
-    private bool instantMove;
+    private bool instantMove = false;
 
     [SerializeField] [Tooltip("Disables movement if the ground's rigid body does not contain the 'TeleportationArea.cs', Ensures the player only stays on ground used for teleporting")]
-    private bool moveOnlyOnTeleportArea;
+    private bool moveOnlyOnTeleportArea = true;
 
     [SerializeField] [Tooltip("Instead of forward being the head direction, forward will be in the controller direction")]
-    private bool moveInControllerDirection;
+    private bool moveInControllerDirection = false;
     
     [SerializeField] [Tooltip("Moves character only when the pad is clicked instead of touched")]
-    private bool moveOnlyOnPadClick;
+    private bool moveOnlyOnPadClick = true;
 
     private enum InputAxes
     {
