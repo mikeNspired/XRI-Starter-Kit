@@ -13,7 +13,7 @@ public class PlayerRigMovement : MonoBehaviour
     public float MovementSpeed = 1;
 
     [Tooltip("Acceleration to max movement speed on SmoothMovement")] [SerializeField]
-    private float movementAcceleration;
+    private float movementAcceleration = 6;
 
     [Tooltip("How fast or slow you will fall multiplied by physics gravity")]
     public float GravityMultiplier = 1;
@@ -32,10 +32,7 @@ public class PlayerRigMovement : MonoBehaviour
 
     [SerializeField] [Tooltip("Instead of forward being the head direction, forward will be in the controller direction")]
     private bool moveInControllerDirection;
-
-    [SerializeField] [Tooltip("Instead of forward being the head direction, forward will be in the controller direction")]
-    private bool fadeSpeed;
-
+    
     [SerializeField] [Tooltip("Moves character only when the pad is clicked instead of touched")]
     private bool moveOnlyOnPadClick;
 
@@ -151,7 +148,6 @@ public class PlayerRigMovement : MonoBehaviour
         else //get head direction
             direction = Quaternion.Euler(0, head.transform.eulerAngles.y, 0);
 
-        Debug.Log("Direction:" + direction + "Input: " + position);
         //Multiply direction times input axis to get movement Direction
         return direction * new Vector3(position.x, 0, position.y);
     }
