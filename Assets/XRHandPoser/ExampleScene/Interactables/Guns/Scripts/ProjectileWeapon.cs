@@ -13,9 +13,11 @@ namespace MikeNspired.UnityXRHandPoser
         private XRGrabInteractable interactable;
 
         [SerializeField] private Transform firePoint = null;
+        [SerializeField] private MagazineAttachPoint magazineAttach = null;
         [SerializeField] private Rigidbody projectilePrefab = null;
         [SerializeField] private ParticleSystem cartridgeEjection = null;
         [SerializeField] private AudioSource fireAudio = null;
+        [SerializeField] private AudioSource outOfAmmoAudio = null;
         [SerializeField] private MatchTransform bulletFlash = null;
 
         public float recoilAmount = -0.03f;
@@ -24,7 +26,8 @@ namespace MikeNspired.UnityXRHandPoser
         public int bulletsPerShot = 1;
         public float bulletSpreadAngle = 1;
         public float bulletSpeed = 150;
-
+        
+        
         private XRBaseInteractor controller;
 
         private void Start()
@@ -47,6 +50,11 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (bulletsPerShot < 1) return;
 
+            if (!magazineAttach.magazine || !magazineAttach.magazine.UseAmmo())
+            {
+                outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
+                return;
+            }
             for (int i = 0; i < bulletsPerShot; i++)
             {
                 Vector3 shotDirection = Vector3.Slerp(firePoint.forward, UnityEngine.Random.insideUnitSphere, bulletSpreadAngle / 180f);
