@@ -344,7 +344,7 @@ namespace MikeNspired.UnityXRHandPoser
             transform.SetPositionAndRotation(newTransform.position, newTransform.rotation);
         }
 
-        public Rigidbody rigidbody;
+        public Rigidbody rb;
         private IEnumerator AnimateHandTransformLocal(float animationLength, TransformStruct newTransform)
         {
             float timer = 0;

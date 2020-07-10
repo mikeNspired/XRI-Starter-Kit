@@ -1,6 +1,4 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MikeNspired.UnityXRHandPoser

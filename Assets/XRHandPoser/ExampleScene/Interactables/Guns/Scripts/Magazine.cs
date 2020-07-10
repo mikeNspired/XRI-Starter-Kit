@@ -1,47 +1,62 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
-public class Magazine : MonoBehaviour
+namespace MikeNspired.UnityXRHandPoser
 {
-
-    public int AmmoCount = 10;
-    public GunType gunType;
-    public bool isBeingGrabbed;
-
-    private void Start()
+    public class Magazine : MonoBehaviour
     {
-        GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(x => isBeingGrabbed = true);
-        GetComponent<XRGrabInteractable>().onSelectExit.AddListener(x => isBeingGrabbed = false);
-    }
+        public int AmmoCount = 10;
+        public GunType gunType = null;
+        private bool isBeingGrabbed = false;
 
-    public bool UseAmmo()
-    {
-        if (AmmoCount <= 0) return false;
-        
-        AmmoCount--;
-        return true;
+        [SerializeField] private GameObject ammoModels = null;
+        [SerializeField] private Collider collider = null;
+        [SerializeField] private new Rigidbody rigidBody = null;
+        public bool IsBeingGrabbed() => isBeingGrabbed;
+
+
+        private void Start()
+        {
+            OnValidate();
+            GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(x => OnGrab());
+            GetComponent<XRGrabInteractable>().onSelectExit.AddListener(x => isBeingGrabbed = false);
+        }
+
+        private void OnGrab()
+        {
+            isBeingGrabbed = true;
+            collider.isTrigger = false;
+            rigidBody.isKinematic = false;
+        }
+
+        public void SetupForGunAttachment()
+        {
+            collider.isTrigger = true;
+            rigidBody.isKinematic = true;
+            rigidBody.velocity = Vector3.zero;
+            rigidBody.angularVelocity = Vector3.zero;
+        }
+
+        private void OnValidate()
+        {
+            if (!collider)
+                collider = GetComponentInChildren<Collider>();
+            if (!rigidBody)
+                rigidBody = GetComponentInChildren<Rigidbody>();
+        }
+
+        public bool UseAmmo()
+        {
+            if (AmmoCount <= 0)
+            {
+                ammoModels.SetActive(false);
+                return false;
+            }
+
+            AmmoCount--;
+            return true;
+        }
     }
 }
-
-//Ammo attachpoint
-//Ammo magazine contains ammo count
-//Ammo get in range - Ammo auto attaches = Plays sound
-//Ammo has collider to grab
-
-
-//Magazine pick up
-//Turn on small collider on attachment point
-//Dot product to see if they are alligning the ammo properly
-
-//Magazine hits attachpoint collider
-//Magazine unAttaches from hand
-//Magazine disables all colliders
-//Magazine lerps towards insertion point
-//Magazine Animates inside
-//Magazine updates gun ammo?
-//Turn on magazine collider to grab and remove
-
-

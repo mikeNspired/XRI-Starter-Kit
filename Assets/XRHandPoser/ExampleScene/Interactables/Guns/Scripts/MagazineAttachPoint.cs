@@ -1,41 +1,54 @@
-﻿using System;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class MagazineAttachPoint : MonoBehaviour
     {
-        [SerializeField] private Transform start, end;
+        [SerializeField] private Transform start = null, end = null;
         [SerializeField] private float alignAnimationLength = .05f;
         [SerializeField] private float insertAnimationLength = .1f;
-        [SerializeField] private AudioSource AudioSource;
-        [SerializeField] private GunType gunType;
-        public bool isBeingGrabbed;
-        public Magazine magazine;
+        [SerializeField] private AudioSource loadAudio = null;
+        [SerializeField] private AudioSource unloadAudio = null;
+        [SerializeField] private GunType gunType = null;
+        [SerializeField] private Magazine startingMagazine = null;
+        [SerializeField] private Collider collider;
+
         private XRGrabInteractable xrGrabInteractable;
         private XRInteractionManager interactionManager;
+        private Magazine magazine;
+        public Magazine Magazine => magazine;
 
-        private bool ammoIsAttached;
+        private bool ammoIsAttached; //Used to stop from quickly attaching again when removed
+        private bool isBeingGrabbed;
 
         private void Start()
         {
             OnValidate();
             xrGrabInteractable.onSelectEnter.AddListener(x => isBeingGrabbed = true);
             xrGrabInteractable.onSelectExit.AddListener(x => isBeingGrabbed = false);
+
+            collider.gameObject.SetActive(true);
+            if (startingMagazine) CreateStartingMagazine();
         }
 
         private void OnValidate()
         {
-            if (!AudioSource)
-                AudioSource = GetComponent<AudioSource>();
             if (!xrGrabInteractable)
                 xrGrabInteractable = GetComponentInParent<XRGrabInteractable>();
             if (!interactionManager)
                 interactionManager = FindObjectOfType<XRInteractionManager>();
+        }
+
+        private void CreateStartingMagazine()
+        {
+            if (magazine) return;
+            magazine = Instantiate(startingMagazine, transform.position, end.rotation, transform);
+            SetupMagazine(magazine);
+            ammoIsAttached = true;
         }
 
 
@@ -44,32 +57,29 @@ namespace MikeNspired.UnityXRHandPoser
             if (ammoIsAttached) return;
 
             Magazine collidedMagazine = other.attachedRigidbody?.GetComponent<Magazine>();
+
             if (collidedMagazine && collidedMagazine.gunType == gunType && CheckIfBothGrabbed(collidedMagazine))
             {
-                SetMagazine(collidedMagazine);
-                other.isTrigger = true;
-                ReleaseItemFromHand();
-                
-                magazine.GetComponent<Rigidbody>().isKinematic = true;
-                magazine.GetComponent<Rigidbody>().velocity = Vector3.zero;
-                magazine.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-
-                magazine.transform.parent = transform;
-
                 ammoIsAttached = true;
+                magazine = collidedMagazine;
+                ReleaseItemFromHand();
+                SetupMagazine(collidedMagazine);
                 StartCoroutine(StartAnimation(other.attachedRigidbody.transform));
             }
         }
 
-        private void SetMagazine(Magazine collidedMagazine)
+        private void SetupMagazine(Magazine mag)
         {
-            magazine = collidedMagazine;
-            magazine.GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(AmmoRemoved); 
+            magazine = mag;
+            magazine.GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(AmmoRemoved);
+            magazine.SetupForGunAttachment();
+            magazine.transform.parent = transform;
         }
+
 
         private bool CheckIfBothGrabbed(Magazine magazine)
         {
-            return isBeingGrabbed && magazine.isBeingGrabbed;
+            return isBeingGrabbed && magazine.IsBeingGrabbed();
         }
 
         private void ReleaseItemFromHand()
@@ -83,13 +93,14 @@ namespace MikeNspired.UnityXRHandPoser
         {
             StopAllCoroutines();
             magazine.GetComponent<XRGrabInteractable>().onSelectEnter.RemoveListener(AmmoRemoved);
-            magazine.GetComponent<Rigidbody>().isKinematic = false;
             magazine.transform.parent = null;
             magazine = null;
-            Invoke(nameof(Test),1);
+            unloadAudio.Play();
+
+            Invoke(nameof(PreventAutoAttach), 1);
         }
 
-        private void Test()
+        private void PreventAutoAttach()
         {
             ammoIsAttached = false;
         }
@@ -113,7 +124,7 @@ namespace MikeNspired.UnityXRHandPoser
                 timer += Time.deltaTime;
             }
 
-            PlaySound();
+            loadAudio.Play();
 
             timer = 0;
 
@@ -129,11 +140,6 @@ namespace MikeNspired.UnityXRHandPoser
                 yield return new WaitForSeconds(Time.deltaTime);
                 timer += Time.deltaTime;
             }
-        }
-
-        private void PlaySound()
-        {
-            AudioSource.Play();
         }
     }
 }

@@ -1,7 +1,9 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "GunType", menuName = "ScriptableObject/GunType")]
-
-public class GunType : ScriptableObject
+namespace MikeNspired.UnityXRHandPoser
 {
+    [CreateAssetMenu(fileName = "GunType", menuName = "ScriptableObject/GunType")]
+    public class GunType : ScriptableObject
+    {
+    }
 }

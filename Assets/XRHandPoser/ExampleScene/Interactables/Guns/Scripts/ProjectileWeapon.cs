@@ -1,13 +1,12 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
+
 using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
-{    
-    
-
+{
     public class ProjectileWeapon : MonoBehaviour
     {
         private XRGrabInteractable interactable;
@@ -26,18 +25,17 @@ namespace MikeNspired.UnityXRHandPoser
         public int bulletsPerShot = 1;
         public float bulletSpreadAngle = 1;
         public float bulletSpeed = 150;
-        
-        
+
         private XRBaseInteractor controller;
 
         private void Start()
         {
-
             interactable = GetComponent<XRGrabInteractable>();
             interactable.onActivate.AddListener(FireBullets);
             interactable.onSelectEnter.AddListener(SetupRecoilVariables);
             interactable.onSelectExit.AddListener(DestroyRecoilTracker);
         }
+
         private void OnEnable() => Application.onBeforeRender += RecoilUpdate;
 
         private void OnDisable() => Application.onBeforeRender -= RecoilUpdate;
@@ -50,11 +48,13 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (bulletsPerShot < 1) return;
 
-            if (!magazineAttach.magazine || !magazineAttach.magazine.UseAmmo())
+
+            if (magazineAttach && (!magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
             {
                 outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
                 return;
             }
+
             for (int i = 0; i < bulletsPerShot; i++)
             {
                 Vector3 shotDirection = Vector3.Slerp(firePoint.forward, UnityEngine.Random.insideUnitSphere, bulletSpreadAngle / 180f);
@@ -66,8 +66,10 @@ namespace MikeNspired.UnityXRHandPoser
             }
 
             var flash = Instantiate(bulletFlash);
-            flash.positionToMatch = firePoint;
-            fireAudio.PlayOneShot(fireAudio.clip);
+            flash.positionToMatch = firePoint; //Follow gun barrel on update
+            
+            if (fireAudio)
+                fireAudio.PlayOneShot(fireAudio.clip);
 
             if (cartridgeEjection)
                 cartridgeEjection.Play();
@@ -162,59 +164,11 @@ namespace MikeNspired.UnityXRHandPoser
             if (timer > recoilTime)
                 isRecoiling = false;
         }
-        
-    
+
+
         private float Remap(float value, float from1, float to1, float from2, float to2)
         {
             return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
         }
     }
 }
-
-  // private IEnumerator Recoil()
-        // {
-        //     recoilTracker.localRotation = startingRotation;
-        //     recoilTracker.localPosition = Vector3.zero;
-        //
-        //     float timer = 0;
-        //
-        //     var controllerToAttachDelta = transform.position - recoilTracker.transform.position;
-        //
-        //     while (timer < recoilTime)
-        //     {
-        //         yield return new WaitForFixedUpdate();
-        //
-        //         if (timer < recoilTime / 2)
-        //         {
-        //             if (Math.Abs(recoilAmount) > .001f)
-        //             {
-        //                 recoilTracker.position += (transform.forward * recoilAmount * Time.deltaTime);
-        //                 transform.position = recoilTracker.position + controllerToAttachDelta;
-        //             }
-        //
-        //             if (Math.Abs(recoilRotation) > .001f)
-        //             {
-        //                 recoilTracker.Rotate(Vector3.right, -recoilRotation * Time.deltaTime, Space.Self);
-        //                 transform.rotation = recoilTracker.rotation;
-        //             }
-        //
-        //             endOfRecoilPosition = recoilTracker.localPosition;
-        //             endOfRecoilRotation = recoilTracker.localRotation;
-        //         }
-        //         else
-        //         {
-        //             float timerRemappedPercentage = Remap(timer, recoilTime / 2, recoilTime, 0, 1);
-        //             var newPosition = Vector3.Lerp(endOfRecoilPosition, Vector3.zero, timerRemappedPercentage);
-        //             var newRotation = Quaternion.Lerp(endOfRecoilRotation, startingRotation, timerRemappedPercentage);
-        //
-        //             recoilTracker.localPosition = newPosition;
-        //             recoilTracker.localRotation = newRotation;
-        //             transform.rotation = recoilTracker.rotation;
-        //
-        //             transform.position = recoilTracker.position + controllerToAttachDelta;
-        //             transform.rotation = recoilTracker.rotation;
-        //         }
-        //
-        //         timer += Time.deltaTime;
-        //     }
-        // }
