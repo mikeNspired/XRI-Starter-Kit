@@ -44,6 +44,12 @@ namespace MikeNspired.UnityXRHandPoser
         protected virtual void BeginNewHandPoses(HandAnimator hand)
         {
             currentHandGrabbing = hand;
+            
+            if (!hasAnimationPose)
+            {
+                LeftHandAnimationPose = null;
+                RightHandAnimationPose = null;
+            }
             if (hand.handType == LeftRight.Left)
             {
                 currentLeftHand = hand;

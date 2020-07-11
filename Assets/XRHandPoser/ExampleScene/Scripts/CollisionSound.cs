@@ -12,7 +12,7 @@ public class CollisionSound : MonoBehaviour
     [SerializeField] private AudioClip[] Clips = null;
     [SerializeField] private AudioSource audioSource = null;
     [SerializeField] private bool randomizePitch = false;
-    [SerializeField] private float minPitch = -.1f, maxPitch = .1f;
+    [SerializeField] private float minPitchChange = -.1f, maxPitchChange = .1f;
     [SerializeField] private float maxVolume = 1;
     [SerializeField] private float timeTillCanPlayAgain = .1f;
     [SerializeField] private float maxVelocity = 5;
@@ -20,7 +20,7 @@ public class CollisionSound : MonoBehaviour
     private float timer;
 
     
-    private void Start()
+    private void Awake()
     {
         originalPitch = audioSource.pitch;
     }
@@ -39,7 +39,7 @@ public class CollisionSound : MonoBehaviour
         if (randomizePitch)
         {
             audioSource.pitch = originalPitch;
-            audioSource.pitch += Random.Range(minPitch, maxPitch);
+            audioSource.pitch += Random.Range(minPitchChange, maxPitchChange);
         }
 
         //Remap velocity to 0 to 1 for volume

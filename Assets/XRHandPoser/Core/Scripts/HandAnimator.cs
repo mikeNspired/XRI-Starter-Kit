@@ -133,6 +133,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void BeginNewPoses(Pose primaryPose, Pose animationPose)
         {
+            AnimationPose = animationPose;
+            
             AnimateFromOldPoseToNewPose(primaryPose, animationPose);
             if (animationPose)
                 StartAnimationByValue(animationPose);
@@ -148,7 +150,7 @@ namespace MikeNspired.UnityXRHandPoser
             DefaultPose = primaryPose;
             TransformStruct[] newPose;
 
-            //Get position animation should be in from trigger being held
+            //Get position joints should be if trigger is held for animation
             if (animationPose)
             {
                 SetNewJoints(animationPose, goalPoseJoints);

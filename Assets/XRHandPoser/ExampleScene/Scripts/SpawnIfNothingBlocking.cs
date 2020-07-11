@@ -7,8 +7,8 @@ namespace MikeNspired.UnityXRHandPoser
     public class SpawnIfNothingBlocking : MonoBehaviour
     {
         public bool isActive = true;
-        [SerializeField] private GameObject Prefab;
-        [SerializeField] private Transform spawnPoint;
+        [SerializeField] private GameObject Prefab = null;
+        [SerializeField] private Transform spawnPoint = null;
         [SerializeField] private float spawnTimer = 5;
 
         private bool hitDetect;

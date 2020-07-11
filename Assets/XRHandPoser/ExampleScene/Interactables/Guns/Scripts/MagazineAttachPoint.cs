@@ -15,7 +15,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private AudioSource unloadAudio = null;
         [SerializeField] private GunType gunType = null;
         [SerializeField] private Magazine startingMagazine = null;
-        [SerializeField] private Collider collider;
+        [SerializeField] private new Collider collider = null;
 
         private XRGrabInteractable xrGrabInteractable;
         private XRInteractionManager interactionManager;

@@ -10,20 +10,20 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private XRGrabInteractable grabInteractable;
 
         [Tooltip("The default colliders to grab the weapon when the item is not being held")] [SerializeField]
-        private Transform defaultColliders;
+        private Transform defaultColliders = null;
 
         [Tooltip("Used to allow collisions but disable accidentally grabbing item when trying to grab other grabbable parts of the item." +
                  "NOTE: Must be disabled before starting game or it will be registered with XRManager")]
         [SerializeField]
-        private Transform onGrabColliders;
+        private Transform onGrabColliders  = null;
 
         [Tooltip("Optional: Expands the grab point near hand to a larger collider to. NOTE: Must be enabled at start")] [SerializeField]
-        private Transform handGrabCollider;
+        private Transform handGrabCollider  = null;
 
 
         private void Awake()
         {
-            OnValidate();
+            OnValidate();  
 
             handGrabCollider.gameObject.SetActive(false);
 

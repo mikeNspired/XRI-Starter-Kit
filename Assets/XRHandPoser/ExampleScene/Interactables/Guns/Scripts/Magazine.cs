@@ -12,8 +12,8 @@ namespace MikeNspired.UnityXRHandPoser
         private bool isBeingGrabbed = false;
 
         [SerializeField] private GameObject ammoModels = null;
-        [SerializeField] private Collider collider = null;
-        [SerializeField] private new Rigidbody rigidBody = null;
+        [SerializeField] private new Collider collider = null;
+        [SerializeField] private Rigidbody rigidBody = null;
         public bool IsBeingGrabbed() => isBeingGrabbed;
 
 
