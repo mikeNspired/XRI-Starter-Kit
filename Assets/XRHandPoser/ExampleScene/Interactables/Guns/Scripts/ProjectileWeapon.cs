@@ -28,7 +28,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private XRBaseInteractor controller;
 
-        private void Start()
+        private void Awake()
         {
             interactable = GetComponent<XRGrabInteractable>();
             interactable.onActivate.AddListener(FireBullets);
@@ -86,7 +86,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             StopAllCoroutines();
             if (recoilTracker)
-                DestroyImmediate(recoilTracker.gameObject);
+                Destroy(recoilTracker.gameObject);
             isRecoiling = false;
         }
 
@@ -96,7 +96,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private IEnumerator SetupRecoil(float interactableAttachEaseInTime)
         {
-            yield return new WaitForSeconds(interactableAttachEaseInTime);
+            //yield return new WaitForSeconds(interactableAttachEaseInTime);
 
             recoilTracker = new GameObject().transform;
             recoilTracker.parent = controller.attachTransform;
@@ -107,6 +107,8 @@ namespace MikeNspired.UnityXRHandPoser
                 recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().leftHandAttach.localRotation);
 
             startingRotation = recoilTracker.localRotation;
+            
+            yield return null;
         }
 
         private Vector3 endOfRecoilPosition;
@@ -118,6 +120,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void StartRecoil()
         {
+            if (!recoilTracker) StartCoroutine(SetupRecoil(1));
             recoilTracker.localRotation = startingRotation;
             recoilTracker.localPosition = Vector3.zero;
             timer = 0;

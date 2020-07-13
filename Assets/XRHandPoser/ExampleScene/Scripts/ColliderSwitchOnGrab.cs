@@ -29,6 +29,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             grabInteractable.onSelectEnter.AddListener(x => OnGrab());
             grabInteractable.onSelectExit.AddListener(x => OnRelease());
+            
         }
 
         private void OnValidate()
