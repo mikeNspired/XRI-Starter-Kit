@@ -5421,7 +5421,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   firePoint: {fileID: 6528731519250727693}
-  magazineAttach: {fileID: 6528731518315455511}
   projectilePrefab: {fileID: 1277569234665110449, guid: 9f4bf21a112af234da4451493e741800,
     type: 3}
   cartridgeEjection: {fileID: 6528731518668252099}
@@ -5429,7 +5428,8 @@ MonoBehaviour:
   outOfAmmoAudio: {fileID: 6528731517785641740}
   bulletFlash: {fileID: 8827744101140687833, guid: b75c213e31b6bb1419fdcf25eb5155b2,
     type: 3}
-  recoilAmount: -0.3
+  magazineAttach: {fileID: 6528731518315455511}
+  recoilAmount: -0.4
   recoilRotation: 10
   recoilTime: 0.1
   bulletsPerShot: 1
@@ -5570,8 +5570,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 9149f8e7e15cde44c8442820cae0c004, type: 3}
   audioSource: {fileID: 6528731519027308704}
   randomizePitch: 1
-  minPitch: -0.1
-  maxPitch: 0.1
+  minPitchChange: -0.1
+  maxPitchChange: 0.1
   maxVolume: 0.4
   timeTillCanPlayAgain: 0.1
   maxVelocity: 5
@@ -6563,7 +6563,8 @@ MonoBehaviour:
   loadAudio: {fileID: 6528731518158699473}
   unloadAudio: {fileID: 6528731518531742831}
   gunType: {fileID: 11400000, guid: 28e951b9ddb12e045826cb58c8ba0ad6, type: 2}
-  startingMagazine: {fileID: 0}
+  startingMagazine: {fileID: 3217367507161224162, guid: 218a9e5f1d2b164439ff4f3f968ea65b,
+    type: 3}
   collider: {fileID: 6528731517926892231}
 --- !u!54 &6528731518315455510
 Rigidbody:

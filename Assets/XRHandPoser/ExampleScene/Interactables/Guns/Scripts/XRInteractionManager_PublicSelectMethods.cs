@@ -17,10 +17,18 @@ namespace MikeNspired.UnityXRHandPoser
 
             unity_SelectEnter.Invoke(manager, new object[] {interactor, interactable});
         }
-
+        
         public static void SelectExit_public(this XRInteractionManager manager, XRBaseInteractor interactor, XRBaseInteractable interactable)
         {
             MethodInfo unity_SelectEnter = typeof(XRInteractionManager).GetMethod("SelectExit",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+
+            unity_SelectEnter.Invoke(manager, new object[] {interactor, interactable});
+        }
+
+        public static void HoverExit_public(this XRInteractionManager manager, XRBaseInteractor interactor, XRBaseInteractable interactable)
+        {
+            MethodInfo unity_SelectEnter = typeof(XRInteractionManager).GetMethod("HoverExit",
                 BindingFlags.NonPublic | BindingFlags.Instance);
 
             unity_SelectEnter.Invoke(manager, new object[] {interactor, interactable});

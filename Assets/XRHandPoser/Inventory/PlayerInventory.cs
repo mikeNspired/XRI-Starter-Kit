@@ -6,7 +6,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class PlayerInventory : MonoBehaviour
 {
-    public InventoryItem[] inventoryItems;
+    public InventorySlot[] inventoryItems;
     public GameObject TopItem;
     public GameObject BottomItem;
     public GameObject LeftItem;
@@ -19,16 +19,15 @@ public class PlayerInventory : MonoBehaviour
 
     private void Awake()
     {
-        inventoryItems = GetComponentsInChildren<InventoryItem>();
-        //ToggleInventoryItems(false);
+        inventoryItems = GetComponentsInChildren<InventorySlot>();
+        foreach (var itemSlot in inventoryItems)
+            itemSlot.gameObject.SetActive(false);
     }
 
     private void OnValidate()
     {
-        
-       // UpdateSpacing();
+        UpdateSpacing();
     }
-    
 
 
     private void UpdateSpacing()
@@ -75,25 +74,39 @@ public class PlayerInventory : MonoBehaviour
             TurnOnInventory(leftController.gameObject);
     }
 
-    public void TurnOnInventory(GameObject sender)
+    private void TurnOnInventory(GameObject sender)
     {
         isActive = !isActive;
-        ToggleInventoryItems(isActive);
-
-        transform.position = sender.transform.position;
-        transform.localEulerAngles = Vector3.zero;
-        transform.LookAt(Camera.main.transform);
+        ToggleInventoryItems(isActive, sender);
     }
 
-    public void ToggleInventoryItems(bool state)
+    private void ToggleInventoryItems(bool state, GameObject sender)
     {
         foreach (var itemSlot in inventoryItems)
         {
-            itemSlot.gameObject.SetActive(state);
+            if (!state)
+            {
+                itemSlot.DisableSlot();
+            }
+            else
+            {
+                if (itemSlot.gameObject.active)
+                    itemSlot.EnableSlot();
+                itemSlot.gameObject.SetActive(state);
+                SetPositionAndRotation(sender);
+            }
         }
+
         // TopItem.SetActive(state);
         // BottomItem.SetActive(state);
         // LeftItem.SetActive(state);
         // RightItem.SetActive(state);
+    }
+
+    private void SetPositionAndRotation(GameObject sender)
+    {
+        transform.position = sender.transform.position;
+        transform.localEulerAngles = Vector3.zero;
+        transform.LookAt(Camera.main.transform);
     }
 }

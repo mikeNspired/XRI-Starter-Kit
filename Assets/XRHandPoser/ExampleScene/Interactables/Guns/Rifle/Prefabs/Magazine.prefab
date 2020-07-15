@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 3217367507161224162}
   - component: {fileID: 3217367507161224163}
   - component: {fileID: 3217367507161224165}
+  - component: {fileID: 6074871980931933677}
   m_Layer: 0
   m_Name: Magazine
   m_TagString: Untagged
@@ -247,6 +248,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c50143321aa76b4db067006368a3e88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MaxAmmo: 30
   AmmoCount: 30
   gunType: {fileID: 11400000, guid: 28e951b9ddb12e045826cb58c8ba0ad6, type: 2}
   ammoModels: {fileID: 3217367507332200334}
@@ -269,8 +271,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 9149f8e7e15cde44c8442820cae0c004, type: 3}
   audioSource: {fileID: 3217367507545894509}
   randomizePitch: 1
-  minPitch: -0.1
-  maxPitch: 0.1
+  minPitchChange: -0.1
+  maxPitchChange: 0.1
   maxVolume: 0.4
   timeTillCanPlayAgain: 0.1
   maxVelocity: 5
@@ -290,6 +292,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &6074871980931933677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3217367507161224167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a4e8d4ba05e4cd4ab11827fc2c5ef66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canInventory: 1
+  maxStackSize: 0
 --- !u!1 &3217367507332200334
 GameObject:
   m_ObjectHideFlags: 0

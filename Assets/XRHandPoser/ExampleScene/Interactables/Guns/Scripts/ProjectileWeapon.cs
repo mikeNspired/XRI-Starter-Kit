@@ -12,13 +12,13 @@ namespace MikeNspired.UnityXRHandPoser
         private XRGrabInteractable interactable;
 
         [SerializeField] private Transform firePoint = null;
-        [SerializeField] private MagazineAttachPoint magazineAttach = null;
         [SerializeField] private Rigidbody projectilePrefab = null;
         [SerializeField] private ParticleSystem cartridgeEjection = null;
         [SerializeField] private AudioSource fireAudio = null;
         [SerializeField] private AudioSource outOfAmmoAudio = null;
         [SerializeField] private MatchTransform bulletFlash = null;
 
+        public MagazineAttachPoint magazineAttach = null;
         public float recoilAmount = -0.03f;
         public float recoilRotation = 1;
         public float recoilTime = .06f;
@@ -67,7 +67,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             var flash = Instantiate(bulletFlash);
             flash.positionToMatch = firePoint; //Follow gun barrel on update
-            
+
             if (fireAudio)
                 fireAudio.PlayOneShot(fireAudio.clip);
 
@@ -107,7 +107,7 @@ namespace MikeNspired.UnityXRHandPoser
                 recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().leftHandAttach.localRotation);
 
             startingRotation = recoilTracker.localRotation;
-            
+
             yield return null;
         }
 

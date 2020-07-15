@@ -1,4 +1,6 @@
 // Copyright (c) MikeNspired. All Rights Reserved.
+
+using System;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -17,19 +19,13 @@ namespace MikeNspired.UnityXRHandPoser
         public bool DisableHandAttachTransforms = false;
 
         private Rigidbody rb;
+
         protected override void Awake()
         {
             base.Awake();
-            if (!interactable)
-                interactable = GetComponent<XRGrabInteractable>();
 
-            if (!interactable)
-            {
-                Debug.LogWarning(gameObject + " XRGrabPoser does not have an XRGrabInteractable assigned");
-                return;
-            }
-            
-            rb = interactable.GetComponent<Rigidbody>();
+            OnValidate();
+
             //Set hand animation on grab
             interactable.onSelectEnter.AddListener(x => SetAttachForInstantaneous(x.GetComponent<HandReference>()?.hand));
             interactable.onSelectEnter.AddListener(x => BeginNewHandPoses(x.GetComponent<HandReference>()?.hand));
@@ -39,9 +35,21 @@ namespace MikeNspired.UnityXRHandPoser
             interactable.onSelectExit.AddListener(x => rb.ResetCenterOfMass());
         }
 
-        
+        private void OnValidate()
+        {
+            if (!interactable)
+                interactable = GetComponent<XRGrabInteractable>();
+
+            if (!interactable)
+                Debug.LogWarning(gameObject + " XRGrabPoser does not have an XRGrabInteractable assigned." + "  (Parent name) " + transform.parent);
+
+            if (!rb && interactable)
+                rb = interactable.GetComponent<Rigidbody>();
+        }
+
         private void SetAttachForInstantaneous(HandAnimator hand)
         {
+            if (!CheckIfCorrectHand(hand)) return;
             if (interactable.movementType != XRBaseInteractable.MovementType.Instantaneous) return;
 
             //Instantaneous movement uses the rigidbody center of mass as the attachment point. This updates that to the left or right attachpoint
@@ -56,12 +64,11 @@ namespace MikeNspired.UnityXRHandPoser
             //Determines if the left or right hand is grabbed, and then sends over the proper attachment point to be assigned to the XRGrabInteractable.
             var attachPoint = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
             hand.MoveHandToTarget(attachPoint, interactable.attachEaseInTime, WaitForHandToAnimateToPosition);
-            
         }
 
         protected override void BeginNewHandPoses(HandAnimator hand)
         {
-            if (!hand) return;
+            if (!CheckIfCorrectHand(hand)) return;
 
             //Check if left or right hand to set attachment point
             if (!DisableHandAttachTransforms)
@@ -70,6 +77,23 @@ namespace MikeNspired.UnityXRHandPoser
             base.BeginNewHandPoses(hand);
 
             MoveHandToPoseTransforms(hand);
+        }
+
+        private bool CheckIfCorrectHand(HandAnimator hand)
+        {
+            if (leftHandPose)
+            {
+                if (hand.handType == LeftRight.Left)
+                    return true;
+            }
+
+            if (rightHandPose)
+            {
+                if (hand.handType == LeftRight.Right)
+                    return true;
+            }
+
+            return false;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace MikeNspired.UnityXRHandPoser
         private bool ammoIsAttached; //Used to stop from quickly attaching again when removed
         private bool isBeingGrabbed;
 
-        private void Start()
+        private void Awake()
         {
             OnValidate();
             xrGrabInteractable.onSelectEnter.AddListener(x => isBeingGrabbed = true);
@@ -47,7 +47,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (magazine) return;
             magazine = Instantiate(startingMagazine, transform.position, end.rotation, transform);
-            SetupMagazine(magazine);
+            SetupNewMagazine(magazine);
             ammoIsAttached = true;
         }
 
@@ -60,15 +60,16 @@ namespace MikeNspired.UnityXRHandPoser
 
             if (collidedMagazine && collidedMagazine.gunType == gunType && CheckIfBothGrabbed(collidedMagazine))
             {
+                if (collidedMagazine.AmmoCount <= 0) return;
                 ammoIsAttached = true;
                 magazine = collidedMagazine;
                 ReleaseItemFromHand();
-                SetupMagazine(collidedMagazine);
+                SetupNewMagazine(collidedMagazine);
                 StartCoroutine(StartAnimation(other.attachedRigidbody.transform));
             }
         }
 
-        private void SetupMagazine(Magazine mag)
+        private void SetupNewMagazine(Magazine mag)
         {
             magazine = mag;
             magazine.GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(AmmoRemoved);
@@ -96,8 +97,9 @@ namespace MikeNspired.UnityXRHandPoser
             magazine.transform.parent = null;
             magazine = null;
             unloadAudio.Play();
+           // ammoIsAttached = false;
 
-            Invoke(nameof(PreventAutoAttach), 1);
+            Invoke(nameof(PreventAutoAttach), .15f);
         }
 
         private void PreventAutoAttach()

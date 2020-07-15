@@ -7,6 +7,7 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class Magazine : MonoBehaviour
     {
+        public int MaxAmmo = 10;
         public int AmmoCount = 10;
         public GunType gunType = null;
         private bool isBeingGrabbed = false;
