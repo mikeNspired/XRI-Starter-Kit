@@ -22,9 +22,9 @@ public class InventorySlotTextUpdater : MonoBehaviour
 
     private void CheckTypes()
     {
-        if (!inventorySlot.currentSlotItem) return;
+        if (!inventorySlot.CurrentSlotItem) return;
 
-        var projectile = inventorySlot.currentSlotItem.GetComponent<ProjectileWeapon>();
+        var projectile = inventorySlot.CurrentSlotItem.GetComponent<ProjectileWeapon>();
         if (projectile)
         {
             CheckAmmo(projectile);

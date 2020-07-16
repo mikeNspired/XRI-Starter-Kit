@@ -71,7 +71,7 @@ namespace MikeNspired.UnityXRHandPoser
                 snapDisabled = true;
             }
 
-            controller.inputDevice.IsPressed(activationButton, out isActive, .3f);
+            controller.inputDevice.IsPressed(activationButton, out isActive, .02f);
             if (!isActive)
             {
                 snapDisabled = false;

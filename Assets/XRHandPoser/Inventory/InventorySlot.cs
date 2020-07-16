@@ -10,7 +10,6 @@ public class InventorySlot : MonoBehaviour
     [SerializeField] [Tooltip("Optional Starting item")]
     private XRBaseInteractable startingItem = null;
 
-    public XRBaseInteractable currentSlotItem;
 
     [SerializeField] [Tooltip("Display used when holding slot is holding an item")]
     private GameObject slotDisplayWhenContainsItem = null;
@@ -24,21 +23,32 @@ public class InventorySlot : MonoBehaviour
     [SerializeField] [Tooltip("Transform of back image that rotates during animations, used to attach ItemModelHolder to after positioning model")]
     private Transform backImagesThatRotate = null;
 
-    [SerializeField] private AudioSource grabAudio, releaseAudio;
+    [SerializeField] [Tooltip("Item will be scaled down to size to fit inside this box collider")]
+    private BoxCollider inventorySize;
     [SerializeField] private Collider collider;
+    [SerializeField] private AudioSource grabAudio, releaseAudio;
+    
 
-    private bool isBusy = false;
+    public UnityEvent inventorySlotUpdated;
+
+    private XRBaseInteractable currentSlotItem;
+
+    private readonly int Disable = Animator.StringToHash("Disable");
+    private readonly int Enable = Animator.StringToHash("Enable");
+
+    private Transform boundCenterTransform, itemSlotMeshClone;
     private XRInteractionManager interactionManager;
     private PlayerInventory inventory;
-    private Transform boundCenterTransform, itemSlotMeshClone;
+
+    //Animation
+    private bool isBusy, isDisabling;
     private Animator addItemAnimator, hasItemAnimator;
     private TransformStruct startingTransformFromHand;
     private Vector3 goalSizeToFitInSlot;
-    private const float AnimationDisableLength = .5f;
-    private const float AnimationLengthItemToSlot = .15f;
-    private bool isDisabling;
+    private const float AnimationDisableLength = .5f, AnimationLengthItemToSlot = .15f;
 
-    public UnityEvent inventorySlotUpdated;
+    public XRBaseInteractable CurrentSlotItem => currentSlotItem;
+    
 
     private void Awake()
     {
@@ -85,11 +95,7 @@ public class InventorySlot : MonoBehaviour
         inventorySlotUpdated.Invoke();
     }
 
-    private void OnDisable()
-    {
-        CancelInvoke();
-    }
-
+    private void OnDisable() => CancelInvoke();
 
     private void OnTriggerEnter(Collider other)
     {
@@ -118,7 +124,6 @@ public class InventorySlot : MonoBehaviour
             releaseAudio.Play();
         }
 
-
         //Enable Inventory Slot
         currentSlotItem = itemHandIsHolding;
 
@@ -131,16 +136,13 @@ public class InventorySlot : MonoBehaviour
     private bool CheckIfCanAddItemToSlot(XRBaseInteractable itemHandIsHolding)
     {
         InventoryItemHelper helper = itemHandIsHolding.GetComponent<InventoryItemHelper>();
-        if (!helper.canInventory) return false;
-
-        return true;
+        return helper.canInventory;
     }
-
 
     private IEnumerator AnimateIcon()
     {
         isBusy = true;
-        if (currentSlotItem)
+        if (currentSlotItem) //If has item show item
         {
             if (animateItemToSlotCoroutine != null) StopCoroutine(animateItemToSlotCoroutine);
 
@@ -149,7 +151,7 @@ public class InventorySlot : MonoBehaviour
             yield return new WaitForSeconds(AnimationDisableLength / 2);
             slotDisplayToAddItem.gameObject.SetActive(false);
         }
-        else
+        else //Show add item display
         {
             if (boundCenterTransform) Destroy(boundCenterTransform.gameObject);
             hasItemAnimator.SetTrigger("Disable");
@@ -161,7 +163,6 @@ public class InventorySlot : MonoBehaviour
         //Better user experience  after waiting to enable collider after some visuals start appearing
         collider.enabled = true;
 
-
         // yield return new WaitForSeconds(.25f);
         isBusy = false;
     }
@@ -169,6 +170,7 @@ public class InventorySlot : MonoBehaviour
 
     public void DisableSlot()
     {
+        //Disable hand from adding item when animating to disable slot
         collider.enabled = false;
         if (!isDisabling)
             StartCoroutine(DisableAfterAnimation(AnimationDisableLength));
@@ -178,8 +180,9 @@ public class InventorySlot : MonoBehaviour
     {
         StopAllCoroutines();
         OnEnable();
-        addItemAnimator.SetTrigger("Enable");
-        hasItemAnimator.SetTrigger("Enable");
+        //Start animations if the gameobject is turned on
+        addItemAnimator.SetTrigger(Enable);
+        hasItemAnimator.SetTrigger(Enable);
     }
 
 
@@ -208,15 +211,15 @@ public class InventorySlot : MonoBehaviour
         var itemHandIsHolding = controller.selectTarget;
         if (!itemHandIsHolding) return;
 
-
         //Release current item
         itemHandIsHolding.GetComponent<ColliderSwitchOnGrab>()?.TurnOnAllCollidersToRemoveXRFromManager();
         ReleaseItemFromHand(controller, itemHandIsHolding);
 
-        itemModelHolder.transform.parent = transform;
-        itemModelHolder.transform.localScale = Vector3.one;
-        itemModelHolder.transform.localPosition = new Vector3(0, 0, 4.3f);
-        itemModelHolder.transform.localEulerAngles = Vector3.zero;
+        var itemHolderTransform = itemModelHolder.transform;
+        itemHolderTransform.parent = transform;
+        itemHolderTransform.localScale = Vector3.one;
+        itemHolderTransform.localPosition = new Vector3(0, 0, 4.3f);
+        itemHolderTransform.localEulerAngles = Vector3.zero;
 
         SetupNewMeshClone(itemHandIsHolding);
 
@@ -263,33 +266,33 @@ public class InventorySlot : MonoBehaviour
         itemSlotMeshClone = Instantiate(itemHandIsHolding, itemModelHolder, true).transform;
         itemSlotMeshClone.gameObject.SetActive(true);
 
-//Match clone to original object transform
+        //Match clone to original object transform
         itemSlotMeshClone.transform.SetPositionAndRotation(itemHandIsHolding.transform.position, itemHandIsHolding.transform.rotation);
 
-//Disable clone from interacting with world
+        //Disable clone from interacting with world
         DestroyComponentsOnClone(itemSlotMeshClone);
 
-//Create a new parent for the item at the center of the mesh's
+        //Create a new parent for the item at the center of the mesh's
         Bounds bounds = GetBoundsOfAllMeshes(itemSlotMeshClone.transform);
         boundCenterTransform = new GameObject("Bound Center Transform").transform;
 
-//Match rotation of item in hand to setup starting animation point
+        //Match rotation of item in hand to setup starting animation point
         boundCenterTransform.rotation = itemHandIsHolding.transform.rotation;
 
-//Set position to be the center of the bounds 
+        //Set position to be the center of the bounds 
         boundCenterTransform.position = bounds.center;
 
-//Organize hiearchy
+        //Organize hiearchy
         boundCenterTransform.parent = itemModelHolder;
 
-//Place model as child of center point to act as the new pivot point
+        //Place model as child of center point to act as the new pivot point
         itemSlotMeshClone.transform.parent = boundCenterTransform;
 
-//Set starting transform to animate object from hand into the inventory slot
+        //Set starting transform to animate object from hand into the inventory slot
         startingTransformFromHand.SetTransformStruct(boundCenterTransform.localPosition, boundCenterTransform.localRotation, boundCenterTransform.localScale);
         boundCenterTransform.localEulerAngles = new Vector3(0, 90, 0);
 
-//Shrink item to fit within inventorySizeCollider
+        //Shrink item to fit within inventorySizeCollider
         inventorySize.enabled = true;
         Vector3 parentSize = inventorySize.bounds.size;
         while (bounds.size.x > parentSize.x || bounds.size.y > parentSize.y || bounds.size.z > parentSize.z)
@@ -297,6 +300,7 @@ public class InventorySlot : MonoBehaviour
             bounds = GetBoundsOfAllMeshes(boundCenterTransform.transform);
             boundCenterTransform.transform.localScale *= 0.9f;
         }
+
         inventorySize.enabled = false;
 
 
@@ -305,7 +309,7 @@ public class InventorySlot : MonoBehaviour
 
     private void DestroyComponentsOnClone(Transform clone)
     {
-//Destroy almost all components besides models - Could not foreach through Components because it destroys out of order causing issues
+        //Destroy almost all components besides models - Could not foreach through Components because it destroys out of order causing issues
         var monoBehaviors = clone.GetComponentsInChildren<MonoBehaviour>();
         foreach (var t in monoBehaviors) Destroy(t);
 
@@ -321,7 +325,7 @@ public class InventorySlot : MonoBehaviour
         if (!currentSlotItem)
             return;
 
-//Create a clone of the new item
+        //Create a clone of the new item
         if (!itemSlotMeshClone)
             SetupNewMeshClone(currentSlotItem);
         animateItemToSlotCoroutine = StartCoroutine(AnimateItemToSlot());
@@ -353,13 +357,17 @@ public class InventorySlot : MonoBehaviour
 
     private Bounds GetBoundsOfAllMeshes(Transform item)
     {
-        Renderer[] rends = item.GetComponentsInChildren<Renderer>();
+        Bounds bounds = new Bounds();
+        Renderer[] rends = itemSlotMeshClone.GetComponentsInChildren<Renderer>();
 
-        Bounds bounds = rends[0].bounds;
         foreach (Renderer rend in rends)
         {
             if (rend.GetComponent<ParticleSystem>()) continue;
-            bounds = bounds.GrowBounds(rend.bounds);
+
+            if (bounds.extents == Vector3.zero)
+                bounds = rend.bounds;
+
+            bounds.Encapsulate(rend.bounds);
         }
 
         return bounds;
@@ -367,13 +375,11 @@ public class InventorySlot : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-// var bounds = GetBoundsOfAllMeshes(itemSlotMeshClone);
-// Gizmos.DrawWireCube(bounds.center, bounds.size);
-// Gizmos.DrawSphere(bounds.center, .01f);
+        if (!itemSlotMeshClone) return;
+        Bounds tempBounds = GetBoundsOfAllMeshes(itemSlotMeshClone);
+        Gizmos.DrawWireCube(tempBounds.center, tempBounds.size);
+        Gizmos.DrawSphere(tempBounds.center, .01f);
     }
-
-    public BoxCollider inventorySize;
-    private static readonly int Disable = Animator.StringToHash("Disable");
 
     public InventorySlot(TransformStruct startingTransformFromHand)
     {

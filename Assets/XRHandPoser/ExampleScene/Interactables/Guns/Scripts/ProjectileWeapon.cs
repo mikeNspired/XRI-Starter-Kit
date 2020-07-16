@@ -18,6 +18,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private AudioSource outOfAmmoAudio = null;
         [SerializeField] private MatchTransform bulletFlash = null;
 
+        //All public for in game changes
         public MagazineAttachPoint magazineAttach = null;
         public float recoilAmount = -0.03f;
         public float recoilRotation = 1;
@@ -25,7 +26,7 @@ namespace MikeNspired.UnityXRHandPoser
         public int bulletsPerShot = 1;
         public float bulletSpreadAngle = 1;
         public float bulletSpeed = 150;
-
+        public bool infiniteAmmo = false;
         private XRBaseInteractor controller;
 
         private void Awake()
@@ -49,7 +50,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (bulletsPerShot < 1) return;
 
 
-            if (magazineAttach && (!magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
+            if (!infiniteAmmo && !magazineAttach && (!magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
             {
                 outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
                 return;

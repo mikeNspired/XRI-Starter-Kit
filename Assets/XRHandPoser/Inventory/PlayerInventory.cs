@@ -6,38 +6,27 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class PlayerInventory : MonoBehaviour
 {
-    public InventorySlot[] inventoryItems;
-    public GameObject TopItem;
-    public GameObject BottomItem;
-    public GameObject LeftItem;
-    public GameObject RightItem;
-    public InputHelpers.Button activationButton;
+    public InventorySlot[] inventorySlots;
+    [SerializeField] private InputHelpers.Button activationButton;
+    [SerializeField] private XRController leftController = null, rightController = null;
+    [SerializeField] private AudioSource enableAudio, disableAudio;
 
+    [SerializeField] private bool lookAtController;
     private bool isActive = false;
-    [SerializeField] private float ItemSpacing = 400;
-    public XRController leftController, rightController;
 
     private void Awake()
     {
-        inventoryItems = GetComponentsInChildren<InventorySlot>();
-        foreach (var itemSlot in inventoryItems)
+        inventorySlots = GetComponentsInChildren<InventorySlot>();
+
+        foreach (var itemSlot in inventorySlots)
             itemSlot.gameObject.SetActive(false);
     }
 
     private void OnValidate()
     {
-        UpdateSpacing();
+        inventorySlots = GetComponentsInChildren<InventorySlot>();
     }
-
-
-    private void UpdateSpacing()
-    {
-        TopItem.transform.localPosition = new Vector3(0, ItemSpacing, 0);
-        BottomItem.transform.localPosition = new Vector3(0, -ItemSpacing, 0);
-        LeftItem.transform.localPosition = new Vector3(-ItemSpacing, 0, 0);
-        RightItem.transform.localPosition = new Vector3(ItemSpacing, 0, 0);
-    }
-
+    
     private void Update()
     {
         CheckController();
@@ -78,11 +67,21 @@ public class PlayerInventory : MonoBehaviour
     {
         isActive = !isActive;
         ToggleInventoryItems(isActive, sender);
+        PlayAudio(isActive);
     }
 
+    private void PlayAudio(bool state)
+    {
+        if(state)
+            enableAudio.Play();
+        else
+            disableAudio.Play();
+    }
+
+    
     private void ToggleInventoryItems(bool state, GameObject sender)
     {
-        foreach (var itemSlot in inventoryItems)
+        foreach (var itemSlot in inventorySlots)
         {
             if (!state)
             {
@@ -96,17 +95,19 @@ public class PlayerInventory : MonoBehaviour
                 SetPositionAndRotation(sender);
             }
         }
-
-        // TopItem.SetActive(state);
-        // BottomItem.SetActive(state);
-        // LeftItem.SetActive(state);
-        // RightItem.SetActive(state);
     }
 
     private void SetPositionAndRotation(GameObject sender)
     {
         transform.position = sender.transform.position;
         transform.localEulerAngles = Vector3.zero;
-        transform.LookAt(Camera.main.transform);
-    }
+        
+        if(lookAtController)
+            transform.LookAt(sender.transform);
+        else
+          transform.LookAt(Camera.main.transform);
+    } 
+
+    
 }
+

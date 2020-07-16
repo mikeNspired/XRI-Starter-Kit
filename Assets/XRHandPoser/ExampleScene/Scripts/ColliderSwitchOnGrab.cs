@@ -18,16 +18,16 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField]
         private Transform onGrabColliders = null;
 
-        [Tooltip("Optional: Expands the grab point near hand to a larger collider to. NOTE: Must be enabled at start")] [SerializeField]
-        private Transform handGrabCollider = null;
+        // [Tooltip("Optional: Expands the grab point near hand to a larger collider to. NOTE: Must be enabled at start")] [SerializeField]
+        // private Transform handGrabCollider = null;
 
         private bool PreventDisableOfCollidersForObjectDisable;
 
-        private void Awake()
+        private void Start()
         {
             OnValidate();
 
-            handGrabCollider.gameObject.SetActive(false);
+           // handGrabCollider.gameObject.SetActive(false);
 
             grabInteractable.onSelectEnter.AddListener(x => OnGrab());
             grabInteractable.onSelectExit.AddListener(x => OnRelease());
@@ -41,7 +41,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnEnable()
         {
-            handGrabCollider.gameObject.SetActive(false);
+         //   handGrabCollider.gameObject.SetActive(false);
             defaultColliders.gameObject.SetActive(true);
             onGrabColliders.gameObject.SetActive(false);
         }
@@ -50,13 +50,13 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (PreventDisableOfCollidersForObjectDisable)
             {
-                handGrabCollider.gameObject.SetActive(true);
+              //  handGrabCollider.gameObject.SetActive(true);
                 defaultColliders.gameObject.SetActive(true);
                 onGrabColliders.gameObject.SetActive(true);
             }
             else
             {
-                handGrabCollider.gameObject.SetActive(false);
+             //   handGrabCollider.gameObject.SetActive(false);
                 defaultColliders.gameObject.SetActive(true);
                 onGrabColliders.gameObject.SetActive(false);
             }
@@ -66,7 +66,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void TurnOnAllCollidersToRemoveXRFromManager()
         {
-            handGrabCollider.gameObject.SetActive(true);
+           // handGrabCollider.gameObject.SetActive(true);
             defaultColliders.gameObject.SetActive(true);
             onGrabColliders.gameObject.SetActive(true);
             PreventDisableOfCollidersForObjectDisable = true;
@@ -74,7 +74,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnGrab()
         {
-            handGrabCollider.gameObject.SetActive(true);
+           // handGrabCollider.gameObject.SetActive(true);
             defaultColliders.gameObject.SetActive(false);
             onGrabColliders.gameObject.SetActive(true);
         }
