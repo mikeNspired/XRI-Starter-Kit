@@ -1,6 +1,7 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
 
-using System;
+
+using System.Collections;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -27,7 +28,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             OnValidate();
 
-           // handGrabCollider.gameObject.SetActive(false);
+            // handGrabCollider.gameObject.SetActive(false);
 
             grabInteractable.onSelectEnter.AddListener(x => OnGrab());
             grabInteractable.onSelectExit.AddListener(x => OnRelease());
@@ -41,7 +42,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnEnable()
         {
-         //   handGrabCollider.gameObject.SetActive(false);
+            //   handGrabCollider.gameObject.SetActive(false);
             defaultColliders.gameObject.SetActive(true);
             onGrabColliders.gameObject.SetActive(false);
         }
@@ -50,15 +51,16 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (PreventDisableOfCollidersForObjectDisable)
             {
-              //  handGrabCollider.gameObject.SetActive(true);
+                //  handGrabCollider.gameObject.SetActive(true);
                 defaultColliders.gameObject.SetActive(true);
                 onGrabColliders.gameObject.SetActive(true);
             }
             else
             {
-             //   handGrabCollider.gameObject.SetActive(false);
+                //   handGrabCollider.gameObject.SetActive(false);
                 defaultColliders.gameObject.SetActive(true);
-                onGrabColliders.gameObject.SetActive(false);
+                // onGrabColliders.gameObject.SetActive(false);
+                StartCoroutine(DisableItem(onGrabColliders.transform));
             }
 
             PreventDisableOfCollidersForObjectDisable = false;
@@ -66,7 +68,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void TurnOnAllCollidersToRemoveXRFromManager()
         {
-           // handGrabCollider.gameObject.SetActive(true);
+            // handGrabCollider.gameObject.SetActive(true);
             defaultColliders.gameObject.SetActive(true);
             onGrabColliders.gameObject.SetActive(true);
             PreventDisableOfCollidersForObjectDisable = true;
@@ -74,9 +76,18 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnGrab()
         {
-           // handGrabCollider.gameObject.SetActive(true);
+            // handGrabCollider.gameObject.SetActive(true);
             defaultColliders.gameObject.SetActive(false);
             onGrabColliders.gameObject.SetActive(true);
+        }
+
+
+        private IEnumerator DisableItem(Transform item)
+        {
+            item.transform.position += Vector3.one * 9999;
+            //Lets physics respond to collider disappearing before disabling object phyics update needs to run twice
+            yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
+            item.gameObject.SetActive(false);
         }
     }
 }

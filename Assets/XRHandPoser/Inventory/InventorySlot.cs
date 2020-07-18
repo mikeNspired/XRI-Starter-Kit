@@ -50,7 +50,6 @@ public class InventorySlot : MonoBehaviour
     private const float AnimationDisableLength = .5f, AnimationLengthItemToSlot = .15f;
 
 
-
     private void Awake()
     {
         OnValidate();
@@ -101,23 +100,12 @@ public class InventorySlot : MonoBehaviour
 
     private void OnDisable() => CancelInvoke();
 
-    // private void OnTriggerEnter(Collider other)
-    // {
-    //     if (isBusy) return;
-    //     var controller = other.GetComponent<XRBaseControllerInteractor>();
-    //
-    //     if (!controller) return;
-    //
-    //     if (touchToInteract)
-    //         InteractWithSlot(controller);
-    // }
-
     public void TryInteractWithSlot(XRBaseInteractor controller)
     {
         if (isBusy) return;
         InteractWithSlot(controller);
     }
-    
+
 
     private void InteractWithSlot(XRBaseInteractor controller)
     {
@@ -236,7 +224,7 @@ public class InventorySlot : MonoBehaviour
         SetupNewMeshClone(itemHandIsHolding);
 
         //Disable current item
-        StartCoroutine(DisableItem(itemHandIsHolding, controller));
+        StartCoroutine(DisableItem(itemHandIsHolding));
 
         itemHandIsHolding.transform.parent = transform;
     }
@@ -254,7 +242,7 @@ public class InventorySlot : MonoBehaviour
         grabAudio.Play();
     }
 
-    private IEnumerator DisableItem(XRBaseInteractable item, XRBaseInteractor controller)
+    private IEnumerator DisableItem(XRBaseInteractable item)
     {
         item.transform.position += Vector3.one * 9999;
         //Lets physics respond to collider disappearing before disabling object phyics update needs to run twice

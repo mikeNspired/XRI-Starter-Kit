@@ -93,7 +93,7 @@ namespace MikeNspired.UnityXRHandPoser
             triggerAnimationValue = val;
         }
 
-        
+
         //Animates the the 'SecondButtonPose' typically the grip button when no item is being grabbed
         public void AnimateToSecondPose()
         {
@@ -121,7 +121,7 @@ namespace MikeNspired.UnityXRHandPoser
             isGrabbed = false;
             BeginNewPoses(DefaultPose, AnimationPose);
         }
-      
+
 
         public void SetBones() => SetNewJoints(RootBone, currentJoints);
 
@@ -134,7 +134,7 @@ namespace MikeNspired.UnityXRHandPoser
         public void BeginNewPoses(Pose primaryPose, Pose animationPose)
         {
             AnimationPose = animationPose;
-            
+
             AnimateFromOldPoseToNewPose(primaryPose, animationPose);
             if (animationPose)
                 StartAnimationByValue(animationPose);
@@ -347,6 +347,7 @@ namespace MikeNspired.UnityXRHandPoser
         }
 
         public Rigidbody rb;
+
         private IEnumerator AnimateHandTransformLocal(float animationLength, TransformStruct newTransform)
         {
             float timer = 0;
@@ -388,8 +389,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (setPosition)
             {
-               // transform.SetPositionAndRotation(handPositionTarget.position, handPositionTarget.rotation);
-                //Debug.Log("ihiohoih");
+                transform.SetPositionAndRotation(handPositionTarget.position, handPositionTarget.rotation);
             }
         }
 

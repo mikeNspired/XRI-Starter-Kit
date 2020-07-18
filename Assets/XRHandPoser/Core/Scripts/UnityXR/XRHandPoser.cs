@@ -69,7 +69,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         protected override void BeginNewHandPoses(HandAnimator hand)
         {
-            
             if (!hand) return;
             if (!CheckIfCorrectHand(hand)) return;
 

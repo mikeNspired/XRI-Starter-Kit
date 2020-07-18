@@ -57,7 +57,7 @@ namespace MikeNspired.UnityXRHandPoser
             interactableTransform.localRotation = interactableStartingTransformData.rotation;
             interactableTransform.localScale = interactableStartingTransformData.scale;
 
-            if (mainGripHand) 
+            if (mainGripHand)
                 mainGripHand.attachTransform.localRotation = mainInteractableHandAttachTransformStartingRotation;
         }
 
@@ -76,23 +76,30 @@ namespace MikeNspired.UnityXRHandPoser
                 interactionManager.SelectExit_public(currentHand, interactable);
         }
 
+
+        
         private void Update()
         {
             if (currentHand && mainGripHand)
-                SetRotation();
+                mainGripHand.attachTransform.LookAt(currentHand.transform);
         }
 
         //Credit to "VR with Andrew" on youTube for this method 
         private void SetRotation()
         {
             Vector3 target = currentHand.transform.position - mainGrabTransform.position;
+            Debug.DrawLine(currentHand.transform.position,target);
             Quaternion lookRotation = Quaternion.LookRotation(target);
 
             Vector3 gripRotation = Vector3.zero;
             gripRotation.z = mainGripHand.transform.eulerAngles.z;
 
+            Debug.Log(target + " " + gripRotation + " " +  gripRotation.z);
+
             lookRotation *= Quaternion.Euler(gripRotation);
             mainGripHand.attachTransform.rotation = lookRotation;
         }
+        
+        
     }
 }
