@@ -911,8 +911,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1835669618016567782}
-  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
-  m_LocalPosition: {x: 0, y: 0.27, z: 0}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.0015347794, y: 0.0015347796, z: 0.0015347797}
   m_Children:
   - {fileID: 1835669617859143371}
@@ -936,20 +936,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69c39e2825a643142b35bfaea9f7e19c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingItem: {fileID: 7496913877081974209, guid: 15db5d355e91a6545a128309aaa1b1e0,
-    type: 3}
-  currentSlotItem: {fileID: 0}
+  startingItem: {fileID: 0}
   slotDisplayWhenContainsItem: {fileID: 1835669617859143372}
   slotDisplayToAddItem: {fileID: 1835669617239174410}
   itemModelHolder: {fileID: 1835669619289417563}
   backImagesThatRotate: {fileID: 1835669618407104109}
+  inventorySize: {fileID: 1835669618514384806}
+  collider: {fileID: 1835669619151401656}
   grabAudio: {fileID: 7063514729345399696}
   releaseAudio: {fileID: 3699397546169138222}
-  collider: {fileID: 1835669619151401656}
   inventorySlotUpdated:
     m_PersistentCalls:
       m_Calls: []
-  inventorySize: {fileID: 1835669618514384806}
 --- !u!54 &1835669618016567779
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2259,7 +2257,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1835669619137661865
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2267,14 +2265,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1835669619137661866}
-  m_LocalRotation: {x: -0, y: -0, z: 0.7071068, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.21470404, y: 0.18853594, z: 0.21470405}
   m_Children:
   - {fileID: 1835669618775869103}
   m_Father: {fileID: 1835669617239174409}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -110.2}
@@ -2715,7 +2713,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0

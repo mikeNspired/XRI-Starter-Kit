@@ -49,8 +49,9 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void SetAttachForInstantaneous(HandAnimator hand)
         {
-            if (!CheckIfCorrectHand(hand)) return;
+            if (!hand) return;
             if (interactable.movementType != XRBaseInteractable.MovementType.Instantaneous) return;
+            if (!CheckIfCorrectHand(hand)) return;
 
             //Instantaneous movement uses the rigidbody center of mass as the attachment point. This updates that to the left or right attachpoint
             var position = hand.handType == LeftRight.Left ? leftHandAttach.position : rightHandAttach.position;
@@ -68,6 +69,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         protected override void BeginNewHandPoses(HandAnimator hand)
         {
+            if (!hand) return;
             if (!CheckIfCorrectHand(hand)) return;
 
             //Check if left or right hand to set attachment point
@@ -76,23 +78,15 @@ namespace MikeNspired.UnityXRHandPoser
 
             base.BeginNewHandPoses(hand);
 
-            MoveHandToPoseTransforms(hand);
+           // MoveHandToPoseTransforms(hand);
         }
 
         private bool CheckIfCorrectHand(HandAnimator hand)
         {
-            if (leftHandPose)
-            {
-                if (hand.handType == LeftRight.Left)
-                    return true;
-            }
-
-            if (rightHandPose)
-            {
-                if (hand.handType == LeftRight.Right)
-                    return true;
-            }
-
+            if (leftHandPose && hand.handType == LeftRight.Left)
+                return true;
+            if (rightHandPose && hand.handType == LeftRight.Right)
+                return true;
             return false;
         }
     }

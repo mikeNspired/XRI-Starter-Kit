@@ -7,9 +7,9 @@ using UnityEngine.XR.Interaction.Toolkit;
 public class PlayerInventory : MonoBehaviour
 {
     public InventorySlot[] inventorySlots;
-    [SerializeField] private InputHelpers.Button activationButton;
+    [SerializeField] private InputHelpers.Button activationButton = InputHelpers.Button.MenuButton;
     [SerializeField] private XRController leftController = null, rightController = null;
-    [SerializeField] private AudioSource enableAudio, disableAudio;
+    [SerializeField] private AudioSource enableAudio = null, disableAudio = null;
 
     [SerializeField] private bool lookAtController;
     private bool isActive = false;
@@ -63,10 +63,10 @@ public class PlayerInventory : MonoBehaviour
             TurnOnInventory(leftController.gameObject);
     }
 
-    private void TurnOnInventory(GameObject sender)
+    private void TurnOnInventory(GameObject hand)
     {
         isActive = !isActive;
-        ToggleInventoryItems(isActive, sender);
+        ToggleInventoryItems(isActive, hand);
         PlayAudio(isActive);
     }
 
@@ -79,7 +79,7 @@ public class PlayerInventory : MonoBehaviour
     }
 
     
-    private void ToggleInventoryItems(bool state, GameObject sender)
+    private void ToggleInventoryItems(bool state, GameObject hand)
     {
         foreach (var itemSlot in inventorySlots)
         {
@@ -89,25 +89,29 @@ public class PlayerInventory : MonoBehaviour
             }
             else
             {
-                if (itemSlot.gameObject.active)
+                if (itemSlot.gameObject.activeSelf)
                     itemSlot.EnableSlot();
                 itemSlot.gameObject.SetActive(state);
-                SetPositionAndRotation(sender);
+                SetPositionAndRotation(hand);
             }
         }
     }
 
-    private void SetPositionAndRotation(GameObject sender)
+    private void SetPositionAndRotation(GameObject hand)
     {
-        transform.position = sender.transform.position;
+        transform.position = hand.transform.position;
         transform.localEulerAngles = Vector3.zero;
         
         if(lookAtController)
-            transform.LookAt(sender.transform);
+            SetPosition(hand.transform);
         else
           transform.LookAt(Camera.main.transform);
     } 
-
+    private void SetPosition(Transform hand)
+    {
+        var handDirection = hand.transform.forward;
+        transform.transform.forward = Vector3.ProjectOnPlane(-handDirection, transform.up);
+    }
     
 }
 

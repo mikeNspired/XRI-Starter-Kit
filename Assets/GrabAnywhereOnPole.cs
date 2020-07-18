@@ -9,6 +9,7 @@ namespace MikeNspired.UnityXRHandPoser
     {
         [SerializeField] private XRGrabInteractable Interactable = null;
 
+        [SerializeField] private Transform GrabbableHolder = null;
         [SerializeField] private Transform LeftHandGrip = null, RightHandGrip = null;
 
         [SerializeField] private bool rotateToFollowHand = true;
@@ -42,13 +43,17 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void MoveGripPosition(Transform grip, Transform hand)
         {
-            Vector3 newPosition = Vector3.Project((hand.position - transform.position), transform.up);
+            Vector3 newPosition = Vector3.Project((hand.position - GrabbableHolder.position), transform.up);
 
-            newPosition += transform.position;
-
-            if (!CheckIfPositionInHeightConstraints(newPosition)) return;
+            newPosition += GrabbableHolder.position;
+      
 
             grip.position = newPosition;
+            grip.localPosition = new Vector3(grip.localPosition.x, 
+                Mathf.Clamp(grip.localPosition.y, -minHeight, maxHeight), grip.localPosition.z);
+
+
+            //grip.position = newPosition;
             if (rotateToFollowHand)
                 grip.rotation = Quaternion.LookRotation(-((hand.position) - grip.transform.position), transform.up);
         }
@@ -58,7 +63,8 @@ namespace MikeNspired.UnityXRHandPoser
             return newPosition.y >= (transform.position - transform.up * minHeight).y
                    && newPosition.y <= (transform.position + transform.up * maxHeight).y;
         }
-        
+
+
         private void OnTriggerEnter(Collider other)
         {
             HandReference hand = other.GetComponent<HandReference>();
@@ -95,11 +101,12 @@ namespace MikeNspired.UnityXRHandPoser
                 rightFollow = true;
             }
         }
+
         private void OnDrawGizmosSelected()
         {
-            var localPosition = transform.localPosition;
+            var localPosition = GrabbableHolder.localPosition;
 
-            Gizmos.matrix = transform.parent.localToWorldMatrix;
+            Gizmos.matrix = GrabbableHolder.parent.localToWorldMatrix;
             Gizmos.color = Color.cyan;
             Gizmos.DrawLine(localPosition - Vector3.up * minHeight, localPosition + Vector3.up * maxHeight);
             Gizmos.DrawWireSphere(localPosition - Vector3.up * minHeight, .005f);

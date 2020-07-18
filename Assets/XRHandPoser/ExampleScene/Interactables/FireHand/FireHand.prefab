@@ -19377,7 +19377,7 @@ MonoBehaviour:
   newMaterial: {fileID: 2100000, guid: 9267b179f3ff3aa43996672d14d4d13b, type: 2}
   powerParticleSystem: {fileID: 8617852245219615889}
   meshCollider: {fileID: 382128047905790592}
-  animationTime: 0
+  animationTime: 1.5
 --- !u!114 &3626242251110275234
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19404,9 +19404,9 @@ MonoBehaviour:
   currentLeftHand: {fileID: 0}
   currentRightHand: {fileID: 0}
   grabAttachPoints: {fileID: 382128048132493768}
-  interactable: {fileID: 0}
+  interactable: {fileID: 3626242251110275236}
   WaitForHandToAnimateToPosition: 0
-  DisableHandAttachTransforms: 0
+  DisableHandAttachTransforms: 1
 --- !u!82 &3626242251110275238
 AudioSource:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using System.Reflection;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
 
@@ -17,7 +18,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             unity_SelectEnter.Invoke(manager, new object[] {interactor, interactable});
         }
-        
+
         public static void SelectExit_public(this XRInteractionManager manager, XRBaseInteractor interactor, XRBaseInteractable interactable)
         {
             MethodInfo unity_SelectEnter = typeof(XRInteractionManager).GetMethod("SelectExit",
@@ -34,4 +35,6 @@ namespace MikeNspired.UnityXRHandPoser
             unity_SelectEnter.Invoke(manager, new object[] {interactor, interactable});
         }
     }
+    
+    
 }

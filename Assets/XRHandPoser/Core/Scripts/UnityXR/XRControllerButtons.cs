@@ -12,8 +12,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// </summary>
     public class XRControllerButtons : MonoBehaviour
     {
-        public InputDevice inputDevice;
-        public XRController xrController;
+        [SerializeField] private XRController xrController;
 
         public UnityEventFloat OnTriggerValue;
         public UnityEvent OnGripPressed;
@@ -22,6 +21,7 @@ namespace MikeNspired.UnityXRHandPoser
         public bool gripValue;
         public float triggerValue;
 
+        private InputDevice inputDevice;
         private bool IsGripped;
 
         void Start()
@@ -56,18 +56,6 @@ namespace MikeNspired.UnityXRHandPoser
                     OnGripRelease.Invoke();
                 }
             }
-
-        }
-
-        public void Grab()
-        {
-            OnGripPressed.Invoke();
-
-        }
-
-        public void Release()
-        {
-            OnGripRelease.Invoke();
 
         }
     }

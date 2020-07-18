@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
 public class InventorySlot : MonoBehaviour
 {
     [SerializeField] [Tooltip("Optional Starting item")]
     private XRBaseInteractable startingItem = null;
-
 
     [SerializeField] [Tooltip("Display used when holding slot is holding an item")]
     private GameObject slotDisplayWhenContainsItem = null;
@@ -24,17 +24,19 @@ public class InventorySlot : MonoBehaviour
     private Transform backImagesThatRotate = null;
 
     [SerializeField] [Tooltip("Item will be scaled down to size to fit inside this box collider")]
-    private BoxCollider inventorySize;
-    [SerializeField] private Collider collider;
-    [SerializeField] private AudioSource grabAudio, releaseAudio;
-    
+    private BoxCollider inventorySize = null;
+
+    [SerializeField] private new Collider collider = null;
+    [SerializeField] private AudioSource grabAudio = null, releaseAudio = null;
+
 
     public UnityEvent inventorySlotUpdated;
 
     private XRBaseInteractable currentSlotItem;
+    public XRBaseInteractable CurrentSlotItem => currentSlotItem;
 
-    private readonly int Disable = Animator.StringToHash("Disable");
-    private readonly int Enable = Animator.StringToHash("Enable");
+    private int Disable;
+    private int Enable;
 
     private Transform boundCenterTransform, itemSlotMeshClone;
     private XRInteractionManager interactionManager;
@@ -47,8 +49,7 @@ public class InventorySlot : MonoBehaviour
     private Vector3 goalSizeToFitInSlot;
     private const float AnimationDisableLength = .5f, AnimationLengthItemToSlot = .15f;
 
-    public XRBaseInteractable CurrentSlotItem => currentSlotItem;
-    
+
 
     private void Awake()
     {
@@ -64,6 +65,9 @@ public class InventorySlot : MonoBehaviour
             SetupNewMeshClone(currentSlotItem);
             startingTransformFromHand.SetTransformStruct(Vector3.zero, Quaternion.Euler(new Vector3(0, 90, 0)), startingTransformFromHand.scale * .1f);
         }
+
+        Disable = Animator.StringToHash("Disable");
+        Enable = Animator.StringToHash("Enable");
     }
 
     private void OnValidate()
@@ -97,15 +101,23 @@ public class InventorySlot : MonoBehaviour
 
     private void OnDisable() => CancelInvoke();
 
-    private void OnTriggerEnter(Collider other)
+    // private void OnTriggerEnter(Collider other)
+    // {
+    //     if (isBusy) return;
+    //     var controller = other.GetComponent<XRBaseControllerInteractor>();
+    //
+    //     if (!controller) return;
+    //
+    //     if (touchToInteract)
+    //         InteractWithSlot(controller);
+    // }
+
+    public void TryInteractWithSlot(XRBaseInteractor controller)
     {
         if (isBusy) return;
-        var controller = other.GetComponent<XRBaseControllerInteractor>();
-
-        if (!controller) return;
-
         InteractWithSlot(controller);
     }
+    
 
     private void InteractWithSlot(XRBaseInteractor controller)
     {
@@ -154,7 +166,7 @@ public class InventorySlot : MonoBehaviour
         else //Show add item display
         {
             if (boundCenterTransform) Destroy(boundCenterTransform.gameObject);
-            hasItemAnimator.SetTrigger("Disable");
+            hasItemAnimator.SetTrigger(Disable);
             slotDisplayToAddItem.gameObject.SetActive(true);
             yield return new WaitForSeconds(AnimationDisableLength / 2);
             slotDisplayWhenContainsItem.gameObject.SetActive(false);

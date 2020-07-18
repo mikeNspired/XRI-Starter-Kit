@@ -1,5 +1,6 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
 
+using System;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -21,17 +22,17 @@ namespace MikeNspired.UnityXRHandPoser
         void Start()
         {
             OnValidate();
-            interactable.onSelectEnter.AddListener(x => SetAttachForInstantaneous(x.GetComponent<XRBaseControllerInteractor>()));
-            interactable.onSelectExit.AddListener(x => ReturnAttachForInstantaneous(x.GetComponent<XRBaseControllerInteractor>()));
+            interactable.onSelectEnter.AddListener(x => SetActionTrigger(x.GetComponent<XRBaseControllerInteractor>()));
+            interactable.onSelectExit.AddListener(x => ReturnToOriginalActionTrigger(x.GetComponent<XRBaseControllerInteractor>()));
         }
 
-        private void SetAttachForInstantaneous(XRBaseControllerInteractor controller)
+        private void SetActionTrigger(XRBaseControllerInteractor controller)
         {
             originalActionTriggerType = controller.selectActionTrigger;
             controller.selectActionTrigger = ActionTriggerType;
         }
 
-        private void ReturnAttachForInstantaneous(XRBaseControllerInteractor controller)
+        private void ReturnToOriginalActionTrigger(XRBaseControllerInteractor controller)
         {
             controller.selectActionTrigger = originalActionTriggerType;
         }
@@ -43,3 +44,4 @@ namespace MikeNspired.UnityXRHandPoser
         }
     }
 }
+

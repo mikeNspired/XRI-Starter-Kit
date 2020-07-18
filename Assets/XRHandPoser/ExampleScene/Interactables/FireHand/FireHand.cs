@@ -1,4 +1,5 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,7 +19,8 @@ namespace MikeNspired.UnityXRHandPoser
         private TransformStruct startingParticleOrigin; //Still need to set
         private AudioSource audioSource;
         private Vector3 startingPosition;
-        private void Start()
+
+        private void Awake()
         {
             startingPosition = transform.position;
             audioSource = GetComponent<AudioSource>();
@@ -56,15 +58,18 @@ namespace MikeNspired.UnityXRHandPoser
             startingParticleOrigin.rotation = powerParticleSystem.transform.localRotation;
             powerParticleSystem.Stop();
             audioSource.Stop();
-            StartCoroutine(SetDefaultPosition());
+            if (gameObject.activeSelf)
+                StartCoroutine(SetDefaultPosition());
         }
 
         public float animationTime;
+
         private void OnGrab(XRBaseInteractor interactor)
         {
             StopAllCoroutines();
+
             itemModel.SetActive(false);
-        
+
             if (!playerHandModel)
             {
                 playerHandModel = interactor.GetComponent<HandReference>().hand.GetComponentInChildren<SkinnedMeshRenderer>();
@@ -80,7 +85,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             float timer = 0;
             Quaternion startingRotation = transform.rotation;
-            Vector3 endingRotation = new Vector3(0,startingRotation.y,0);
+            Vector3 endingRotation = new Vector3(0, startingRotation.y, 0);
             Vector3 currentPosition = transform.position;
             while (timer <= animationTime + Time.deltaTime)
             {
