@@ -388,7 +388,8 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (setPosition)
             {
-                transform.SetPositionAndRotation(handPositionTarget.position, handPositionTarget.rotation);
+               // transform.SetPositionAndRotation(handPositionTarget.position, handPositionTarget.rotation);
+                //Debug.Log("ihiohoih");
             }
         }
 

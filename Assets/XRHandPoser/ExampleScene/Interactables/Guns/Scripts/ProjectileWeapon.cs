@@ -50,7 +50,9 @@ namespace MikeNspired.UnityXRHandPoser
             if (bulletsPerShot < 1) return;
 
 
-            if (!infiniteAmmo && !magazineAttach && (!magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
+
+            
+            if (magazineAttach && !infiniteAmmo && (!magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
             {
                 outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
                 return;

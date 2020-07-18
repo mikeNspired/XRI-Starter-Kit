@@ -69,6 +69,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         protected override void BeginNewHandPoses(HandAnimator hand)
         {
+            
             if (!hand) return;
             if (!CheckIfCorrectHand(hand)) return;
 
@@ -78,7 +79,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             base.BeginNewHandPoses(hand);
 
-           // MoveHandToPoseTransforms(hand);
+            MoveHandToPoseTransforms(hand);
         }
 
         private bool CheckIfCorrectHand(HandAnimator hand)
