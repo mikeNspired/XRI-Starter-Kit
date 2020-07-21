@@ -17,6 +17,7 @@ namespace MikeNspired.UnityXRHandPoser
         private Quaternion mainInteractableHandAttachTransformStartingRotation;
         private TransformStruct interactableStartingTransformData;
         private Transform interactableStartingParent;
+        private Quaternion fromToAtStart;
 
         private void Awake()
         {
@@ -65,6 +66,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             mainGripHand = hand;
             mainInteractableHandAttachTransformStartingRotation = mainGripHand.attachTransform.localRotation;
+            SetStartingFromToRotation();
         }
 
         private void DisableMainInteractableHand(XRBaseInteractor hand)
@@ -77,29 +79,29 @@ namespace MikeNspired.UnityXRHandPoser
         }
 
 
-        
         private void Update()
         {
             if (currentHand && mainGripHand)
-                mainGripHand.attachTransform.LookAt(currentHand.transform);
+                SetRotation();
+            mainGripHand.attachTransform.LookAt(currentHand.transform);
+        }
+        
+        private void SetStartingFromToRotation()
+        {
+            Vector3 oldForward = mainGripHand.attachTransform.forward;
+            Quaternion oldRotation = mainGripHand.attachTransform.rotation;
+
+            mainGripHand.attachTransform.LookAt(currentHand.transform);
+            Vector3 newForward = mainGripHand.attachTransform.forward;
+
+            mainGripHand.attachTransform.rotation = oldRotation;
+            fromToAtStart = Quaternion.FromToRotation(oldForward, newForward);
         }
 
-        //Credit to "VR with Andrew" on youTube for this method 
         private void SetRotation()
         {
-            Vector3 target = currentHand.transform.position - mainGrabTransform.position;
-            Debug.DrawLine(currentHand.transform.position,target);
-            Quaternion lookRotation = Quaternion.LookRotation(target);
-
-            Vector3 gripRotation = Vector3.zero;
-            gripRotation.z = mainGripHand.transform.eulerAngles.z;
-
-            Debug.Log(target + " " + gripRotation + " " +  gripRotation.z);
-
-            lookRotation *= Quaternion.Euler(gripRotation);
-            mainGripHand.attachTransform.rotation = lookRotation;
+            mainGripHand.transform.LookAt(currentHand.transform.position);
+            mainGripHand.attachTransform.rotation = mainGripHand.attachTransform.rotation * Quaternion.Inverse(fromToAtStart);
         }
-        
-        
     }
 }
