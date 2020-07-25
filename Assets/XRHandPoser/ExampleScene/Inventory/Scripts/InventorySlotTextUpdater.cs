@@ -45,7 +45,8 @@ public class InventorySlotTextUpdater : MonoBehaviour
         else
         {
             Magazine magazine = projectile.magazineAttach.Magazine;
-            SetText(projectile.magazineAttach?.Magazine.CurrentAmmo.ToString(), magazine.MaxAmmo.ToString());
+            if (magazine)
+                SetText(magazine.CurrentAmmo.ToString(), magazine.MaxAmmo.ToString());
         }
     }
 

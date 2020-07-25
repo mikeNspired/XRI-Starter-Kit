@@ -106,7 +106,7 @@ namespace MikeNspired.UnityXRHandPoser
             mainGripHand.attachTransform.parent = newHandAttachTransform;
         }
 
-        [SerializeField] private bool rotateOnY, rotateOnZ;
+        [SerializeField] private bool rotateOnY = false, rotateOnZ = false;
 
         private void SetRotation()
         {

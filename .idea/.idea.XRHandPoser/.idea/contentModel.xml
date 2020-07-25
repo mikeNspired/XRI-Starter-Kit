@@ -5,26 +5,11 @@
     <e p="C:\Users\mikeN\.Rider2019.3\system\extResources" t="IncludeRecursive" />
     <e p="C:\Users\mikeN\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_XRHandPoser.414816931.00" t="ExcludeRecursive" />
     <e p="C:\Users\mikeN\Desktop\Git\XRHandPoser\XRHandPoser" t="IncludeRecursive">
-      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
         <e p="InProgress" t="Include">
-          <e p="GrabAnywhereOnPole.cs" t="Include" />
-          <e p="IgnoreCharacterControllerCollider.cs" t="Include" />
           <e p="InProgress.asmdef" t="Include" />
-          <e p="Inventory" t="Include">
-            <e p="InventoryGrabInteract.cs" t="Include" />
-            <e p="InventoryItemHelper.cs" t="Include" />
-            <e p="InventorySlot.cs" t="Include" />
-            <e p="InventorySlotTextUpdater.cs" t="Include" />
-            <e p="InventoryTouchInteract.cs" t="Include" />
-            <e p="PlayerInventory.cs" t="Include" />
-          </e>
           <e p="PhysicsIgnoreColliders.cs" t="Include" />
-          <e p="RecoilReduceOnInteractableGrab.cs" t="Include" />
-          <e p="SecondaryGrabFollow.cs" t="Include" />
         </e>
-        <e p="Test1.cs" t="Include" />
-        <e p="Test2.cs" t="Include" />
         <e p="XRHandPoser" t="Include">
           <e p="Core" t="Include">
             <e p="Audio" t="Include">
@@ -101,10 +86,21 @@
                 </e>
               </e>
             </e>
+            <e p="Inventory" t="Include">
+              <e p="Scripts" t="Include">
+                <e p="InventoryGrabInteract.cs" t="Include" />
+                <e p="InventoryItemHelper.cs" t="Include" />
+                <e p="InventoryManager.cs" t="Include" />
+                <e p="InventorySlot.cs" t="Include" />
+                <e p="InventorySlotTextUpdater.cs" t="Include" />
+                <e p="InventoryTouchInteract.cs" t="Include" />
+              </e>
+            </e>
             <e p="Scripts" t="Include">
               <e p="CollidersSetToTrigger.cs" t="Include" />
               <e p="CollisionSound.cs" t="Include" />
               <e p="GameObjectListActivator.cs" t="Include" />
+              <e p="IgnoreCharacterControllerCollider.cs" t="Include" />
               <e p="InteractableForceActionTrigger.cs" t="Include" />
               <e p="MatchHandRotationOnSelect.cs" t="Include" />
               <e p="Modified VRBeginner Scripts" t="Include">
@@ -117,6 +113,11 @@
               <e p="RotateOverTime.cs" t="Include" />
               <e p="SpawnIfNothingBlocking.cs" t="Include" />
               <e p="TeleportRayEnabler.cs" t="Include" />
+              <e p="TwoHanded Grabbing" t="Include">
+                <e p="GrabAnywhereOnPole.cs" t="Include" />
+                <e p="RecoilReduceOnInteractableGrab.cs" t="Include" />
+                <e p="SecondaryGrabFollow.cs" t="Include" />
+              </e>
             </e>
             <e p="XR-Interaction-Toolkit-Assets" t="Include">
               <e p="VR" t="Include">

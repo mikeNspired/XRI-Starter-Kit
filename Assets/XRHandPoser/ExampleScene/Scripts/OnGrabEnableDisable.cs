@@ -18,7 +18,7 @@ namespace MikeNspired.UnityXRHandPoser
         [Tooltip("Transform is disabled at start, and enabled when the interactable is grabbed, and disabled when released")] [SerializeField]
         private Transform enableOnGrab = null;
 
-        [SerializeField] private bool moveAndDisableAfterFrameOnGrabColliders;
+        [SerializeField] private bool moveAndDisableAfterFrameOnGrabColliders = true;
 
 
         private bool PreventDisableOfCollidersForObjectDisable;
@@ -74,7 +74,8 @@ namespace MikeNspired.UnityXRHandPoser
             if (moveAndDisableAfterFrameOnGrabColliders)
             {
                 StopAllCoroutines();
-                disableOnGrab.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
+                if (disableOnGrab)
+                    disableOnGrab.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
                 StartCoroutine(MoveDisableAndReturn(enableOnGrab));
             }
             else if (enableOnGrab)
@@ -90,7 +91,8 @@ namespace MikeNspired.UnityXRHandPoser
             if (moveAndDisableAfterFrameOnGrabColliders)
             {
                 StopAllCoroutines();
-                enableOnGrab.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
+                if (enableOnGrab)
+                    enableOnGrab.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
                 StartCoroutine(MoveDisableAndReturn(disableOnGrab));
             }
             else if (disableOnGrab)

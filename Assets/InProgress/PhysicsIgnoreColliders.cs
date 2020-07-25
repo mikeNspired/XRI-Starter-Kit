@@ -28,14 +28,14 @@ public class PhysicsIgnoreColliders : MonoBehaviour
     }
 }
 
-public class XRInteractablePhysicsIgnoreColliders : PhysicsIgnoreColliders
-{
-    private List<Collider> mainColliders;
-    private List<Collider> collidersToIgnore;
-
-    void Start()
-    {
-        mainColliders = GetComponent<XRBaseInteractable>().colliders;
-        IgnoreCollisions(mainColliders,collidersToIgnore);
-    }
-}
+// public class XRInteractablePhysicsIgnoreColliders : PhysicsIgnoreColliders
+// {
+//     private List<Collider> mainColliders;
+//     private List<Collider> collidersToIgnore;
+//
+//     void Start()
+//     {
+//         mainColliders = GetComponent<XRBaseInteractable>().colliders;
+//         IgnoreCollisions(mainColliders,collidersToIgnore);
+//     }
+// }
