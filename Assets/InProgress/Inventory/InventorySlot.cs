@@ -54,20 +54,29 @@ public class InventorySlot : MonoBehaviour
     {
         OnValidate();
 
-        //Create currentSlotItem from prefab
-        if (!currentSlotItem && startingItem)
-        {
-            currentSlotItem = Instantiate(startingItem, transform, true);
-            currentSlotItem.gameObject.SetActive(false);
-            currentSlotItem.transform.localPosition = Vector3.zero;
-            currentSlotItem.transform.localEulerAngles = Vector3.zero;
-            SetupNewMeshClone(currentSlotItem);
-            startingTransformFromHand.SetTransformStruct(Vector3.zero, Quaternion.Euler(new Vector3(0, 90, 0)), startingTransformFromHand.scale * .1f);
-        }
-
         Disable = Animator.StringToHash("Disable");
         Enable = Animator.StringToHash("Enable");
     }
+
+    public IEnumerator CreateStartingItemAndDisable()
+    {
+        //Called from PlayerInventory, to give a frame for the start methods to be called on currentSlotItem
+        if (startingItem)
+        {
+            currentSlotItem = Instantiate(startingItem, transform, true);
+            yield return null;
+            currentSlotItem.gameObject.SetActive(false);
+
+            currentSlotItem.transform.localPosition = Vector3.zero;
+            currentSlotItem.transform.localEulerAngles = Vector3.zero;
+            startingTransformFromHand.SetTransformStruct(
+                Vector3.zero, Quaternion.Euler(new Vector3(0, 90, 0)), startingTransformFromHand.scale * .1f);
+            SetupNewMeshClone(currentSlotItem);
+        }
+
+        gameObject.SetActive(false);
+    }
+
 
     private void OnValidate()
     {
@@ -85,20 +94,22 @@ public class InventorySlot : MonoBehaviour
     {
         isBusy = false;
         isDisabling = false;
-        startingTransformFromHand.SetTransformStruct(Vector3.zero, Quaternion.Euler(new Vector3(0, 90, 0)), startingTransformFromHand.scale * .1f);
+        startingTransformFromHand.SetTransformStruct(
+            Vector3.zero, Quaternion.Euler(new Vector3(0, 90, 0)), startingTransformFromHand.scale * .1f);
 
         StartCoroutine(AnimateIcon());
 
         if (currentSlotItem)
         {
-            boundCenterTransform.gameObject.SetActive(false);
+            if (boundCenterTransform)
+                boundCenterTransform.gameObject.SetActive(false);
             Invoke(nameof(SetNewItemModel), .25f);
         }
 
         inventorySlotUpdated.Invoke();
     }
 
-    private void OnDisable() => CancelInvoke();
+    private void OnDisable() => CancelInvoke(nameof(SetNewItemModel));
 
     public void TryInteractWithSlot(XRBaseInteractor controller)
     {
@@ -128,7 +139,6 @@ public class InventorySlot : MonoBehaviour
         currentSlotItem = itemHandIsHolding;
 
         StartCoroutine(AnimateIcon());
-
         SetNewItemModel();
         inventorySlotUpdated.Invoke();
     }
@@ -211,8 +221,8 @@ public class InventorySlot : MonoBehaviour
         var itemHandIsHolding = controller.selectTarget;
         if (!itemHandIsHolding) return;
 
+
         //Release current item
-        itemHandIsHolding.GetComponent<ColliderSwitchOnGrab>()?.TurnOnAllCollidersToRemoveXRFromManager();
         ReleaseItemFromHand(controller, itemHandIsHolding);
 
         var itemHolderTransform = itemModelHolder.transform;
@@ -221,18 +231,33 @@ public class InventorySlot : MonoBehaviour
         itemHolderTransform.localPosition = new Vector3(0, 0, 4.3f);
         itemHolderTransform.localEulerAngles = Vector3.zero;
 
-        SetupNewMeshClone(itemHandIsHolding);
-
         //Disable current item
         StartCoroutine(DisableItem(itemHandIsHolding));
 
         itemHandIsHolding.transform.parent = transform;
     }
 
+    //Lets physics respond to collider disappearing before disabling object physics update needs to run twice
+    private IEnumerator DisableItem(XRBaseInteractable item)
+    {
+        item.gameObject.SetActive(true); //Force gameObject on to get collision events
+        yield return null;
+
+        item.GetComponent<OnGrabEnableDisable>()?.EnableAll(); //Force collider on to get collision events
+        item.transform.position += Vector3.one * 9999;
+
+        yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
+
+        currentSlotItem.transform.localPosition = Vector3.zero; //Return to position
+        item.gameObject.SetActive(false);
+
+        yield return new WaitForSeconds(Time.fixedDeltaTime);
+
+        SetupNewMeshClone(item);
+    }
+
     private void GetNewItemFromSlot(XRBaseInteractor controller)
     {
-        currentSlotItem.transform.localPosition = Vector3.zero;
-
         //Enable Current Item
         currentSlotItem.gameObject.SetActive(true);
         currentSlotItem.transform.parent = null;
@@ -240,14 +265,6 @@ public class InventorySlot : MonoBehaviour
         //Set controller to hold interactable
         GrabNewItem(controller, currentSlotItem);
         grabAudio.Play();
-    }
-
-    private IEnumerator DisableItem(XRBaseInteractable item)
-    {
-        item.transform.position += Vector3.one * 9999;
-        //Lets physics respond to collider disappearing before disabling object phyics update needs to run twice
-        yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
-        item.gameObject.SetActive(false);
     }
 
 
@@ -264,13 +281,15 @@ public class InventorySlot : MonoBehaviour
             Destroy(itemSlotMeshClone.gameObject);
 
         itemSlotMeshClone = Instantiate(itemHandIsHolding, itemModelHolder, true).transform;
-        itemSlotMeshClone.gameObject.SetActive(true);
-
-        //Match clone to original object transform
-        itemSlotMeshClone.transform.SetPositionAndRotation(itemHandIsHolding.transform.position, itemHandIsHolding.transform.rotation);
 
         //Disable clone from interacting with world
         DestroyComponentsOnClone(itemSlotMeshClone);
+
+        //Destroy components and then activating object does not work, must be called a tick after destroy or awakes get called
+        Invoke(nameof(ActivateItemSlotMeshClone), 0);
+
+        //Match clone to original object transform
+        itemSlotMeshClone.transform.SetPositionAndRotation(itemHandIsHolding.transform.position, itemHandIsHolding.transform.rotation);
 
         //Create a new parent for the item at the center of the mesh's
         Bounds bounds = GetBoundsOfAllMeshes(itemSlotMeshClone.transform);
@@ -282,7 +301,7 @@ public class InventorySlot : MonoBehaviour
         //Set position to be the center of the bounds 
         boundCenterTransform.position = bounds.center;
 
-        //Organize hiearchy
+        //Organize hierarchy
         boundCenterTransform.parent = itemModelHolder;
 
         //Place model as child of center point to act as the new pivot point
@@ -303,21 +322,27 @@ public class InventorySlot : MonoBehaviour
 
         inventorySize.enabled = false;
 
-
         goalSizeToFitInSlot = boundCenterTransform.transform.localScale;
+        
+        animateItemToSlotCoroutine = StartCoroutine(AnimateItemToSlot());
     }
+
+    private void ActivateItemSlotMeshClone() => itemSlotMeshClone.gameObject.SetActive(true);
 
     private void DestroyComponentsOnClone(Transform clone)
     {
-        //Destroy almost all components besides models - Could not foreach through Components because it destroys out of order causing issues
-        var monoBehaviors = clone.GetComponentsInChildren<MonoBehaviour>();
+        //Destroy almost all components - Could not foreach through Components because it destroys out of order causing issues
+        var monoBehaviors = clone.GetComponentsInChildren<MonoBehaviour>(true);
         foreach (var t in monoBehaviors) Destroy(t);
 
-        var rigidBodies = clone.GetComponentsInChildren<Rigidbody>();
+        var rigidBodies = clone.GetComponentsInChildren<Rigidbody>(true);
         foreach (var t in rigidBodies) Destroy(t);
 
-        var colliders = clone.GetComponentsInChildren<Collider>();
+        var colliders = clone.GetComponentsInChildren<Collider>(true);
         foreach (var t in colliders) Destroy(t);
+
+        var lights = clone.GetComponentsInChildren<Light>(true);
+        foreach (var t in lights) Destroy(t);
     }
 
     private void SetNewItemModel()
@@ -328,7 +353,8 @@ public class InventorySlot : MonoBehaviour
         //Create a clone of the new item
         if (!itemSlotMeshClone)
             SetupNewMeshClone(currentSlotItem);
-        animateItemToSlotCoroutine = StartCoroutine(AnimateItemToSlot());
+        else
+            animateItemToSlotCoroutine = StartCoroutine(AnimateItemToSlot());
     }
 
     private Coroutine animateItemToSlotCoroutine;

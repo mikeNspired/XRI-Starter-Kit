@@ -53,8 +53,8 @@ namespace MikeNspired.UnityXRHandPoser
                 Mathf.Clamp(grip.localPosition.y, -minHeight, maxHeight), grip.localPosition.z);
 
 
-            //grip.position = newPosition;
-            if (rotateToFollowHand)
+
+            if (CheckIfPositionInHeightConstraints(newPosition) && rotateToFollowHand)
                 grip.rotation = Quaternion.LookRotation(-((hand.position) - grip.transform.position), transform.up);
         }
 

@@ -233,7 +233,7 @@ MonoBehaviour:
   currentLeftHand: {fileID: 0}
   currentRightHand: {fileID: 0}
   grabAttachPoints: {fileID: 6012831926955386494}
-  interactable: {fileID: 0}
+  interactable: {fileID: 3217367507161224161}
   WaitForHandToAnimateToPosition: 1
   DisableHandAttachTransforms: 0
 --- !u!114 &3217367507161224162
@@ -249,7 +249,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxAmmo: 30
-  AmmoCount: 30
+  CurrentAmmo: 30
   gunType: {fileID: 11400000, guid: 28e951b9ddb12e045826cb58c8ba0ad6, type: 2}
   ammoModels: {fileID: 3217367507332200334}
   collider: {fileID: 8252189506900701473}

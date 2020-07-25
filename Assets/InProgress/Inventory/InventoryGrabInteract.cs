@@ -24,7 +24,7 @@ public class InventoryGrabInteract : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         var controller = other.GetComponent<XRController>();
-        if (controller)
+        if (controller && !controllers.Contains(controller))
             controllers.Add(controller);
     }
 
@@ -86,8 +86,8 @@ public class InventoryGrabInteract : MonoBehaviour
         else if (isGripped && !gripValue)
         {
             isGripped = false;
-            if (!IsControllerHoldingObject(controller)) return;
-            inventorySlot.TryInteractWithSlot(controller.GetComponent<XRBaseInteractor>());
+            if (IsControllerHoldingObject(controller))
+                inventorySlot.TryInteractWithSlot(controller.GetComponent<XRBaseInteractor>());
         }
     }
 

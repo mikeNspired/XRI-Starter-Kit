@@ -58,9 +58,9 @@ namespace MikeNspired.UnityXRHandPoser
 
             Magazine collidedMagazine = other.attachedRigidbody?.GetComponent<Magazine>();
 
-            if (collidedMagazine && collidedMagazine.gunType == gunType && CheckIfBothGrabbed(collidedMagazine))
+            if (collidedMagazine && collidedMagazine.GunType == gunType && CheckIfBothGrabbed(collidedMagazine))
             {
-                if (collidedMagazine.AmmoCount <= 0) return;
+                if (collidedMagazine.CurrentAmmo <= 0) return;
                 ammoIsAttached = true;
                 magazine = collidedMagazine;
                 ReleaseItemFromHand();

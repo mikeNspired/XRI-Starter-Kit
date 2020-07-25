@@ -8,14 +8,15 @@ namespace MikeNspired.UnityXRHandPoser
     public class Magazine : MonoBehaviour
     {
         public int MaxAmmo = 10;
-        public int AmmoCount = 10;
-        public GunType gunType = null;
+        public int CurrentAmmo = 10;
         private bool isBeingGrabbed = false;
 
+        [SerializeField] private GunType gunType = null;
         [SerializeField] private GameObject ammoModels = null;
         [SerializeField] private new Collider collider = null;
         [SerializeField] private Rigidbody rigidBody = null;
         public bool IsBeingGrabbed() => isBeingGrabbed;
+        public GunType GunType => gunType;
 
 
         private void Start()
@@ -50,13 +51,13 @@ namespace MikeNspired.UnityXRHandPoser
 
         public bool UseAmmo()
         {
-            if (AmmoCount <= 0)
+            if (CurrentAmmo <= 0)
             {
                 ammoModels.SetActive(false);
                 return false;
             }
 
-            AmmoCount--;
+            CurrentAmmo--;
             return true;
         }
     }

@@ -16,17 +16,21 @@ public class PlayerInventory : MonoBehaviour
 
     private void Awake()
     {
-        inventorySlots = GetComponentsInChildren<InventorySlot>();
+    }
+
+    private void Start()
+    {
+        OnValidate();
 
         foreach (var itemSlot in inventorySlots)
-            itemSlot.gameObject.SetActive(false);
+            itemSlot.StartCoroutine(itemSlot.CreateStartingItemAndDisable());
     }
 
     private void OnValidate()
     {
         inventorySlots = GetComponentsInChildren<InventorySlot>();
     }
-    
+
     private void Update()
     {
         CheckController();
@@ -72,13 +76,13 @@ public class PlayerInventory : MonoBehaviour
 
     private void PlayAudio(bool state)
     {
-        if(state)
+        if (state)
             enableAudio.Play();
         else
             disableAudio.Play();
     }
 
-    
+
     private void ToggleInventoryItems(bool state, GameObject hand)
     {
         foreach (var itemSlot in inventorySlots)
@@ -101,17 +105,16 @@ public class PlayerInventory : MonoBehaviour
     {
         transform.position = hand.transform.position;
         transform.localEulerAngles = Vector3.zero;
-        
-        if(lookAtController)
+
+        if (lookAtController)
             SetPosition(hand.transform);
         else
-          transform.LookAt(Camera.main.transform);
-    } 
+            transform.LookAt(Camera.main.transform);
+    }
+
     private void SetPosition(Transform hand)
     {
         var handDirection = hand.transform.forward;
         transform.transform.forward = Vector3.ProjectOnPlane(-handDirection, transform.up);
     }
-    
 }
-

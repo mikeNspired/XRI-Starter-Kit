@@ -38,13 +38,15 @@ public class InventorySlotTextUpdater : MonoBehaviour
 
     private void CheckAmmo(ProjectileWeapon projectile)
     {
-        Magazine magazine = projectile.magazineAttach?.Magazine;
-        if (!magazine)
+        if (!projectile.magazineAttach)
         {
             SetTextToInfinity();
         }
         else
-            SetText(magazine.AmmoCount.ToString(), magazine.MaxAmmo.ToString());
+        {
+            Magazine magazine = projectile.magazineAttach.Magazine;
+            SetText(projectile.magazineAttach?.Magazine.CurrentAmmo.ToString(), magazine.MaxAmmo.ToString());
+        }
     }
 
     private void SetText(string currentValue, string maxValue)
