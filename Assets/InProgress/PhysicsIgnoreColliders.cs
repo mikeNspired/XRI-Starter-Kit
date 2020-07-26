@@ -23,7 +23,7 @@ public class PhysicsIgnoreColliders : MonoBehaviour
             {
                 Physics.IgnoreCollision(col, ignoreCollider);
             }
-        }
+        } 
 
     }
 }

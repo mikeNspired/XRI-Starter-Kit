@@ -19373,6 +19373,11 @@ PrefabInstance:
       propertyPath: OnDragStep.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8597198176579317506, guid: d69099f58923ee14fbe4e4424e39df51,
+        type: 3}
+      propertyPath: ActionTriggerType
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d69099f58923ee14fbe4e4424e39df51, type: 3}
 --- !u!1001 &1599908664
@@ -27017,7 +27022,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82968030fafeacf4d872a3d8a7c7a1ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ActionTriggerType: 0
+  ActionTriggerType: 1
 --- !u!1 &2395267076842230443
 GameObject:
   m_ObjectHideFlags: 0
@@ -27183,6 +27188,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Grabbable Lever
+      objectReference: {fileID: 0}
+    - target: {fileID: 8597198176579317506, guid: d69099f58923ee14fbe4e4424e39df51,
+        type: 3}
+      propertyPath: ActionTriggerType
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d69099f58923ee14fbe4e4424e39df51, type: 3}
@@ -27834,7 +27844,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82968030fafeacf4d872a3d8a7c7a1ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ActionTriggerType: 0
+  ActionTriggerType: 1
 --- !u!4 &5050749363738527471
 Transform:
   m_ObjectHideFlags: 0
@@ -27982,7 +27992,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82968030fafeacf4d872a3d8a7c7a1ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ActionTriggerType: 0
+  ActionTriggerType: 1
 --- !u!33 &5263967372581601217
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -28502,6 +28512,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2145773258}
     m_Modifications:
+    - target: {fileID: 981703664138127157, guid: 49476ef37cff9cf4b9e501dd9b720dfe,
+        type: 3}
+      propertyPath: ActionTriggerType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1339479717689491597, guid: 49476ef37cff9cf4b9e501dd9b720dfe,
+        type: 3}
+      propertyPath: ActionTriggerType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1845934694687595225, guid: 49476ef37cff9cf4b9e501dd9b720dfe,
         type: 3}
       propertyPath: m_LocalScale.z

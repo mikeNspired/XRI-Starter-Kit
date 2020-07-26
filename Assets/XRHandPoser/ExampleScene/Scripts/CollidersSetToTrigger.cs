@@ -38,7 +38,7 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 collider = c;
                 this.isTrigger = isTrigger;
-            }
+            } 
         }
     }
 }

@@ -30,7 +30,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         [SerializeField] private new Collider collider = null;
         [SerializeField] private AudioSource grabAudio = null, releaseAudio = null;
-        
+
         public XRBaseInteractable CurrentSlotItem => currentSlotItem;
         public UnityEvent inventorySlotUpdated;
 
@@ -46,7 +46,7 @@ namespace MikeNspired.UnityXRHandPoser
         private TransformStruct startingTransformFromHand;
         private Vector3 goalSizeToFitInSlot;
         private const float AnimationDisableLength = .5f, AnimationLengthItemToSlot = .15f;
-        
+
         private void Awake()
         {
             OnValidate();
@@ -288,7 +288,8 @@ namespace MikeNspired.UnityXRHandPoser
 
             //Create a new parent for the item at the center of the mesh's
             Bounds bounds = GetBoundsOfAllMeshes(itemSlotMeshClone.transform);
-            boundCenterTransform = new GameObject("Bound Center Transform").transform;
+            if (!boundCenterTransform)
+                boundCenterTransform = new GameObject("Bound Center Transform").transform;
 
             //Match rotation of item in hand to setup starting animation point
             boundCenterTransform.rotation = itemHandIsHolding.transform.rotation;
@@ -374,7 +375,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             itemModelHolder.transform.parent = backImagesThatRotate;
         }
-        
+
         private Bounds GetBoundsOfAllMeshes(Transform item)
         {
             Bounds bounds = new Bounds();

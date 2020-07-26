@@ -5,7 +5,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 public class PlayerRigMovement : MonoBehaviour
 {
     [SerializeField] private XRController controller =null;
-    [SerializeField] private InputAxes TurningInput = InputAxes.Primary2DAxis;
+    [SerializeField] private InputAxes buttonInput = InputAxes.Primary2DAxis;
     [SerializeField] private CharacterController characterController;
     private GameObject head;
 
@@ -77,21 +77,21 @@ public class PlayerRigMovement : MonoBehaviour
         
         if (!moveOnlyOnPadClick)
         {
-            controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) TurningInput], out inputAxis);
+            controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) buttonInput], out inputAxis);
             return inputAxis;
         }
 
-        if (InputAxesToCommonUsage[(int) TurningInput] == CommonUsages.primary2DAxis)
+        if (InputAxesToCommonUsage[(int) buttonInput] == CommonUsages.primary2DAxis)
         {
             controller.inputDevice.TryGetFeatureValue(CommonUsages.primary2DAxisClick, out bool onClick);
             if (onClick)
-                controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) TurningInput], out inputAxis);
+                controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) buttonInput], out inputAxis);
         }
-        else if (InputAxesToCommonUsage[(int) TurningInput] == CommonUsages.secondary2DAxis)
+        else if (InputAxesToCommonUsage[(int) buttonInput] == CommonUsages.secondary2DAxis)
         {
             controller.inputDevice.TryGetFeatureValue(CommonUsages.secondary2DAxisClick, out bool onClick);
             if (onClick)
-                controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) TurningInput], out inputAxis);
+                controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) buttonInput], out inputAxis);
         }
 
         return inputAxis;
