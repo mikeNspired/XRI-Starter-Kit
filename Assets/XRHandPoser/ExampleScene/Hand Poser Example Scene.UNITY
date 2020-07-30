@@ -9500,7 +9500,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1423496601, guid: ba97101e13c459b49abea1a64a75d60f, type: 3}
       propertyPath: m_Radius
-      value: 0.15
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 395021012025575315, guid: ba97101e13c459b49abea1a64a75d60f,
         type: 3}
@@ -9510,6 +9510,11 @@ PrefabInstance:
     - target: {fileID: 1313782602285486911, guid: ba97101e13c459b49abea1a64a75d60f,
         type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5126563915070674738, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: buttonInput
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8037807108736616066, guid: ba97101e13c459b49abea1a64a75d60f,
@@ -12214,7 +12219,7 @@ MonoBehaviour:
   GrabbableHolder: {fileID: 1370175984}
   LeftHandGrip: {fileID: 847360447}
   RightHandGrip: {fileID: 1962621884}
-  rotateToFollowHand: 1
+  rotateToFollowHand: 0
   maxHeight: 0.5
   minHeight: 0.55
 --- !u!54 &1069709675
