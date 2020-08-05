@@ -28,7 +28,7 @@ namespace MikeNspired.UnityXRHandPoser
 
 
 
-        public void TakeDamage(float damage)
+        public void TakeDamage(float damage, GameObject damager)
         {
             onHit.Invoke(damage);
             GetComponent<AudioRandomize>().PlaySound();

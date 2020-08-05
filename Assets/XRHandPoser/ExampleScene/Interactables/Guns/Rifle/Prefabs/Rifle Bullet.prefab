@@ -78,7 +78,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f996429cb5c48d4893590774355ba7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  decalPrefab: {fileID: 7561338667224050496, guid: b01d86ce0cf260642a372ef30b47f1fd,
+  damage: 10
+  metalDecal: {fileID: 7561338667224050496, guid: b01d86ce0cf260642a372ef30b47f1fd,
+    type: 3}
+  fleshDecal: {fileID: 7561338667224050496, guid: 200a697aec56ff04db3bed9b4380e9ff,
     type: 3}
 --- !u!1 &2897808304556876308
 GameObject:

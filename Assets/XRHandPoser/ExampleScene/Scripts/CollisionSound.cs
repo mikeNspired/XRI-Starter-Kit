@@ -22,7 +22,14 @@ public class CollisionSound : MonoBehaviour
     
     private void Awake()
     {
+        OnValidate();
         originalPitch = audioSource.pitch;
+    }
+
+    private void OnValidate()
+    {
+        if (!audioSource)
+            audioSource = GetComponent<AudioSource>();
     }
 
     private void OnCollisionEnter(Collision other)

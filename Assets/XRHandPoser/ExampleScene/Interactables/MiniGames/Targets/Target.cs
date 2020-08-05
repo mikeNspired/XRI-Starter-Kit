@@ -16,7 +16,7 @@ namespace MikeNspired.UnityXRHandPoser
             animator.OnFinishedAnimatingTowards.AddListener(() => canActivate = true);
         }
 
-        public void TakeDamage(float damage)
+        public void TakeDamage(float damage, GameObject damager)
         {
             if (!canTakeDamage) return;
             canTakeDamage = false;
@@ -60,5 +60,6 @@ namespace MikeNspired.UnityXRHandPoser
             animator.AnimateReturn();
 
         }
+
     }
 }

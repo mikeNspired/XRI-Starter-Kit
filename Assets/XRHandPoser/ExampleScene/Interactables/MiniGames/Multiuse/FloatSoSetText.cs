@@ -17,7 +17,7 @@ namespace MikeNspired.UnityXRHandPoser
         private string decimalString = "f";
 
         // Start is called before the first frame update
-        void Start()
+        void Awake()
         {
             FloatSO.OnValueChanged += ChangedValue;
             decimalString += (decimalCount.ToString());

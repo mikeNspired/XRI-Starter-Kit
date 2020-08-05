@@ -48,9 +48,6 @@ namespace MikeNspired.UnityXRHandPoser
         public void FireBullets(XRBaseInteractor interactor)
         {
             if (bulletsPerShot < 1) return;
-
-
-
             
             if (magazineAttach && !infiniteAmmo && (!magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
             {

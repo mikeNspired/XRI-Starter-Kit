@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class AudioRandomize : MonoBehaviour
 {
@@ -8,12 +10,21 @@ public class AudioRandomize : MonoBehaviour
     public List<AudioClip> audioClips;
     public float minPitch = -.1f, maxPitch = .1f;
     public float minVolume = -.1f, maxVolume = .1f;
-    public bool randomize = true;
-
+    public bool randomize = true, playOnAwake = false, playOnlyIfClipFinished = false, playAsOneShot = false;
+    public AudioClip CurrentClipPlayed => currentClipPlayed;
+    private AudioClip currentClipPlayed;
     private void Awake()
     {
+        OnValidate();
         GetStartingValues();
         Randomize();
+        if (playOnAwake)
+            PlaySound();
+    }
+
+    private void OnValidate()
+    {
+        if (!audioSource) audioSource = GetComponent<AudioSource>();
     }
 
     private void Randomize()
@@ -24,7 +35,8 @@ public class AudioRandomize : MonoBehaviour
         if (audioClips.Count > 0)
         {
             var i = Random.Range(0, audioClips.Count);
-            audioSource.clip = audioClips[i];
+            currentClipPlayed = audioClips[i];
+            audioSource.clip = currentClipPlayed;
         }
     }
 
@@ -33,19 +45,24 @@ public class AudioRandomize : MonoBehaviour
 
     void GetStartingValues()
     {
-        audioSource = GetComponent<AudioSource>();
         originalPitch = audioSource.pitch;
         originalVolume = audioSource.volume;
     }
-
 
     public void PlaySound()
     {
         audioSource.volume = originalVolume;
         audioSource.pitch = originalPitch;
 
+        if(playOnlyIfClipFinished && audioSource.isPlaying)
+            return;
+
         if (randomize)
             Randomize();
+        
+        if(playAsOneShot)
+            audioSource.PlayOneShot(currentClipPlayed);
+        
         audioSource.Play();
     }
 }

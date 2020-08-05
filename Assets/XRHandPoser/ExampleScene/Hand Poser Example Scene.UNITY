@@ -1175,7 +1175,7 @@ Transform:
   - {fileID: 1883806224}
   - {fileID: 90803665}
   m_Father: {fileID: 203023352}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &142017852
 GameObject:
@@ -2019,13 +2019,13 @@ Transform:
   m_LocalPosition: {x: -0.7070407, y: 0.17212127, z: 1.3776795}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 5974674523251696955}
   - {fileID: 549450558}
   - {fileID: 938000551}
   - {fileID: 1756033411}
   - {fileID: 1550578248}
   - {fileID: 130419789}
   - {fileID: 1655116081}
-  - {fileID: 5974674523251696955}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5927,7 +5927,7 @@ Transform:
   m_Children:
   - {fileID: 1810890867}
   m_Father: {fileID: 203023352}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &563501584
 PrefabInstance:
@@ -7106,6 +7106,14 @@ PrefabInstance:
     - target: {fileID: 4418791568702970, guid: 2ed68cc4c6f4c5d42bb123a2bc92d4d9, type: 3}
       propertyPath: m_LocalScale.z
       value: 1.07
+      objectReference: {fileID: 0}
+    - target: {fileID: 4763220523979898, guid: 2ed68cc4c6f4c5d42bb123a2bc92d4d9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 13.81
+      objectReference: {fileID: 0}
+    - target: {fileID: 4763220523979898, guid: 2ed68cc4c6f4c5d42bb123a2bc92d4d9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ed68cc4c6f4c5d42bb123a2bc92d4d9, type: 3}
@@ -9687,6 +9695,13 @@ PrefabInstance:
       propertyPath: m_LocalPosition.x
       value: -0
       objectReference: {fileID: 0}
+    - target: {fileID: 8334237502621162108, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: note
+      value: 'On LayerMask Water: To avoid having to export unity Settings. Teleport
+        Colliders are also set to water. This prevents the ray from interactor with
+        the rest of the world.'
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 963205204, guid: ba97101e13c459b49abea1a64a75d60f, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: ba97101e13c459b49abea1a64a75d60f, type: 3}
@@ -9868,7 +9883,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &914383686
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -10236,7 +10251,7 @@ Transform:
   m_Children:
   - {fileID: 322258158}
   m_Father: {fileID: 203023352}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 50.000004, y: -47.667004, z: 0}
 --- !u!1001 &940627711
 PrefabInstance:
@@ -11423,6 +11438,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1012776785}
   m_CullTransparentMesh: 0
+--- !u!1 &1013960185 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8037807109381460841, guid: ba97101e13c459b49abea1a64a75d60f,
+    type: 3}
+  m_PrefabInstance: {fileID: 868569671}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1013960192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1013960185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 995e7e53aa4fea14685e128a8e82efe0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  note: 
 --- !u!1 &1015622309
 GameObject:
   m_ObjectHideFlags: 0
@@ -11646,6 +11680,16 @@ PrefabInstance:
     - target: {fileID: 2854460863217181427, guid: 716f04dfda0546543adcd047a6e0ab7b,
         type: 3}
       propertyPath: m_textInfo.pageCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2854460864200160228, guid: 716f04dfda0546543adcd047a6e0ab7b,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2854460864200160228, guid: 716f04dfda0546543adcd047a6e0ab7b,
+        type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2854460864200160231, guid: 716f04dfda0546543adcd047a6e0ab7b,
@@ -18740,7 +18784,7 @@ Transform:
   - {fileID: 1023604970}
   - {fileID: 610708525}
   m_Father: {fileID: 203023352}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1550578249
 BoxCollider:
@@ -20020,7 +20064,7 @@ Transform:
   - {fileID: 1417002095}
   - {fileID: 578721088}
   m_Father: {fileID: 203023352}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &1656066542
 GameObject:
@@ -20897,7 +20941,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1756033411
 RectTransform:
   m_ObjectHideFlags: 0
@@ -20912,7 +20956,7 @@ RectTransform:
   - {fileID: 1542666940}
   - {fileID: 97389590}
   m_Father: {fileID: 203023352}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -28650,7 +28694,7 @@ Transform:
   - {fileID: 9184774688060152757}
   - {fileID: 6984574827314371529}
   m_Father: {fileID: 203023352}
-  m_RootOrder: 6
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6158370791473834755
 GameObject:
@@ -29403,15 +29447,30 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5974674523251696955}
+  - component: {fileID: 7255605807216629545}
   - component: {fileID: 8296172667968391456}
   - component: {fileID: 546653709}
   m_Layer: 4
-  m_Name: TeleportArea
+  m_Name: Teleport Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &7255605807216629545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7255605807216629544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 995e7e53aa4fea14685e128a8e82efe0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  note: 'On LayerMask Water: To avoid having to export unity Settings. Change ''Ray
+    Teleport'' XR Ray Interactor layermaskto whatever layer this is on.'
 --- !u!1001 &7325907190610425348
 PrefabInstance:
   m_ObjectHideFlags: 0
