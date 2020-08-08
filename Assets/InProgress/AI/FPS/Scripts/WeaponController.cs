@@ -124,14 +124,12 @@ public class WeaponController : MonoBehaviour
         m_LastMuzzlePosition = weaponMuzzle.position;
 
         m_ShootAudioSource = GetComponent<AudioSource>();
-        DebugUtility.HandleErrorIfNullGetComponent<AudioSource, WeaponController>(m_ShootAudioSource, this, gameObject);
 
         if (useContinuousShootSound)
         {
             m_continuousShootAudioSource = gameObject.AddComponent<AudioSource>();
             m_continuousShootAudioSource.playOnAwake = false;
             m_continuousShootAudioSource.clip = continuousShootLoopSFX;
-            m_continuousShootAudioSource.outputAudioMixerGroup = AudioUtility.GetAudioGroup(AudioUtility.AudioGroups.WeaponShoot);
             m_continuousShootAudioSource.loop = true;
         }
     }

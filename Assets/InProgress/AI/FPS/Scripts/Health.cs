@@ -3,8 +3,7 @@ using UnityEngine.Events;
 
 public class Health : MonoBehaviour
 {
-    [Tooltip("Maximum amount of health")]
-    public float maxHealth = 10f;
+    [Tooltip("Maximum amount of health")] public float maxHealth = 10f;
 
     public UnityAction<float, GameObject> onDamaged;
 
@@ -16,7 +15,7 @@ public class Health : MonoBehaviour
 
     public float getRatio() => currentHealth / maxHealth;
 
-    
+
     bool m_IsDead;
 
     private void Start()
@@ -26,10 +25,8 @@ public class Health : MonoBehaviour
 
     public void Heal(float healAmount)
     {
-
         currentHealth += healAmount;
         currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
-        
     }
 
     public void TakeDamage(float damage, GameObject damageSource)
@@ -47,6 +44,7 @@ public class Health : MonoBehaviour
         {
             onDamaged.Invoke(trueDamageAmount, damageSource);
         }
+
         HandleDeath(damageSource);
     }
 
@@ -78,5 +76,4 @@ public class Health : MonoBehaviour
             }
         }
     }
-    
 }

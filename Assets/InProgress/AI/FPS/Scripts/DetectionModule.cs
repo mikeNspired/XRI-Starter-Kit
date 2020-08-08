@@ -35,7 +35,6 @@ public class DetectionModule : MonoBehaviour
     protected virtual void Start()
     {
         m_ActorsManager = FindObjectOfType<ActorsManager>();
-        DebugUtility.HandleErrorIfNullFindObject<ActorsManager, DetectionModule>(m_ActorsManager, this);
 
         if (GetComponentInParent<Actor>())
             affiliation = GetComponentInParent<Actor>().affiliation;

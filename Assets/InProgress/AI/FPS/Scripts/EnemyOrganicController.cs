@@ -198,7 +198,6 @@ public class A_EnemyController : MonoBehaviour
     protected ActorsManager actorsManager;
     protected Health health;
     protected Collider[] selfColliders;
-    protected GameFlowManager gameFlowManager;
     protected bool m_WasDamagedThisFrame;
     protected Animator animator;
     const string k_AnimAttackParameter = "Attack";
@@ -255,8 +254,6 @@ public class A_EnemyController : MonoBehaviour
             health = GetComponent<Health>();
         if (!navMeshAgent)
             navMeshAgent = GetComponent<NavMeshAgent>();
-        if (!gameFlowManager)
-            gameFlowManager = FindObjectOfType<GameFlowManager>();
         if (!detectionModule)
             detectionModule = GetComponentInChildren<DetectionModule>();
         selfColliders = GetComponentsInChildren<Collider>();
@@ -297,7 +294,7 @@ public class A_EnemyController : MonoBehaviour
 
     public virtual void SetNavDestination(Vector3 destination)
     {
-        if (!navMeshAgent) return;
+        if (!navMeshAgent || !enabled) return;
 
         // Debug.Log("SetNavDestination: " + destination + "  " + patrolPath);
         navMeshAgent.SetDestination(destination);

@@ -5,6 +5,7 @@
     <e p="C:\Users\mikeN\.Rider2019.3\system\extResources" t="IncludeRecursive" />
     <e p="C:\Users\mikeN\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_XRHandPoser.414816931.00" t="ExcludeRecursive" />
     <e p="C:\Users\mikeN\Desktop\Git\XRHandPoser\XRHandPoser" t="IncludeRecursive">
+      <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
         <e p="3DGamekit" t="Include">
@@ -23,6 +24,27 @@
           </e>
         </e>
         <e p="DamageableSpawnParticle.cs" t="Include" />
+        <e p="EffectExamples" t="Include">
+          <e p="Misc Effects" t="Include">
+            <e p="Scripts" t="Include">
+              <e p="SpawnEffect.cs" t="Include" />
+            </e>
+            <e p="Shaders" t="Include">
+              <e p="Dissolve.shader" t="Include" />
+              <e p="Respawn.shader" t="Include" />
+            </e>
+          </e>
+          <e p="TutorialInfo" t="Include">
+            <e p="Scripts" t="Include">
+              <e p="Editor" t="Include">
+                <e p="ReadmeEditor.cs" t="Include" />
+              </e>
+              <e p="Readme.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="EnableDisableRepeat.cs" t="Include" />
+        <e p="Grenade.cs" t="Include" />
         <e p="InProgress" t="Include">
           <e p="AI" t="Include">
             <e p="3DGamekitLite" t="Include">
@@ -42,82 +64,28 @@
               <e p="Scripts" t="Include">
                 <e p="Actor.cs" t="Include" />
                 <e p="ActorsManager.cs" t="Include" />
-                <e p="AudioManager.cs" t="Include" />
-                <e p="AudioUtility.cs" t="Include" />
-                <e p="ChargedProjectileEffectsHandler.cs" t="Include" />
-                <e p="ChargedWeaponEffectsHandler.cs" t="Include" />
-                <e p="ConstantRotation.cs" t="Include" />
                 <e p="Damageable.cs" t="Include" />
                 <e p="DamageArea.cs" t="Include" />
-                <e p="DebugUtility.cs" t="Include" />
-                <e p="Destructable.cs" t="Include" />
                 <e p="DetectionModule.cs" t="Include" />
                 <e p="EnemyManager.cs" t="Include" />
                 <e p="EnemyMobile.cs" t="Include" />
                 <e p="EnemyOrganicController.cs" t="Include" />
                 <e p="EnemyTurret.cs" t="Include" />
-                <e p="FollowPlayer.cs" t="Include" />
                 <e p="FramerateCounter.cs" t="Include" />
-                <e p="GameConstants.cs" t="Include" />
-                <e p="GameFlowManager.cs" t="Include" />
                 <e p="Health.cs" t="Include" />
-                <e p="HealthPickup.cs" t="Include" />
-                <e p="IgnoreHeatMap.cs" t="Include" />
                 <e p="IgnoreHitDetection.cs" t="Include" />
-                <e p="InGameMenuManager.cs" t="Include" />
-                <e p="Jetpack.cs" t="Include" />
-                <e p="JetpackPickup.cs" t="Include" />
                 <e p="MinMaxParameters.cs" t="Include" />
-                <e p="NavigationModule.cs" t="Include" />
-                <e p="Objective.cs" t="Include" />
-                <e p="ObjectiveKillEnemies.cs" t="Include" />
-                <e p="ObjectiveManager.cs" t="Include" />
-                <e p="ObjectivePickupItem.cs" t="Include" />
-                <e p="ObjectiveReachPoint.cs" t="Include" />
-                <e p="OverheatBehavior.cs" t="Include" />
                 <e p="PatrolPath.cs" t="Include" />
-                <e p="Pickup.cs" t="Include" />
-                <e p="PlayerCharacterController.cs" t="Include" />
-                <e p="PlayerInputHandler.cs" t="Include" />
-                <e p="PlayerWeaponsManager.cs" t="Include" />
-                <e p="PositionBobbing.cs" t="Include" />
-                <e p="PrefabReplacer.cs" t="Include" />
-                <e p="PrefabReplacerOnInstance.cs" t="Include" />
                 <e p="ProjectileBase.cs" t="Include" />
-                <e p="ProjectileChargeParameters.cs" t="Include" />
                 <e p="ProjectileStandard.cs" t="Include" />
                 <e p="RobotEnemyController.cs" t="Include" />
-                <e p="TakeScreenshot.cs" t="Include" />
-                <e p="TeleportPlayer.cs" t="Include" />
-                <e p="TemplateObject.cs" t="Include" />
                 <e p="TimedSelfDestruct.cs" t="Include" />
                 <e p="UI" t="Include">
-                  <e p="AmmoCounter.cs" t="Include" />
-                  <e p="Compass.cs" t="Include" />
-                  <e p="CompassElement.cs" t="Include" />
-                  <e p="CompassMarker.cs" t="Include" />
-                  <e p="CrosshairManager.cs" t="Include" />
-                  <e p="DisplayMessage.cs" t="Include" />
-                  <e p="DisplayMessageManager.cs" t="Include" />
-                  <e p="EnemyCounter.cs" t="Include" />
                   <e p="FillBarColorChange.cs" t="Include" />
-                  <e p="JetpackCounter.cs" t="Include" />
-                  <e p="LoadSceneButton.cs" t="Include" />
-                  <e p="MenuNavigation.cs" t="Include" />
-                  <e p="NotificationHUDManager.cs" t="Include" />
-                  <e p="NotificationToast.cs" t="Include" />
-                  <e p="ObjectiveHUDManger.cs" t="Include" />
-                  <e p="ObjectiveToast.cs" t="Include" />
-                  <e p="PlayerHealthBar.cs" t="Include" />
-                  <e p="StanceHUD.cs" t="Include" />
-                  <e p="ToggleGameObjectButton.cs" t="Include" />
                   <e p="TurretEnergyBar.cs" t="Include" />
-                  <e p="WeaponHUDManager.cs" t="Include" />
                   <e p="WorldspaceHealthBar.cs" t="Include" />
                 </e>
                 <e p="WeaponController.cs" t="Include" />
-                <e p="WeaponFuelCellHandler.cs" t="Include" />
-                <e p="WeaponPickup.cs" t="Include" />
               </e>
             </e>
             <e p="MeleeAttack.cs" t="Include" />
@@ -139,6 +107,7 @@
         </e>
         <e p="PlaySoundOnHealthChange.cs" t="Include" />
         <e p="ResetCombo.cs" t="Include" />
+        <e p="RobotTest.cs" t="Include" />
         <e p="SetNewPathAllControllers.cs" t="Include" />
         <e p="SetNewPathOnCollision.cs" t="Include" />
         <e p="XRHandPoser" t="Include">

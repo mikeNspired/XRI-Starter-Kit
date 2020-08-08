@@ -11,9 +11,7 @@ public class MeleeAttack : MonoBehaviour
 
     [Tooltip("Offset along the hit normal where the VFX will be spawned")]
     public float impactVFXSpawnOffset = 0.1f;
-
-    [Tooltip("Clip to play on impact")] public AudioClip impactSFXClip;
-
+    
     [Tooltip("Layers this projectile can collide with")]
     public LayerMask hittableLayers = -1;
 
@@ -26,6 +24,7 @@ public class MeleeAttack : MonoBehaviour
     [SerializeField] private GameObject metalDecal = null;
     [SerializeField] private GameObject fleshDecal = null;
     [SerializeField] private GameObject woodDecal = null;
+    [SerializeField] private AudioRandomize audio = null;
 
     [SerializeField] private bool disableAtStart = true;
     private GameObject owner;
@@ -46,6 +45,7 @@ public class MeleeAttack : MonoBehaviour
         Collider[] ownerColliders = owner.GetComponentsInChildren<Collider>();
         m_IgnoredColliders.AddRange(ownerColliders);
         affiliation = GetComponentInParent<Actor>().affiliation;
+        audio = GetComponent<AudioRandomize>();
         if (disableAtStart)
             gameObject.SetActive(false);
     }
@@ -102,9 +102,9 @@ public class MeleeAttack : MonoBehaviour
         }
 
         // impact sfx
-        if (impactSFXClip)
+        if (audio)
         {
-            AudioUtility.CreateSFX(impactSFXClip, point, AudioUtility.AudioGroups.Impact, 1f, 3f);
+            audio.PlaySound();
         }
     }
 

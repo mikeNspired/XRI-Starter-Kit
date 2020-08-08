@@ -25,6 +25,7 @@ public class EnemyTurret : MonoBehaviour
 
     public ParticleSystem[] onDetectVFX;
     public AudioClip onDetectSFX;
+    public AudioSource audioSource;
     public Collider damageHitBox;
 
     public AIState aiState { get; private set; }
@@ -43,6 +44,7 @@ public class EnemyTurret : MonoBehaviour
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         weapon = GetComponentInChildren<WeaponController>();
         weapon.onShoot += OnShoot;
         m_Health = GetComponent<Health>();
@@ -50,7 +52,6 @@ public class EnemyTurret : MonoBehaviour
         m_Health.onDamaged += CheckIfPlayerTryingToActivate;
 
         mRobotEnemyController = GetComponent<RobotEnemyController>();
-        DebugUtility.HandleErrorIfNullGetComponent<RobotEnemyController, EnemyTurret>(mRobotEnemyController, this, gameObject);
 
         mRobotEnemyController.onDetectedTarget += OnDetectedTarget;
         mRobotEnemyController.onLostTarget += OnLostTarget;
@@ -190,9 +191,9 @@ public class EnemyTurret : MonoBehaviour
             onDetectVFX[i].Play();
         }
 
-        if (onDetectSFX)
+        if (onDetectSFX && audioSource)
         {
-            AudioUtility.CreateSFX(onDetectSFX, transform.position, AudioUtility.AudioGroups.EnemyDetection, 1f);
+            audioSource.PlayOneShot(onDetectSFX);
         }
 
         animator.SetBool(k_AnimIsActiveParameter, true);

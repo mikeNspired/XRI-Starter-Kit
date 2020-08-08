@@ -58,7 +58,6 @@ public class ProjectileStandard : MonoBehaviour
     private void OnEnable()
     {
         m_ProjectileBase = GetComponent<ProjectileBase>();
-        DebugUtility.HandleErrorIfNullGetComponent<ProjectileBase, ProjectileStandard>(m_ProjectileBase, this, gameObject);
 
         m_ProjectileBase.onShoot += OnShoot;
 
@@ -76,34 +75,7 @@ public class ProjectileStandard : MonoBehaviour
         // Ignore colliders of owner
         Collider[] ownerColliders = m_ProjectileBase.owner.GetComponentsInChildren<Collider>();
         m_IgnoredColliders.AddRange(ownerColliders);
-
-        // Handle case of player shooting (make projectiles not go through walls, and remember center-of-screen trajectory)
-        PlayerWeaponsManager playerWeaponsManager = m_ProjectileBase.owner.GetComponent<PlayerWeaponsManager>();
-        if(playerWeaponsManager)
-        {
-            m_HasTrajectoryOverride = true;
-
-            Vector3 cameraToMuzzle = (m_ProjectileBase.initialPosition - playerWeaponsManager.weaponCamera.transform.position);
-
-            m_TrajectoryCorrectionVector = Vector3.ProjectOnPlane(-cameraToMuzzle, playerWeaponsManager.weaponCamera.transform.forward);
-            if (trajectoryCorrectionDistance == 0)
-            {
-                transform.position += m_TrajectoryCorrectionVector;
-                m_ConsumedTrajectoryCorrectionVector = m_TrajectoryCorrectionVector;
-            }
-            else if (trajectoryCorrectionDistance < 0)
-            {
-                m_HasTrajectoryOverride = false;
-            }
-            
-            if (Physics.Raycast(playerWeaponsManager.weaponCamera.transform.position, cameraToMuzzle.normalized, out RaycastHit hit, cameraToMuzzle.magnitude, hittableLayers, k_TriggerInteraction))
-            {
-                if (IsHitValid(hit))
-                {
-                    OnHit(hit.point, hit.normal, hit.collider);
-                }
-            }
-        }
+        
     }
 
     void Update()
@@ -236,7 +208,7 @@ public class ProjectileStandard : MonoBehaviour
         // impact sfx
         if (impactSFXClip)
         {
-            AudioUtility.CreateSFX(impactSFXClip, point, AudioUtility.AudioGroups.Impact, 1f, 3f);
+            AudioSource.PlayClipAtPoint(impactSFXClip,point);
         }
 
         // Self Destruct

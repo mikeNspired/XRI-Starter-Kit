@@ -39,8 +39,6 @@ public class EnemyMobile : MonoBehaviour
     {
         detectionModule = GetComponentInChildren<DetectionModule>();
         m_EnemyController = GetComponent<A_EnemyController>();
-        DebugUtility.HandleErrorIfNullGetComponent<RobotEnemyController, EnemyMobile>(m_EnemyController, this, gameObject);
-
         m_EnemyController.onAttack += OnAttack;
         m_EnemyController.onDetectedTarget += OnDetectedTarget;
         m_EnemyController.onLostTarget += OnLostTarget;
@@ -53,7 +51,6 @@ public class EnemyMobile : MonoBehaviour
         // adding a audio source to play the movement sound on it
         m_AudioSource = GetComponent<AudioSource>();
         if (!m_AudioSource) return;
-        DebugUtility.HandleErrorIfNullGetComponent<AudioSource, EnemyMobile>(m_AudioSource, this, gameObject);
         m_AudioSource.clip = MovementSound;
         m_AudioSource.Play();
     }
@@ -155,7 +152,7 @@ public class EnemyMobile : MonoBehaviour
 
             if (onDetectSFX)
             {
-                AudioUtility.CreateSFX(onDetectSFX, transform.position, AudioUtility.AudioGroups.EnemyDetection, 1f);
+                m_AudioSource.PlayOneShot((onDetectSFX));
             }
 
             animator.SetBool(k_AnimAlertedParameter, true);

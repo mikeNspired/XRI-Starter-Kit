@@ -5,8 +5,9 @@ Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_Name: Respawn
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BarrelRespawn
   m_Shader: {fileID: 4800000, guid: 77711a0a1ef662843a281ba4ecd2c54c, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -51,7 +52,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 86ea755185f820840adf8c9155801630, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -59,7 +60,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicSmooth:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 14eacf4e2b8fbc04b9ec01d68a7764d6, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Noise:
@@ -67,7 +68,7 @@ Material:
         m_Scale: {x: 0, y: 3}
         m_Offset: {x: 0, y: 0}
     - _Normal:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 91e193ab56071ae4388c5a3e91b09e39, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
@@ -117,7 +118,7 @@ Material:
     - _UVSec: 0
     - _Use_Gradient: 0
     - _ZWrite: 1
-    - _cutoff: 0.403
+    - _cutoff: 1
     - _cutoffTemp: 1
     - _glowFrequency: 1
     - _glowMax: 1
