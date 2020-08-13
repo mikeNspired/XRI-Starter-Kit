@@ -68,7 +68,7 @@ public class EnemyTurret : MonoBehaviour
 
     private void CheckIfPlayerTryingToActivate(float arg0, GameObject bullet)
     {
-        if (!bullet.GetComponent<Bullet>() || isRecovering) return;
+        if (!bullet.GetComponent<SimpleCollisionDamage>() || isRecovering) return;
 
         animator.SetTrigger("Activate");
         isDeactivated = false;

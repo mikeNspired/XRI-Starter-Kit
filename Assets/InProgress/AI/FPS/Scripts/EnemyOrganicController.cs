@@ -63,7 +63,7 @@ public class EnemyOrganicController : A_EnemyController
         m_LastTimeDamaged = Time.time;
 
         m_WasDamagedThisFrame = true;
-        if (Random.Range(0, 10) == 1)
+        if (Random.Range(0, 7) == 1)
         {
             GetComponent<Animator>().SetTrigger("Hit");
             hitAudio.PlaySound();
@@ -371,7 +371,6 @@ public class A_EnemyController : MonoBehaviour
 
         deathAudio.transform.SetParent(null, true);
         deathAudio.PlaySound();
-        GameObject.Destroy(deathAudio, deathAudio.audioClips.Count == 0 ? 0.0f : deathAudio.CurrentClipPlayed.length + 0.5f);
     }
 
     protected bool IsPathValid()

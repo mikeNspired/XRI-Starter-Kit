@@ -8,7 +8,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
-    public class OnGrabEnableDisable : MonoBehaviour
+    public class OnGrabEnableDisable : MonoBehaviour, IReturnMovedColliders
     {
         [SerializeField] private XRGrabInteractable grabInteractable;
 
@@ -57,7 +57,6 @@ namespace MikeNspired.UnityXRHandPoser
                 disableOnGrab.gameObject.SetActive(true);
                 disableOnGrab.transform.localPosition = disableOnGrabStartPosition;
                 disableOnGrab.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
-
             }
 
             if (enableOnGrab)
@@ -87,7 +86,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnGrab()
         {
-
             if (moveAndDisableAfterFrameOnGrabColliders)
             {
                 StopAllCoroutines();
@@ -115,6 +113,15 @@ namespace MikeNspired.UnityXRHandPoser
             objectToMove.localPosition = objectToMove == enableOnGrab ? enableOnGrabStartPosition : disableOnGrabStartPosition;
 
             objectToMove.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
+        }
+
+        public void ReturnMovedColliders()
+        {
+            StopAllCoroutines();
+            if (enableOnGrab)
+                enableOnGrab.localPosition = enableOnGrabStartPosition;
+            if (disableOnGrab)
+                disableOnGrab.localPosition = disableOnGrabStartPosition;
         }
     }
 }

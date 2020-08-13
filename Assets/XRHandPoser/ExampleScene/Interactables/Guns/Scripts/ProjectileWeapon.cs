@@ -17,6 +17,8 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private AudioSource fireAudio = null;
         [SerializeField] private AudioSource outOfAmmoAudio = null;
         [SerializeField] private MatchTransform bulletFlash = null;
+        [SerializeField] private GunCocking gunCocking = null;
+        private bool gunCocked = false;
 
         //All public for in game changes
         public MagazineAttachPoint magazineAttach = null;
@@ -31,10 +33,21 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void Awake()
         {
-            interactable = GetComponent<XRGrabInteractable>();
+            OnValidate();
             interactable.onActivate.AddListener(FireBullets);
             interactable.onSelectEnter.AddListener(SetupRecoilVariables);
             interactable.onSelectExit.AddListener(DestroyRecoilTracker);
+
+            if (gunCocking)
+                gunCocking.GunCockedEvent.AddListener(() => gunCocked = true);
+        }
+
+        private void OnValidate()
+        {
+            if (!gunCocking)
+                gunCocking = GetComponentInChildren<GunCocking>();
+            if (!interactable)
+                interactable = GetComponent<XRGrabInteractable>();
         }
 
         private void OnEnable() => Application.onBeforeRender += RecoilUpdate;
@@ -48,8 +61,15 @@ namespace MikeNspired.UnityXRHandPoser
         public void FireBullets(XRBaseInteractor interactor)
         {
             if (bulletsPerShot < 1) return;
-            
-            if (magazineAttach && !infiniteAmmo && (!magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
+
+            if (magazineAttach && !infiniteAmmo && ( CheckIfGunCocked() || !magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
+            {
+                outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
+                gunCocked = false;
+                return;
+            }
+
+            if (gunCocking && !gunCocked)
             {
                 outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
                 return;
@@ -74,6 +94,12 @@ namespace MikeNspired.UnityXRHandPoser
             if (cartridgeEjection)
                 cartridgeEjection.Play();
         }
+
+        private bool CheckIfGunCocked()
+        {
+            return gunCocking && !gunCocked;
+        }
+
 
 
         private void SetupRecoilVariables(XRBaseInteractor interactor)

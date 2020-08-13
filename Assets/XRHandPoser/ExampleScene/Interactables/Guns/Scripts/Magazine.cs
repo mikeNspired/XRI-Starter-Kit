@@ -1,11 +1,14 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
-    public class Magazine : MonoBehaviour
+    public class Magazine : MonoBehaviour, IReturnMovedColliders
     {
         public int MaxAmmo = 10;
         public int CurrentAmmo = 10;
@@ -17,10 +20,11 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private Rigidbody rigidBody = null;
         public bool IsBeingGrabbed() => isBeingGrabbed;
         public GunType GunType => gunType;
-
+        private Vector3 startingColliderPosition;
 
         private void Start()
         {
+            startingColliderPosition = collider.transform.localPosition;
             OnValidate();
             GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(x => OnGrab());
             GetComponent<XRGrabInteractable>().onSelectExit.AddListener(x => isBeingGrabbed = false);
@@ -31,6 +35,21 @@ namespace MikeNspired.UnityXRHandPoser
             isBeingGrabbed = true;
             collider.isTrigger = false;
             rigidBody.isKinematic = false;
+        }
+
+        private void OnEnable()
+        {
+            collider.transform.localPosition = startingColliderPosition;
+        }
+
+        public void DisableCollider()
+        {
+            StartCoroutine(MoveAndDisableCollider());
+        }
+
+        public void EnableCollider()
+        {
+            collider.enabled = true;
         }
 
         public void SetupForGunAttachment()
@@ -51,14 +70,33 @@ namespace MikeNspired.UnityXRHandPoser
 
         public bool UseAmmo()
         {
-            if (CurrentAmmo <= 0)
-            {
-                ammoModels.SetActive(false);
+            if (CurrentAmmo <= 0) 
                 return false;
-            }
 
             CurrentAmmo--;
+            
+            if (CurrentAmmo <= 0) 
+                ammoModels.SetActive(false);
+
             return true;
+        }
+
+        private IEnumerator MoveAndDisableCollider()
+        {
+            //objectToMove.GetComponent<CollidersSetToTrigger>()?.SetAllToTrigger();
+            yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
+
+            collider.transform.position += Vector3.one * 9999;
+            //Lets physics respond to collider disappearing before disabling object physics update needs to run twice
+            yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
+            collider.enabled = false;
+            collider.transform.localPosition = startingColliderPosition;
+        }
+
+        public void ReturnMovedColliders()
+        {
+            StopAllCoroutines();
+            collider.transform.localPosition = startingColliderPosition;
         }
     }
 }

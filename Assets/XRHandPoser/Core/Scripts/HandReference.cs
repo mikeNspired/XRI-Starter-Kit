@@ -21,18 +21,7 @@ namespace MikeNspired.UnityXRHandPoser
                 hand = GetComponentInChildren<HandAnimator>();
         }
 
-        private void Start()
-        {
-            if (!hand)
-                hand = GetComponentInChildren<HandAnimator>();
-        }
+        private void Start() => OnValidate();
 
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.G))
-            {
-                
-            }
-        }
     }
 }

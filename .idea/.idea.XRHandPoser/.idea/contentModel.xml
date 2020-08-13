@@ -5,55 +5,25 @@
     <e p="C:\Users\mikeN\.Rider2019.3\system\extResources" t="IncludeRecursive" />
     <e p="C:\Users\mikeN\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_XRHandPoser.414816931.00" t="ExcludeRecursive" />
     <e p="C:\Users\mikeN\Desktop\Git\XRHandPoser\XRHandPoser" t="IncludeRecursive">
-      <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
-        <e p="3DGamekit" t="Include">
-          <e p="Art" t="Include">
-            <e p="Shaders" t="Include">
-              <e p="DepthOnly.shader" t="Include" />
-              <e p="Translucency.shader" t="Include" />
-            </e>
-          </e>
+        <e p="Developer Aid Scripts" t="Include">
+          <e p="FilmingCamera.cs" t="Include" />
         </e>
-        <e p="ActivateOnDeath.cs" t="Include" />
-        <e p="AnimStateStopNavMeshEnterExit.cs" t="Include" />
-        <e p="Barrel" t="Include">
-          <e p="FireExplosionEffects" t="Include">
-            <e p="SurfaceShader_VC.shader" t="Include" />
-          </e>
-        </e>
-        <e p="DamageableSpawnParticle.cs" t="Include" />
-        <e p="EffectExamples" t="Include">
-          <e p="Misc Effects" t="Include">
-            <e p="Scripts" t="Include">
-              <e p="SpawnEffect.cs" t="Include" />
-            </e>
-            <e p="Shaders" t="Include">
-              <e p="Dissolve.shader" t="Include" />
-              <e p="Respawn.shader" t="Include" />
-            </e>
-          </e>
-          <e p="TutorialInfo" t="Include">
-            <e p="Scripts" t="Include">
-              <e p="Editor" t="Include">
-                <e p="ReadmeEditor.cs" t="Include" />
-              </e>
-              <e p="Readme.cs" t="Include" />
-            </e>
-          </e>
-        </e>
-        <e p="EnableDisableRepeat.cs" t="Include" />
-        <e p="Grenade.cs" t="Include" />
         <e p="InProgress" t="Include">
           <e p="AI" t="Include">
-            <e p="3DGamekitLite" t="Include">
+            <e p="3DGamekit" t="Include">
               <e p="Art" t="Include">
                 <e p="Shaders" t="Include">
+                  <e p="DepthOnly.shader" t="Include" />
                   <e p="Dissolve.shader" t="Include" />
+                  <e p="Translucency.shader" t="Include" />
                 </e>
               </e>
             </e>
+            <e p="ActivateOnDeath.cs" t="Include" />
+            <e p="AnimStateStopNavMeshEnterExit.cs" t="Include" />
+            <e p="DamageableSpawnParticle.cs" t="Include" />
             <e p="Dissolve.cs" t="Include" />
             <e p="FPS" t="Include">
               <e p="Art" t="Include">
@@ -99,17 +69,17 @@
               <e p="Wave.cs" t="Include" />
               <e p="WaveManager.cs" t="Include" />
             </e>
+            <e p="PhysicsIgnoreColliders.cs" t="Include" />
+            <e p="PlaySoundOnHealthChange.cs" t="Include" />
+            <e p="ReplaceWithRagdoll.cs" t="Include" />
+            <e p="ResetCombo.cs" t="Include" />
+            <e p="RigidbodyDelayedForce.cs" t="Include" />
+            <e p="RobotTest.cs" t="Include" />
+            <e p="SetNewPathAllControllers.cs" t="Include" />
+            <e p="SetNewPathOnCollision.cs" t="Include" />
           </e>
           <e p="InProgress.asmdef" t="Include" />
-          <e p="PhysicsIgnoreColliders.cs" t="Include" />
-          <e p="ReplaceWithRagdoll.cs" t="Include" />
-          <e p="RigidbodyDelayedForce.cs" t="Include" />
         </e>
-        <e p="PlaySoundOnHealthChange.cs" t="Include" />
-        <e p="ResetCombo.cs" t="Include" />
-        <e p="RobotTest.cs" t="Include" />
-        <e p="SetNewPathAllControllers.cs" t="Include" />
-        <e p="SetNewPathOnCollision.cs" t="Include" />
         <e p="XRHandPoser" t="Include">
           <e p="Core" t="Include">
             <e p="Audio" t="Include">
@@ -143,6 +113,28 @@
             </e>
           </e>
           <e p="ExampleScene" t="Include">
+            <e p="EffectExamples" t="Include">
+              <e p="FireExplosionEffects" t="Include">
+                <e p="SurfaceShader_VC.shader" t="Include" />
+              </e>
+              <e p="Misc Effects" t="Include">
+                <e p="Scripts" t="Include">
+                  <e p="SpawnEffect.cs" t="Include" />
+                </e>
+                <e p="Shaders" t="Include">
+                  <e p="Dissolve.shader" t="Include" />
+                  <e p="Respawn.shader" t="Include" />
+                </e>
+              </e>
+              <e p="TutorialInfo" t="Include">
+                <e p="Scripts" t="Include">
+                  <e p="Editor" t="Include">
+                    <e p="ReadmeEditor.cs" t="Include" />
+                  </e>
+                  <e p="Readme.cs" t="Include" />
+                </e>
+              </e>
+            </e>
             <e p="Interactables" t="Include">
               <e p="Door" t="Include">
                 <e p="ColliderDisableMoveReturn.cs" t="Include" />
@@ -154,15 +146,20 @@
               <e p="FlashLight" t="Include">
                 <e p="FlashLight.cs" t="Include" />
               </e>
+              <e p="Grenades" t="Include">
+                <e p="Grenade.cs" t="Include" />
+              </e>
               <e p="Guns" t="Include">
                 <e p="Scripts" t="Include">
-                  <e p="Bullet.cs" t="Include" />
                   <e p="DestroyAfterTime.cs" t="Include" />
+                  <e p="GunCocking.cs" t="Include" />
                   <e p="GunType.cs" t="Include" />
+                  <e p="IReturnMovedColliders.cs" t="Include" />
                   <e p="Magazine.cs" t="Include" />
                   <e p="MagazineAttachPoint.cs" t="Include" />
                   <e p="MatchTransform.cs" t="Include" />
                   <e p="ProjectileWeapon.cs" t="Include" />
+                  <e p="SimpleCollisionDamage.cs" t="Include" />
                   <e p="UnparentAfterTime.cs" t="Include" />
                   <e p="XRInteractionManager_PublicSelectMethods.cs" t="Include" />
                 </e>
@@ -199,6 +196,8 @@
             <e p="Scripts" t="Include">
               <e p="CollidersSetToTrigger.cs" t="Include" />
               <e p="CollisionSound.cs" t="Include" />
+              <e p="EnableDisableRepeat.cs" t="Include" />
+              <e p="FadeAudioAfterTime.cs" t="Include" />
               <e p="GameObjectListActivator.cs" t="Include" />
               <e p="IgnoreCharacterControllerCollider.cs" t="Include" />
               <e p="InteractableForceActionTrigger.cs" t="Include" />
@@ -212,6 +211,7 @@
               <e p="PlayerRigMovement.cs" t="Include" />
               <e p="RotateOverTime.cs" t="Include" />
               <e p="SpawnIfNothingBlocking.cs" t="Include" />
+              <e p="StopParticlesystemAfterTime.cs" t="Include" />
               <e p="TeleportRayEnabler.cs" t="Include" />
               <e p="TwoHanded Grabbing" t="Include">
                 <e p="GrabAnywhereOnPole.cs" t="Include" />

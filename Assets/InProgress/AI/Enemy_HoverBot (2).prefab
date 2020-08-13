@@ -45,7 +45,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   detectionSourcePoint: {fileID: 1798209239151694829}
   detectionRange: 20
-  attackRange: 15
   knownTargetTimeout: 12
   animator: {fileID: 0}
 --- !u!1 &1798209239151694818
@@ -251,7 +250,7 @@ MonoBehaviour:
   shootType: 1
   projectilePrefab: {fileID: 528546716365072993, guid: ec753d54f333bb944b8b04884ad63828,
     type: 3}
-  delayBetweenShots: 0.8
+  delayBetweenShots: 0.4
   bulletSpreadAngle: 0
   bulletsPerShot: 1
   recoilForce: 1
@@ -715,10 +714,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3de939d976a5bb0419ccd8dbd0b6836b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  patrolPath: {fileID: 0}
   selfDestructYHeight: -20
-  pathReachingRadius: 2
-  orientationSpeed: 10
   deathDuration: 0
   bodyMaterial: {fileID: 2100000, guid: c3dc5a90c49c99142999f85d6b419d80, type: 2}
   onHitBodyGradient:
@@ -754,16 +750,22 @@ MonoBehaviour:
   deathVFX: {fileID: 8950624839484268180, guid: 2a8f5052fe50f7b41b17149abb0f7414,
     type: 3}
   deathVFXSpawnPoint: {fileID: 1798209240367924302}
-  pathReachingRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  attackRangeColor: {r: 1, g: 0, b: 0, a: 1}
-  detectionRangeColor: {r: 0, g: 0, b: 1, a: 1}
+  pathReachingRadius: 2
+  orientationSpeed: 10
   getRandomPathIndex: 0
+  isNewDestinationSpot: 1
+  detectionModule: {fileID: 1798209239127654281}
   frontStepAudio: {fileID: 5734111537091648519}
   backStepAudio: {fileID: 461278098909182328}
   deathAudio: {fileID: 7680989388265719205}
   gruntAudio: {fileID: 3526658378346608515}
   attackAudio: {fileID: 1332797274201660652}
   hitAudio: {fileID: 9090286200247825860}
+  pathReachingRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  attackRangeColor: {r: 1, g: 0, b: 0, a: 1}
+  detectionRangeColor: {r: 0, g: 0, b: 1, a: 1}
+  attackRange: 10
+  distanceshit: 0
   eyeColorMaterial: {fileID: 2100000, guid: e6fdfd4e017234d43ac116abee8fa90a, type: 2}
   defaultEyeColor: {r: 23.968628, g: 6.6509805, b: 0, a: 1}
   attackEyeColor: {r: 23.968628, g: 1.0076232, b: 0, a: 1}
@@ -779,6 +781,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1857b2df8de24b24190ce9e067d2e1e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  detectionModule: {fileID: 0}
   animator: {fileID: 1798209239975538248}
   attackStopDistanceRatio: 0.08
   randomHitSparks:
@@ -808,7 +811,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 30
-  criticalHealthRatio: 0.3
   currentHealth: 0
 --- !u!114 &1798209240530755880
 MonoBehaviour:
@@ -1074,8 +1076,7 @@ AudioSource:
   m_GameObject: {fileID: 2387741665410904183}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 243921076603134450, guid: 248799cb4acba48f7b3ee842a80f788c,
-    type: 2}
+  OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
@@ -1183,6 +1184,8 @@ MonoBehaviour:
   maxVolume: 0.1
   randomize: 1
   playOnAwake: 0
+  playOnlyIfClipFinished: 0
+  playAsOneShot: 0
 --- !u!1 &3558053850550305687
 GameObject:
   m_ObjectHideFlags: 0
@@ -1207,7 +1210,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3558053850550305687}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1.451, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1521924039885129747}
@@ -1261,8 +1264,7 @@ AudioSource:
   m_GameObject: {fileID: 4427642730808307783}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 243921076603134450, guid: 248799cb4acba48f7b3ee842a80f788c,
-    type: 2}
+  OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 0.6
@@ -1370,6 +1372,8 @@ MonoBehaviour:
   maxVolume: 0.1
   randomize: 1
   playOnAwake: 0
+  playOnlyIfClipFinished: 0
+  playAsOneShot: 0
 --- !u!1 &4589590904943944928
 GameObject:
   m_ObjectHideFlags: 0
@@ -1411,8 +1415,7 @@ AudioSource:
   m_GameObject: {fileID: 4589590904943944928}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 243921076603134450, guid: 248799cb4acba48f7b3ee842a80f788c,
-    type: 2}
+  OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
@@ -1519,6 +1522,8 @@ MonoBehaviour:
   maxVolume: 0.1
   randomize: 1
   playOnAwake: 0
+  playOnlyIfClipFinished: 0
+  playAsOneShot: 0
 --- !u!1 &5639100044502280162
 GameObject:
   m_ObjectHideFlags: 0
@@ -1560,8 +1565,7 @@ AudioSource:
   m_GameObject: {fileID: 5639100044502280162}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 243921076603134450, guid: 248799cb4acba48f7b3ee842a80f788c,
-    type: 2}
+  OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
@@ -1668,6 +1672,8 @@ MonoBehaviour:
   maxVolume: 0.1
   randomize: 1
   playOnAwake: 0
+  playOnlyIfClipFinished: 0
+  playAsOneShot: 0
 --- !u!1 &6590590524349776962
 GameObject:
   m_ObjectHideFlags: 0
@@ -1709,8 +1715,7 @@ AudioSource:
   m_GameObject: {fileID: 6590590524349776962}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 243921076603134450, guid: 248799cb4acba48f7b3ee842a80f788c,
-    type: 2}
+  OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: a7fae22399a6e1d448dc0dd2210f1dac, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 0.7
@@ -1818,6 +1823,8 @@ MonoBehaviour:
   maxVolume: 0.1
   randomize: 1
   playOnAwake: 0
+  playOnlyIfClipFinished: 0
+  playAsOneShot: 0
 --- !u!1 &7058959364230661528
 GameObject:
   m_ObjectHideFlags: 0
@@ -1859,8 +1866,7 @@ AudioSource:
   m_GameObject: {fileID: 7058959364230661528}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 243921076603134450, guid: 248799cb4acba48f7b3ee842a80f788c,
-    type: 2}
+  OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
@@ -1968,6 +1974,8 @@ MonoBehaviour:
   maxVolume: 0.1
   randomize: 1
   playOnAwake: 0
+  playOnlyIfClipFinished: 0
+  playAsOneShot: 0
 --- !u!1 &7281246382397478796
 GameObject:
   m_ObjectHideFlags: 0
@@ -2009,8 +2017,7 @@ AudioSource:
   m_GameObject: {fileID: 7281246382397478796}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 243921076603134450, guid: 248799cb4acba48f7b3ee842a80f788c,
-    type: 2}
+  OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
@@ -2117,6 +2124,8 @@ MonoBehaviour:
   maxVolume: 0.1
   randomize: 1
   playOnAwake: 0
+  playOnlyIfClipFinished: 0
+  playAsOneShot: 0
 --- !u!1 &7383261194028493166
 GameObject:
   m_ObjectHideFlags: 0

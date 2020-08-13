@@ -28,11 +28,29 @@ namespace MikeNspired.UnityXRHandPoser
         private void Awake()
         {
             OnValidate();
-            xrGrabInteractable.onSelectEnter.AddListener(x => isBeingGrabbed = true);
-            xrGrabInteractable.onSelectExit.AddListener(x => isBeingGrabbed = false);
+
+            //Invoked after a frame to check if the user switched hands
+            xrGrabInteractable.onSelectEnter.AddListener(x => Invoke(nameof(MakeMagazineGrabbable), Time.deltaTime));
+            xrGrabInteractable.onSelectExit.AddListener(x => Invoke(nameof(MakeMagazineGrabbable), Time.deltaTime));
 
             collider.gameObject.SetActive(true);
             if (startingMagazine) CreateStartingMagazine();
+        }
+
+        private void MakeMagazineGrabbable()
+        {
+            if (!magazine) return;
+
+            if (xrGrabInteractable.isSelected)
+            {
+                magazine.EnableCollider();
+                isBeingGrabbed = true;
+            }
+            else
+            {
+                magazine.DisableCollider();
+                isBeingGrabbed = false;
+            }
         }
 
         private void OnValidate()
@@ -49,6 +67,7 @@ namespace MikeNspired.UnityXRHandPoser
             magazine = Instantiate(startingMagazine, transform.position, end.rotation, transform);
             SetupNewMagazine(magazine);
             ammoIsAttached = true;
+            MakeMagazineGrabbable();
         }
 
 
@@ -97,7 +116,7 @@ namespace MikeNspired.UnityXRHandPoser
             magazine.transform.parent = null;
             magazine = null;
             unloadAudio.Play();
-           // ammoIsAttached = false;
+            // ammoIsAttached = false;
 
             Invoke(nameof(PreventAutoAttach), .15f);
         }

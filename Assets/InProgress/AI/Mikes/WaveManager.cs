@@ -66,7 +66,7 @@ public class WaveManager : MonoBehaviour
 
     private void AddCombo(Actor enemyKilled, GameObject whatKilledEnemy)
     {
-        if (whatKilledEnemy.GetComponent<Bullet>())
+        if (whatKilledEnemy.GetComponent<SimpleCollisionDamage>())
         {
             waveScore.SetValue(waveScore.GetValue() + 5 * comboTracker);
             comboTracker++;

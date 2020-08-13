@@ -327,6 +327,9 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void DestroyComponentsOnClone(Transform clone)
         {
+            var movedColliders = clone.GetComponentsInChildren<IReturnMovedColliders>(true);
+            foreach (var t in movedColliders)  t.ReturnMovedColliders();
+  
             //Destroy almost all components - Could not foreach through Components because it destroys out of order causing issues
             var monoBehaviors = clone.GetComponentsInChildren<MonoBehaviour>(true);
             foreach (var t in monoBehaviors) Destroy(t);

@@ -10,9 +10,10 @@ public class AudioRandomize : MonoBehaviour
     public List<AudioClip> audioClips;
     public float minPitch = -.1f, maxPitch = .1f;
     public float minVolume = -.1f, maxVolume = .1f;
-    public bool randomize = true, playOnAwake = false, playOnlyIfClipFinished = false, playAsOneShot = false;
+    public bool randomize = true, playOnAwake = false, playOnlyIfClipFinished = false, playAsOneShot = false, destroyAfterPlaying;
     public AudioClip CurrentClipPlayed => currentClipPlayed;
     private AudioClip currentClipPlayed;
+
     private void Awake()
     {
         OnValidate();
@@ -51,18 +52,22 @@ public class AudioRandomize : MonoBehaviour
 
     public void PlaySound()
     {
+        if (!audioSource.enabled) return;
+        
         audioSource.volume = originalVolume;
         audioSource.pitch = originalPitch;
 
-        if(playOnlyIfClipFinished && audioSource.isPlaying)
+        if (playOnlyIfClipFinished && audioSource.isPlaying)
             return;
 
         if (randomize)
             Randomize();
-        
-        if(playAsOneShot)
+
+        if (playAsOneShot)
             audioSource.PlayOneShot(currentClipPlayed);
-        
+
         audioSource.Play();
+        if (destroyAfterPlaying)
+            Destroy(gameObject, currentClipPlayed.length);
     }
 }
