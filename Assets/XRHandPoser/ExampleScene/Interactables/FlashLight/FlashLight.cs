@@ -28,6 +28,17 @@ namespace MikeNspired.UnityXRHandPoser
             flashLight.enabled = isEnabled;
         }
 
+        public void GetDialValue(float dialPercentage)
+        {
+            var dialValuueZeroToOne = Remap(dialPercentage, 0, 1, -1, 1);
+            Debug.Log(dialValuueZeroToOne);
+        }
+        
+        private float Remap(float value, float from1, float to1, float from2, float to2)
+        {
+            return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
+        }
+        
         public void SetColor(int color)
         {
             if (color == 0)

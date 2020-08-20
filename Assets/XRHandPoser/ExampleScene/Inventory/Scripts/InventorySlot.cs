@@ -140,8 +140,9 @@ namespace MikeNspired.UnityXRHandPoser
 
         private bool CheckIfCanAddItemToSlot(XRBaseInteractable itemHandIsHolding)
         {
-            InventoryItemHelper helper = itemHandIsHolding.GetComponent<InventoryItemHelper>();
-            return helper.canInventory;
+            // Itemda helper = itemHandIsHolding.GetComponent<InventoryItemHelper>();
+            // return helper.canInventory;
+            return true;
         }
 
         private IEnumerator AnimateIcon()

@@ -4,6 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 #if UNITY_EDITOR
 using UnityEditor;
+
 #endif
 
 /// <summary>
@@ -19,17 +20,24 @@ public class DialInteractable : XRGrabInteractable
         ControllerRotation,
         ControllerPull
     }
-    
-    [System.Serializable]
-    public class DialTurnedAngleEvent : UnityEvent<float> { }
-    [System.Serializable]
-    public class DialTurnedStepEvent : UnityEvent<int> { }
 
     [System.Serializable]
-    public class DialChangedEvent : UnityEvent<DialInteractable> { }
+    public class DialTurnedAngleEvent : UnityEvent<float>
+    {
+    }
+
+    [System.Serializable]
+    public class DialTurnedStepEvent : UnityEvent<int>
+    {
+    }
+
+    [System.Serializable]
+    public class DialChangedEvent : UnityEvent<DialInteractable>
+    {
+    }
 
     public InteractionType DialType = InteractionType.ControllerRotation;
-    
+
     public Rigidbody RotatingRigidbody;
     public Vector3 LocalRotationAxis;
     public Vector3 LocalAxisStart;
@@ -37,51 +45,54 @@ public class DialInteractable : XRGrabInteractable
 
     [Tooltip("If 0, this is a float dial going from 0 to 1, if not 0, that dial is int with that many steps")]
     public int Steps = 0;
-    public bool SnapOnRelease = true;
 
+    public bool SnapOnRelease = true;
+    public float percentageComplete;
     public AudioClip SnapAudioClip;
     public AudioSource AudioSource;
     public DialTurnedAngleEvent OnDialAngleChanged;
     public DialTurnedStepEvent OnDialStepChanged;
     public DialChangedEvent OnDialChanged;
+    public DialTurnedAngleEvent OnDialPercentageChanged;
 
     public float CurrentAngle => m_CurrentAngle;
     public int CurrentStep => m_CurrentStep;
-    
+
     XRBaseInteractor m_GrabbingInteractor;
     Quaternion m_GrabbedRotation;
-    
+
     Vector3 m_StartingWorldAxis;
     float m_CurrentAngle = 0;
     int m_CurrentStep = 0;
-    
+
     float m_StepSize;
     Transform m_SyncTransform;
     Transform m_OriginalTransform;
 
-    
+
     void Start()
     {
         AudioSource.clip = SnapAudioClip;
         LocalAxisStart.Normalize();
         LocalRotationAxis.Normalize();
-        
+
         if (RotatingRigidbody == null)
         {
             RotatingRigidbody = GetComponentInChildren<Rigidbody>();
         }
-        
+
         m_CurrentAngle = 0;
-        
+
         GameObject obj = new GameObject("Dial_Start_Copy");
         m_OriginalTransform = obj.transform;
         m_OriginalTransform.SetParent(transform.parent);
         m_OriginalTransform.localRotation = transform.localRotation;
         m_OriginalTransform.localPosition = transform.localPosition;
-        
+
         if (Steps > 0) m_StepSize = RotationAngleMaximum / Steps;
         else m_StepSize = 0.0f;
     }
+
     private void OnValidate()
     {
         if (!AudioSource)
@@ -95,13 +106,13 @@ public class DialInteractable : XRGrabInteractable
             if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Fixed)
             {
                 m_StartingWorldAxis = m_OriginalTransform.TransformDirection(LocalAxisStart);
-                
+
                 Vector3 worldAxisStart = m_SyncTransform.TransformDirection(LocalAxisStart);
                 Vector3 worldRotationAxis = m_SyncTransform.TransformDirection(LocalRotationAxis);
 
                 float angle = 0.0f;
                 Vector3 newRight = worldAxisStart;
-                
+
                 if (DialType == InteractionType.ControllerRotation)
                 {
                     Quaternion difference = m_GrabbingInteractor.transform.rotation * Quaternion.Inverse(m_GrabbedRotation);
@@ -121,7 +132,7 @@ public class DialInteractable : XRGrabInteractable
                     newRight = centerToController;
 
                     angle = Vector3.SignedAngle(m_StartingWorldAxis, newRight, worldRotationAxis);
-                    
+
                     if (angle < 0) angle = 360 + angle;
                 }
 
@@ -135,22 +146,23 @@ public class DialInteractable : XRGrabInteractable
                     if (upDiff < lowerDiff) angle = 0;
                     else angle = RotationAngleMaximum;
                 }
-                
+
                 float finalAngle = angle;
                 if (!SnapOnRelease && Steps > 0)
                 {
                     int step = Mathf.RoundToInt(angle / m_StepSize);
                     finalAngle = step * m_StepSize;
 
-                    if (!Mathf.Approximately(finalAngle , m_CurrentAngle))
+                    if (!Mathf.Approximately(finalAngle, m_CurrentAngle))
                     {
                         AudioSource.Play();
-                        
+
                         OnDialStepChanged.Invoke(step);
                         OnDialChanged.Invoke(this);
                         m_CurrentStep = step;
                     }
                 }
+
 
                 //first, we use the raw angle to move the sync transform, that allow to keep the proper current rotation
                 //even if we snap during rotation
@@ -168,18 +180,29 @@ public class DialInteractable : XRGrabInteractable
 
                 if (RotatingRigidbody != null)
                 {
-                    
-                    
                     RotatingRigidbody.MoveRotation(newRBRotation);
                 }
                 else
                     transform.rotation = newRBRotation;
-                
+
                 m_SyncTransform.transform.rotation = newRot;
 
                 m_GrabbedRotation = m_GrabbingInteractor.transform.rotation;
             }
+
+            CalculateRotationPercentage();
         }
+    }
+
+    private void CalculateRotationPercentage()
+    {
+        percentageComplete = Remap(m_CurrentAngle, 0, RotationAngleMaximum, 0, 1);
+        OnDialPercentageChanged.Invoke(percentageComplete);
+    }
+
+    private float Remap(float value, float from1, float to1, float from2, float to2)
+    {
+        return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
 
     protected override void OnSelectEnter(XRBaseInteractor interactor)
@@ -190,8 +213,8 @@ public class DialInteractable : XRGrabInteractable
         //create an object that will track the rotation
         var syncObj = new GameObject("TEMP_DialSyncTransform");
         m_SyncTransform = syncObj.transform;
-        
-        if(RotatingRigidbody != null)
+
+        if (RotatingRigidbody != null)
         {
             m_SyncTransform.rotation = RotatingRigidbody.transform.rotation;
             m_SyncTransform.position = RotatingRigidbody.position;
@@ -201,38 +224,38 @@ public class DialInteractable : XRGrabInteractable
             m_SyncTransform.rotation = transform.rotation;
             m_SyncTransform.position = transform.position;
         }
-        
+
         base.OnSelectEnter(interactor);
     }
 
     protected override void OnSelectExit(XRBaseInteractor interactor)
     {
         base.OnSelectExit(interactor);
-        
+
         if (SnapOnRelease && Steps > 0)
         {
             Vector3 right = transform.TransformDirection(LocalAxisStart);
             Vector3 up = transform.TransformDirection(LocalRotationAxis);
-            
+
             float angle = Vector3.SignedAngle(m_StartingWorldAxis, right, up);
             if (angle < 0) angle = 360 + angle;
-        
+
             int step = Mathf.RoundToInt(angle / m_StepSize);
             angle = step * m_StepSize;
-        
+
             // if (angle != m_CurrentAngle)
             // {
-                AudioSource.Play();
-                OnDialStepChanged.Invoke(step);
-                OnDialChanged.Invoke(this);
-                m_CurrentStep = step;
+            AudioSource.Play();
+            OnDialStepChanged.Invoke(step);
+            OnDialChanged.Invoke(this);
+            m_CurrentStep = step;
             //}
-        
+
             Vector3 newRight = Quaternion.AngleAxis(angle, up) * m_StartingWorldAxis;
             angle = Vector3.SignedAngle(right, newRight, up);
-        
+
             m_CurrentAngle = angle;
-        
+
             if (RotatingRigidbody != null)
             {
                 Quaternion newRot = Quaternion.AngleAxis(angle, up) * RotatingRigidbody.rotation;
@@ -247,20 +270,18 @@ public class DialInteractable : XRGrabInteractable
 
         Destroy(m_SyncTransform.gameObject);
     }
-    
+
     public override bool IsSelectableBy(XRBaseInteractor interactor)
     {
         int interactorLayerMask = 1 << interactor.gameObject.layer;
-        return base.IsSelectableBy(interactor) && (interactionLayerMask.value & interactorLayerMask) != 0 ;
+        return base.IsSelectableBy(interactor) && (interactionLayerMask.value & interactorLayerMask) != 0;
     }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     void OnDrawGizmosSelected()
     {
         Handles.color = new Color(1.0f, 0.0f, 0.0f, 0.5f);
-        Handles.DrawSolidArc(transform.position, transform.TransformDirection(LocalRotationAxis), transform.TransformDirection(LocalAxisStart), RotationAngleMaximum, 0.2f );
+        Handles.DrawSolidArc(transform.position, transform.TransformDirection(LocalRotationAxis), transform.TransformDirection(LocalAxisStart), RotationAngleMaximum, 0.2f);
     }
-    #endif
-    
-    
+#endif
 }

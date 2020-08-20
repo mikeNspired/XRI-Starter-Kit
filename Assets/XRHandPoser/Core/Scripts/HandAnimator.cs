@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -57,6 +58,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private Pose originalPose;
         private Pose originalAnimationPose;
+
+        public UnityAction<bool> NewPoseStarting = delegate {  } ;
 
         //Restore original poses when an item is released
         public void ReleaseItemPoses() => BeginNewPoses(originalPose, originalAnimationPose);
@@ -133,6 +136,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void BeginNewPoses(Pose primaryPose, Pose animationPose)
         {
+            
+            NewPoseStarting.Invoke(isGrabbed);
             AnimationPose = animationPose;
 
             AnimateFromOldPoseToNewPose(primaryPose, animationPose);

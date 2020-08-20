@@ -7,7 +7,7 @@
     <e p="C:\Users\mikeN\Desktop\Git\XRHandPoser\XRHandPoser" t="IncludeRecursive">
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
-        <e p="Developer Aid Scripts" t="Include">
+        <e p="Development Aid Scripts" t="Include">
           <e p="FilmingCamera.cs" t="Include" />
         </e>
         <e p="InProgress" t="Include">
@@ -80,6 +80,20 @@
           </e>
           <e p="InProgress.asmdef" t="Include" />
         </e>
+        <e p="Particle Attractor by Moonflower Carnivore" t="Include">
+          <e p="Particle Attractor documentation.txt" t="Include" />
+          <e p="Scripts" t="Include">
+            <e p="particleAttractorLinear.cs" t="Include" />
+            <e p="particleAttractorMove.cs" t="Include" />
+            <e p="particleAttractorSelf.cs" t="Include" />
+            <e p="particleAttractorSpherical.cs" t="Include" />
+            <e p="rotation.cs" t="Include" />
+          </e>
+          <e p="Shaders" t="Include">
+            <e p="Particles Additive Intensify.shader" t="Include" />
+          </e>
+        </e>
+        <e p="SetRigidBodyCenterOfMass.cs" t="Include" />
         <e p="XRHandPoser" t="Include">
           <e p="Core" t="Include">
             <e p="Audio" t="Include">
@@ -113,6 +127,12 @@
             </e>
           </e>
           <e p="ExampleScene" t="Include">
+            <e p="Distance Grabbing" t="Include">
+              <e p="DistanceGrabber.cs" t="Include" />
+              <e p="DistanceGrabberLineBender.cs" t="Include" />
+              <e p="Highlight.cs" t="Include" />
+              <e p="InteractableItemData.cs" t="Include" />
+            </e>
             <e p="EffectExamples" t="Include">
               <e p="FireExplosionEffects" t="Include">
                 <e p="SurfaceShader_VC.shader" t="Include" />
@@ -186,7 +206,6 @@
             <e p="Inventory" t="Include">
               <e p="Scripts" t="Include">
                 <e p="InventoryGrabInteract.cs" t="Include" />
-                <e p="InventoryItemHelper.cs" t="Include" />
                 <e p="InventoryManager.cs" t="Include" />
                 <e p="InventorySlot.cs" t="Include" />
                 <e p="InventorySlotTextUpdater.cs" t="Include" />
@@ -253,6 +272,7 @@
           </e>
           <e p="MikeNspiredXRHandPoser.Runtime.asmdef" t="Include" />
         </e>
+        <e p="XRHandPoserHoverActivate.cs" t="Include" />
       </e>
       <e p="InProgress.csproj" t="IncludeRecursive" />
       <e p="MikeNspired XR HandPoser Editor.csproj" t="IncludeRecursive" />

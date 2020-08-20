@@ -11,7 +11,8 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private GameObject metalDecal = null;
         [SerializeField] private GameObject fleshDecal = null;
         [SerializeField] private GameObject woodDecal = null;
-
+        [SerializeField] private bool destroyOnCollision = true, triggerDamage = false;
+        
         private void OnCollisionEnter(Collision collision)
         {
             if (collision.rigidbody?.GetComponent<SimpleCollisionDamage>()) return;
@@ -20,7 +21,18 @@ namespace MikeNspired.UnityXRHandPoser
 
             CheckForImpacteDecalType(collision);
 
-            Destroy(this.gameObject);
+            if (destroyOnCollision)
+                Destroy(this.gameObject);
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (!triggerDamage) return;
+            
+            other.transform.GetComponentInParent<IDamageable>()?.TakeDamage(damage, gameObject);
+            
+            if (destroyOnCollision)
+                Destroy(this.gameObject);
         }
 
         void CheckForImpacteDecalType(Collision collision)

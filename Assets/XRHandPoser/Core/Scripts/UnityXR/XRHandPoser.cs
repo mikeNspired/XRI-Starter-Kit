@@ -17,7 +17,7 @@ namespace MikeNspired.UnityXRHandPoser
         public XRGrabInteractable interactable;
         public bool WaitForHandToAnimateToPosition = true;
         public bool DisableHandAttachTransforms = false;
-
+        
         private Rigidbody rb;
 
         protected override void Awake()
@@ -26,6 +26,12 @@ namespace MikeNspired.UnityXRHandPoser
 
             OnValidate();
 
+            SubscribeToSelection();
+
+        }
+
+        private void SubscribeToSelection()
+        {
             //Set hand animation on grab
             interactable.onSelectEnter.AddListener(x => SetAttachForInstantaneous(x.GetComponent<HandReference>()?.hand));
             interactable.onSelectEnter.AddListener(x => BeginNewHandPoses(x.GetComponent<HandReference>()?.hand));

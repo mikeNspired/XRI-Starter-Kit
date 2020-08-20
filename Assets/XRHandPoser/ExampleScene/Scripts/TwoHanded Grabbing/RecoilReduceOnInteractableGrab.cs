@@ -8,8 +8,8 @@ namespace MikeNspired.UnityXRHandPoser
     {
         [SerializeField] private ProjectileWeapon projectileWeapon = null;
         [SerializeField] private XRGrabInteractable interactable = null;
-        [SerializeField] private float recoilReduction = 0;
-        [SerializeField] private float recoilRotationReduction = 0;
+        [SerializeField] private float recoilReduction = .6f;
+        [SerializeField] private float recoilRotationReduction = .8f;
         private float startingRecoil, startingRotationRecoil;
 
         private void Start()
@@ -18,6 +18,7 @@ namespace MikeNspired.UnityXRHandPoser
             startingRecoil = projectileWeapon.recoilAmount;
             startingRotationRecoil = projectileWeapon.recoilRotation;
 
+            if (!interactable) return;
             interactable.onSelectEnter.AddListener(x => ReduceProjectileWeaponRecoil());
             interactable.onSelectExit.AddListener(x => ReturnProjectileWeaponRecoil());
         }
@@ -28,13 +29,13 @@ namespace MikeNspired.UnityXRHandPoser
                 interactable = GetComponent<XRGrabInteractable>();
         }
 
-        private void ReduceProjectileWeaponRecoil()
+        public void ReduceProjectileWeaponRecoil()
         {
             projectileWeapon.recoilAmount *= 1 - recoilReduction;
             projectileWeapon.recoilRotation *= 1 - recoilRotationReduction;
         }
 
-        private void ReturnProjectileWeaponRecoil()
+        public void ReturnProjectileWeaponRecoil()
         {
             projectileWeapon.recoilAmount = startingRecoil;
             projectileWeapon.recoilRotation = startingRotationRecoil;
