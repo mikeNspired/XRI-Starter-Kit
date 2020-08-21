@@ -16,7 +16,7 @@ namespace MikeNspired.UnityXRHandPoser
         public Renderer rend;
         public Light flashLight;
         public bool isEnabled = true;
-
+        private float minBrightness = .5f, maxBrightness = 5;
         private void Start()
         {
             flashLight.enabled = isEnabled;
@@ -28,10 +28,10 @@ namespace MikeNspired.UnityXRHandPoser
             flashLight.enabled = isEnabled;
         }
 
-        public void GetDialValue(float dialPercentage)
+        public void SetBrightness(float dialPercentage)
         {
-            var dialValuueZeroToOne = Remap(dialPercentage, 0, 1, -1, 1);
-            Debug.Log(dialValuueZeroToOne);
+            var dialValuueZeroToOne = Remap(dialPercentage, 0f, 1f, minBrightness, maxBrightness);
+            flashLight.intensity = dialValuueZeroToOne;
         }
         
         private float Remap(float value, float from1, float to1, float from2, float to2)

@@ -69,6 +69,7 @@ public class DialInteractable : XRGrabInteractable
     Transform m_SyncTransform;
     Transform m_OriginalTransform;
 
+    public float startingAngle = 0;
 
     void Start()
     {
@@ -81,7 +82,6 @@ public class DialInteractable : XRGrabInteractable
             RotatingRigidbody = GetComponentInChildren<Rigidbody>();
         }
 
-        m_CurrentAngle = 0;
 
         GameObject obj = new GameObject("Dial_Start_Copy");
         m_OriginalTransform = obj.transform;
@@ -91,6 +91,18 @@ public class DialInteractable : XRGrabInteractable
 
         if (Steps > 0) m_StepSize = RotationAngleMaximum / Steps;
         else m_StepSize = 0.0f;
+        
+        Test(startingAngle, transform.TransformDirection(LocalAxisStart), transform.TransformDirection(LocalRotationAxis));
+        
+        transform.Rotate(LocalRotationAxis* CurrentAngle,Space.Self);
+        
+       // m_StartingWorldAxis = m_OriginalTransform.TransformDirection(LocalAxisStart);
+        // var newRight = Quaternion.AngleAxis(startingAngle, LocalRotationAxis) * m_StartingWorldAxis;
+        // Debug.Log(newRight);
+        // startingAngle = Vector3.SignedAngle(LocalAxisStart, newRight, LocalRotationAxis);
+        //
+        // Quaternion newRBRotation = Quaternion.AngleAxis(startingAngle, LocalRotationAxis) * transform.rotation;
+        // transform.localRotation = newRBRotation;
     }
 
     private void OnValidate()
@@ -147,51 +159,59 @@ public class DialInteractable : XRGrabInteractable
                     else angle = RotationAngleMaximum;
                 }
 
-                float finalAngle = angle;
-                if (!SnapOnRelease && Steps > 0)
-                {
-                    int step = Mathf.RoundToInt(angle / m_StepSize);
-                    finalAngle = step * m_StepSize;
-
-                    if (!Mathf.Approximately(finalAngle, m_CurrentAngle))
-                    {
-                        AudioSource.Play();
-
-                        OnDialStepChanged.Invoke(step);
-                        OnDialChanged.Invoke(this);
-                        m_CurrentStep = step;
-                    }
-                }
-
-
-                //first, we use the raw angle to move the sync transform, that allow to keep the proper current rotation
-                //even if we snap during rotation
-                newRight = Quaternion.AngleAxis(angle, worldRotationAxis) * m_StartingWorldAxis;
-                angle = Vector3.SignedAngle(worldAxisStart, newRight, worldRotationAxis);
-                Quaternion newRot = Quaternion.AngleAxis(angle, worldRotationAxis) * m_SyncTransform.rotation;
-
-                //then we redo it but this time using finalAngle, that will snap if needed.
-                newRight = Quaternion.AngleAxis(finalAngle, worldRotationAxis) * m_StartingWorldAxis;
-                m_CurrentAngle = finalAngle;
-                OnDialAngleChanged.Invoke(finalAngle);
-                OnDialChanged.Invoke(this);
-                finalAngle = Vector3.SignedAngle(worldAxisStart, newRight, worldRotationAxis);
-                Quaternion newRBRotation = Quaternion.AngleAxis(finalAngle, worldRotationAxis) * m_SyncTransform.rotation;
-
-                if (RotatingRigidbody != null)
-                {
-                    RotatingRigidbody.MoveRotation(newRBRotation);
-                }
-                else
-                    transform.rotation = newRBRotation;
-
-                m_SyncTransform.transform.rotation = newRot;
-
-                m_GrabbedRotation = m_GrabbingInteractor.transform.rotation;
+                Test(angle, worldAxisStart, worldRotationAxis);
             }
-
-            CalculateRotationPercentage();
         }
+    }
+
+    private void Test(float angle, Vector3 worldAxisStart, Vector3 worldRotationAxis)
+    {
+        float finalAngle = angle;
+        if (!SnapOnRelease && Steps > 0)
+        {
+            int step = Mathf.RoundToInt(angle / m_StepSize);
+            finalAngle = step * m_StepSize;
+
+            if (!Mathf.Approximately(finalAngle, m_CurrentAngle))
+            {
+                AudioSource.Play();
+
+                OnDialStepChanged.Invoke(step);
+                OnDialChanged.Invoke(this);
+                m_CurrentStep = step;
+            }
+        }
+        if (m_SyncTransform == null)
+            m_SyncTransform = transform;
+
+        //first, we use the raw angle to move the sync transform, that allow to keep the proper current rotation
+        //even if we snap during rotation
+        //var newRight = Quaternion.AngleAxis(angle, worldRotationAxis) * m_StartingWorldAxis;
+        // angle = Vector3.SignedAngle(worldAxisStart, newRight, worldRotationAxis);
+        // Quaternion newRot = Quaternion.AngleAxis(angle, worldRotationAxis) * m_SyncTransform.rotation;
+
+        //then we redo it but this time using finalAngle, that will snap if needed.
+        var newRight = Quaternion.AngleAxis(finalAngle, worldRotationAxis) * m_StartingWorldAxis;
+        m_CurrentAngle = finalAngle;
+        OnDialAngleChanged.Invoke(finalAngle);
+        OnDialChanged.Invoke(this);
+        finalAngle = Vector3.SignedAngle(worldAxisStart, newRight, worldRotationAxis);
+
+        Quaternion newRBRotation = Quaternion.AngleAxis(finalAngle, worldRotationAxis) * m_SyncTransform.rotation;
+        if (RotatingRigidbody != null)
+        {
+            RotatingRigidbody.MoveRotation(newRBRotation);
+        }
+        else
+            transform.rotation = newRBRotation;
+        
+        //m_SyncTransform.transform.rotation = newRot;
+
+        if (m_GrabbingInteractor)
+            m_GrabbedRotation = m_GrabbingInteractor.transform.rotation;
+
+
+        CalculateRotationPercentage();
     }
 
     private void CalculateRotationPercentage()
@@ -210,15 +230,15 @@ public class DialInteractable : XRGrabInteractable
         m_GrabbedRotation = interactor.transform.rotation;
         m_GrabbingInteractor = interactor;
 
-        //create an object that will track the rotation
+//create an object that will track the rotation
         var syncObj = new GameObject("TEMP_DialSyncTransform");
         m_SyncTransform = syncObj.transform;
-
         if (RotatingRigidbody != null)
         {
             m_SyncTransform.rotation = RotatingRigidbody.transform.rotation;
             m_SyncTransform.position = RotatingRigidbody.position;
         }
+
         else
         {
             m_SyncTransform.rotation = transform.rotation;
@@ -231,7 +251,6 @@ public class DialInteractable : XRGrabInteractable
     protected override void OnSelectExit(XRBaseInteractor interactor)
     {
         base.OnSelectExit(interactor);
-
         if (SnapOnRelease && Steps > 0)
         {
             Vector3 right = transform.TransformDirection(LocalAxisStart);

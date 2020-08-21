@@ -109,7 +109,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void TryInteractWithSlot(XRBaseInteractor controller)
         {
-            if (isBusy) return;
+            if (isBusy || isDisabling) return;
             InteractWithSlot(controller);
         }
 
@@ -216,6 +216,10 @@ namespace MikeNspired.UnityXRHandPoser
         {
             var itemHandIsHolding = controller.selectTarget;
             if (!itemHandIsHolding) return;
+
+            var itemData = itemHandIsHolding.GetComponent<InteractableItemData>();
+
+            if (!itemData || !itemData.canInventory) return;
 
             releaseAudio.Play();
 
@@ -329,8 +333,8 @@ namespace MikeNspired.UnityXRHandPoser
         private void DestroyComponentsOnClone(Transform clone)
         {
             var movedColliders = clone.GetComponentsInChildren<IReturnMovedColliders>(true);
-            foreach (var t in movedColliders)  t.ReturnMovedColliders();
-  
+            foreach (var t in movedColliders) t.ReturnMovedColliders();
+
             //Destroy almost all components - Could not foreach through Components because it destroys out of order causing issues
             var monoBehaviors = clone.GetComponentsInChildren<MonoBehaviour>(true);
             foreach (var t in monoBehaviors) Destroy(t);
@@ -410,7 +414,28 @@ namespace MikeNspired.UnityXRHandPoser
         {
             this.startingTransformFromHand = startingTransformFromHand;
         }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            var controller = other.GetComponent<XRController>();
+            if (controller)
+            {
+                slotDisplayToAddItem.GetComponent<Animator>().SetBool("OnHover", true);
+                slotDisplayWhenContainsItem.GetComponent<Animator>().SetBool("OnHover", true);
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            var controller = other.GetComponent<XRController>();
+            if (controller)
+            {
+                slotDisplayToAddItem.GetComponent<Animator>().SetBool("OnHover", false);
+                slotDisplayWhenContainsItem.GetComponent<Animator>().SetBool("OnHover", false);
+            }
+        }
     }
+
 
     public static class BoundsExtension
     {
