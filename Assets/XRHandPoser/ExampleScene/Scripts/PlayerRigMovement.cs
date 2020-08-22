@@ -183,10 +183,11 @@ public class PlayerRigMovement : MonoBehaviour
     private bool CheckIfTeleportationGround(Vector3 moveDirection)
     {
         if (!moveOnlyOnTeleportArea) return true;
-
-        Vector3 startPos = transform.TransformPoint(characterController.center) + moveDirection;
-        Debug.DrawRay(startPos, Vector3.down * (characterController.center.y + .1f), Color.yellow);
-        return Physics.Raycast(startPos, Vector3.down, out RaycastHit hit, characterController.center.y + 1)
+        
+        Vector3 startPos = transform.TransformPoint(characterController.center) + moveDirection + Vector3.back * .05f;
+        Debug.DrawRay(startPos, (characterController.center.y * Vector3.down) * 2, Color.yellow);
+        
+        return Physics.Raycast(startPos, Vector3.down, out RaycastHit hit, characterController.center.y + 2)
             ? hit.collider.attachedRigidbody?.GetComponent<TeleportationArea>()
             : false;
     }

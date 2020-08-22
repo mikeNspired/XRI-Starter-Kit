@@ -20,8 +20,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private AudioRandomize launchAudio = null;
         [SerializeField] private SphereCollider mainHandCollider = null;
 
-        [SerializeField] [Tooltip("Grows main collider on hand while item is in flight to allow easier grabbing")]
-        private float mainHandColliderSizeGrow = .2f;
+
         [SerializeField] [Tooltip("If item is less than this distance from hand, it will ignore the item")]
         private float minDistanceToAllowGrab = .2f;
 
@@ -40,6 +39,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         [SerializeField] [Tooltip("How far RayCast will go")]
         private float sphereCastRadius = .5f;
+
         [SerializeField] private LayerMask rayCastMask;
 
         [SerializeField] private bool showDebug = false;
@@ -63,7 +63,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             OnValidate();
             WristRotationReset();
-            directInteractor.onSelectEnter.AddListener(SetGravityOnCurrentTarget);
+            directInteractor.onSelectEnter.AddListener(Reset);
             if (mainHandCollider)
                 mainHandColliderStartingSize = mainHandCollider.radius;
         }
@@ -139,7 +139,7 @@ namespace MikeNspired.UnityXRHandPoser
             else
                 rayCastDebugPosition = Vector3.zero;
 
-            
+
             //If nothing found, try SphereCasting incase on a small area like a podium where raycasting is hard to hit
             Array.Clear(raycastHits, 0, 10);
             Physics.SphereCastNonAlloc(transform.position, sphereCastRadius, transform.forward, raycastHits, rayCastLength, rayCastMask, QueryTriggerInteraction.Ignore);
@@ -149,7 +149,7 @@ namespace MikeNspired.UnityXRHandPoser
                 if (CheckForNearest(potentialGrabbaleItems, transform.position))
                     return;
             }
-            
+
             StopHighlight(currentTarget);
             currentTarget = null;
         }
@@ -168,7 +168,7 @@ namespace MikeNspired.UnityXRHandPoser
 
                     //Check if item is within distance to cancel
                     if (Vector3.Distance(transform.position, hit.position) <= minDistanceToAllowGrab) continue;
-                    
+
                     var interactable = hit.transform.GetComponentInParent<XRGrabInteractable>();
                     //Check if interactable or if its being grabbed then ignore
                     if (!interactable || interactable.selectingInteractor) continue;
@@ -187,7 +187,7 @@ namespace MikeNspired.UnityXRHandPoser
                         }
 
                     float distance = Vector3.Distance(hit.transform.position, startingPoint);
-                    
+
                     if (distance < nearestDistance)
                     {
                         foundHit = true;
@@ -236,13 +236,10 @@ namespace MikeNspired.UnityXRHandPoser
             }
         }
 
-        private void SetGravityOnCurrentTarget(XRBaseInteractable arg0)
+        private void Reset(XRBaseInteractable arg0)
         {
-            if (currentTarget)
-            {
-                currentTarget.GetComponent<Rigidbody>().useGravity = true;
-                CancelTarget(currentTarget);
-            }
+            CancelTarget(currentTarget);
+            mainHandCollider.radius = mainHandColliderStartingSize;
         }
 
         private void TryToLaunchItem(Transform target)
@@ -332,6 +329,12 @@ namespace MikeNspired.UnityXRHandPoser
         [Header("Item Launching")] [SerializeField] [Tooltip("Main attribute to adjust flight time. Near 0 will be faster")]
         private float flightTimeMultiplier = .15f;
 
+        [SerializeField] [Tooltip("Grows main collider on hand while item is in flight to allow easier grabbing")]
+        private float mainHandColliderSizeGrow = .2f;
+
+        [SerializeField] [Tooltip("Length of time collider is large after flight animation")]
+        private float colliderLargeExtraTime = .25f;
+
         [SerializeField] [Tooltip("Distance in world Y to add to hand position")]
         private float verticalGoalAddOn = .1f;
 
@@ -396,14 +399,19 @@ namespace MikeNspired.UnityXRHandPoser
                 yield return null;
             }
 
-            mainHandCollider.radius = mainHandColliderStartingSize;
-
+            StartCoroutine(ShrinkCollider());
             rigidBody.drag = dragHoldAmount;
             yield return new WaitForSeconds(dragTime);
             rigidBody.drag = 0;
 
             rigidBody.useGravity = true;
             isLaunching = false;
+        }
+
+        private IEnumerator ShrinkCollider()
+        {
+            yield return new WaitForSeconds(colliderLargeExtraTime);
+            mainHandCollider.radius = mainHandColliderStartingSize;
         }
 
         #endregion
