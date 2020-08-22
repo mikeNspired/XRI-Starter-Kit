@@ -16,7 +16,6 @@ namespace MyNamespace
         private List<XRController> controllers = new List<XRController>();
         private InventorySlot inventorySlot;
 
-
         private enum InteractButton
         {
             trigger,
@@ -33,10 +32,9 @@ namespace MyNamespace
                     leftIsGripped = true;
                 else
                     rightIsGripped = true;
-
             }
         }
-        
+
         private void OnTriggerExit(Collider other)
         {
             var controller = other.GetComponent<XRController>();
@@ -82,32 +80,24 @@ namespace MyNamespace
         }
 
         private bool isGrippedCheckerBitches = false;
+
         private void CheckControllerGrip(XRController controller, ref bool isGripped)
         {
             inputDevice = controller.inputDevice;
             if (!inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out bool gripValue)) return;
 
-           // Debug.Log("isGripped: " + isGripped + " " + " gripValue: " + gripValue + " isGrippedCheckerBitches: " + isGrippedCheckerBitches);
-            if (!isGripped && gripValue)// && !isGrippedCheckerBitches)
+            if (!isGripped && gripValue) // && !isGrippedCheckerBitches)
             {
-                Debug.Log("grabbing item");
                 isGripped = true;
                 if (!IsControllerHoldingObject(controller))
                     inventorySlot.TryInteractWithSlot(controller.GetComponent<XRBaseInteractor>());
             }
             else if (isGripped && !gripValue)
             {
-                Debug.Log("releasing item");
-
                 isGripped = false;
                 if (IsControllerHoldingObject(controller))
                     inventorySlot.TryInteractWithSlot(controller.GetComponent<XRBaseInteractor>());
             }
-
-            // if(!gripValue)
-            // {
-            //     isGrippedCheckerBitches = false;
-            // }
         }
 
         private bool IsControllerHoldingObject(XRController controller)

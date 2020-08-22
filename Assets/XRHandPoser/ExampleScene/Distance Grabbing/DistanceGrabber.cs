@@ -1,12 +1,16 @@
-﻿using System;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
+    [ExecuteInEditMode]
     public class DistanceGrabber : MonoBehaviour
     {
         [Header("Main")] [SerializeField] private XRController controller = null;
@@ -15,9 +19,18 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private DistanceGrabberLineBender lineEffect;
         [SerializeField] private AudioRandomize launchAudio = null;
         [SerializeField] private SphereCollider mainHandCollider = null;
-        [SerializeField] private float mainHandColliderSizeGrow;
-        [SerializeField] private bool easyModeGrabNoWristFlick;
-        [SerializeField] private float easyModeTimeTillGrab;
+
+        [SerializeField] [Tooltip("Grows main collider on hand while item is in flight to allow easier grabbing")]
+        private float mainHandColliderSizeGrow = .2f;
+        [SerializeField] [Tooltip("If item is less than this distance from hand, it will ignore the item")]
+        private float minDistanceToAllowGrab = .2f;
+
+        [SerializeField] [Tooltip("Disables flicking and enables button holding to easily grab item")]
+        private bool easyModeGrabNoWristFlick = false;
+
+        [SerializeField] [Tooltip("Time holding button to grab item")]
+        private float easyModeTimeTillGrab = .4f;
+
 
         [Header("Item Searching")] [SerializeField] [Tooltip("How far RayCast will go")]
         private float rayCastLength = 10;
@@ -25,7 +38,15 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] [Tooltip("Size of sphere that is created where rayCast hit. Items inside this sphere are potential grabbable items")]
         private float overlapSphereRadius = 1;
 
-        [SerializeField] private LayerMask raycastMask;
+        [SerializeField] [Tooltip("How far RayCast will go")]
+        private float sphereCastRadius = .5f;
+        [SerializeField] private LayerMask rayCastMask;
+
+        [SerializeField] private bool showDebug = false;
+
+        [SerializeField] [Tooltip("Shows the distance and how large the Physics.SphereCast is")]
+        private Transform debugSphereCast = null;
+
 
         [Header("Line Canceling")] [SerializeField] [Tooltip("When to cancel trying to grab item based on rotation. A value of 0 lets you rotate this perpendicular to pointing at the item before canceling.")]
         private float dotProductCancel = .2f;
@@ -34,25 +55,11 @@ namespace MikeNspired.UnityXRHandPoser
         private Transform currentTarget;
         private bool isActive = false, isLaunching = false;
         private float mainHandColliderStartingSize;
-
-        public enum ControllerInput
-        {
-            triggerButton = 0,
-            gripButton = 1,
-        };
-
-        // Mapping of the above InputAxes to actual common usage values
-        private static readonly InputFeatureUsage<bool>[] InputAxesToCommonUsage =
-        {
-            CommonUsages.triggerButton,
-            CommonUsages.gripButton,
-        };
-
+        RaycastHit[] raycastHits = new RaycastHit[20];
+        private Vector3 rayCastDebugPosition;
         private bool isGripping;
 
-
-        // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
             OnValidate();
             WristRotationReset();
@@ -69,11 +76,13 @@ namespace MikeNspired.UnityXRHandPoser
                 controller = GetComponentInParent<XRController>();
             if (!directInteractor)
                 directInteractor = GetComponentInParent<XRDirectInteractor>();
+            if (debugSphereCast)
+                debugSphereCast.gameObject.SetActive(showDebug);
         }
-
 
         private void Update()
         {
+            if (directInteractor.selectTarget) return;
             if (isLaunching) return;
 
             //Check if controller is holding an item already
@@ -84,6 +93,7 @@ namespace MikeNspired.UnityXRHandPoser
             }
 
             SearchWithRayCast();
+
             InitiateGrabStartFromTrigger();
             CheckToCancel();
 
@@ -101,57 +111,103 @@ namespace MikeNspired.UnityXRHandPoser
             TryToLaunchItem(currentTarget);
         }
 
+        private void OnDrawGizmos()
+        {
+            if (!showDebug) return;
+            Gizmos.color = Color.cyan;
+            if (rayCastDebugPosition != Vector3.zero)
+                Gizmos.DrawWireSphere(rayCastDebugPosition, overlapSphereRadius);
+            if (debugSphereCast)
+                debugSphereCast.transform.localScale = new Vector3(sphereCastRadius * 2, sphereCastRadius * 2, rayCastLength);
+        }
+
         private void SearchWithRayCast()
         {
             if (isActive) return;
 
-            Debug.DrawRay(transform.position, transform.forward * rayCastLength, Color.cyan);
+            if (showDebug)
+                Debug.DrawRay(transform.position, transform.forward * rayCastLength, Color.cyan);
 
-
-            if (Physics.Raycast(transform.position, transform.forward, out RaycastHit rayCastHit, rayCastLength, raycastMask))
+            if (Physics.Raycast(transform.position, transform.forward, out RaycastHit rayCastHit, rayCastLength, rayCastMask, QueryTriggerInteraction.Ignore))
             {
-                Collider[] closestHits = Physics.OverlapSphere(rayCastHit.point, overlapSphereRadius, raycastMask);
-                bool foundHit = false;
-                float nearestDistance = Single.PositiveInfinity;
-                XRGrabInteractable nearestGrabbable = null;
-                if (closestHits.Length > 0)
-                {
-                    foreach (var hit in closestHits)
-                    {
-                        if (!hit.transform) continue;
-                        var interactable = hit.transform.GetComponentInParent<XRGrabInteractable>();
-                        //Check if interactable or if its being grabbed then ignore
-                        if (!interactable || interactable.selectingInteractor) continue;
-
-                        //Check if a distance grabbable item
-                        var itemData = interactable.GetComponent<InteractableItemData>();
-                        if (!itemData || !itemData.canDistanceGrab) continue;
-
-                        float distance = Vector3.Distance(hit.transform.position, rayCastHit.point);
-                        if (distance < nearestDistance)
-                        {
-                            foundHit = true;
-                            nearestDistance = distance;
-                            nearestGrabbable = hit.transform.GetComponentInParent<XRGrabInteractable>();
-                        }
-                    }
-
-                    if (foundHit)
-                    {
-                        SetNewCurrentTarget(nearestGrabbable.transform);
-                        return;
-                    }
-                }
+                rayCastDebugPosition = rayCastHit.point;
+                Collider[] closestHits = Physics.OverlapSphere(rayCastHit.point, overlapSphereRadius, rayCastMask, QueryTriggerInteraction.Ignore);
+                Transform[] potentialGrabbaleItems = Array.ConvertAll(closestHits, s => s.transform);
+                if (CheckForNearest(potentialGrabbaleItems, rayCastHit.point))
+                    return;
             }
+            else
+                rayCastDebugPosition = Vector3.zero;
 
-
-            if (!currentTarget) return;
+            
+            //If nothing found, try SphereCasting incase on a small area like a podium where raycasting is hard to hit
+            Array.Clear(raycastHits, 0, 10);
+            Physics.SphereCastNonAlloc(transform.position, sphereCastRadius, transform.forward, raycastHits, rayCastLength, rayCastMask, QueryTriggerInteraction.Ignore);
+            if (raycastHits.Length > 0)
+            {
+                Transform[] potentialGrabbaleItems = Array.ConvertAll(raycastHits, s => s.transform);
+                if (CheckForNearest(potentialGrabbaleItems, transform.position))
+                    return;
+            }
+            
             StopHighlight(currentTarget);
             currentTarget = null;
         }
 
+        private bool CheckForNearest(Transform[] hitObjects, Vector3 startingPoint)
+        {
+            if (hitObjects.Length > 0)
+            {
+                float nearestDistance = Single.PositiveInfinity;
+                bool foundHit = false;
+                XRGrabInteractable nearestGrabbable = null;
+
+                foreach (var hit in hitObjects)
+                {
+                    if (!hit) continue;
+
+                    //Check if item is within distance to cancel
+                    if (Vector3.Distance(transform.position, hit.position) <= minDistanceToAllowGrab) continue;
+                    
+                    var interactable = hit.transform.GetComponentInParent<XRGrabInteractable>();
+                    //Check if interactable or if its being grabbed then ignore
+                    if (!interactable || interactable.selectingInteractor) continue;
+
+                    //Check if allowed to DistanceGrab
+                    var itemData = interactable.GetComponent<InteractableItemData>();
+                    if (!itemData || !itemData.canDistanceGrab) continue;
+
+                    //Check if anything blocking - Would be way better to using layerMasks
+                    if (Physics.Raycast(hit.transform.position, (transform.position - hit.transform.position), out RaycastHit rayCastHit, 1, rayCastMask, QueryTriggerInteraction.Ignore))
+                        if (rayCastHit.transform != interactable.transform)
+                        {
+                            if (showDebug)
+                                Debug.DrawRay(hit.transform.position, (transform.position - hit.transform.position).normalized * 1, Color.magenta);
+                            continue;
+                        }
+
+                    float distance = Vector3.Distance(hit.transform.position, startingPoint);
+                    
+                    if (distance < nearestDistance)
+                    {
+                        foundHit = true;
+                        nearestDistance = distance;
+                        nearestGrabbable = hit.transform.GetComponentInParent<XRGrabInteractable>();
+                    }
+                }
+
+                if (!foundHit) return false;
+
+                SetNewCurrentTarget(nearestGrabbable.transform);
+                return true;
+            }
+
+            return false;
+        }
+
         private void SetNewCurrentTarget(Transform newTarget)
         {
+            if (currentTarget == newTarget) return;
             if (currentTarget)
                 StopHighlight(currentTarget);
 
@@ -185,6 +241,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (currentTarget)
             {
                 currentTarget.GetComponent<Rigidbody>().useGravity = true;
+                CancelTarget(currentTarget);
             }
         }
 
@@ -237,6 +294,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void StopHighlight(Transform target)
         {
+            if (!target) return;
             var highlight = target.GetComponent<Highlight>();
             if (highlight)
                 highlight.RemoveHighlight();
@@ -277,8 +335,8 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] [Tooltip("Distance in world Y to add to hand position")]
         private float verticalGoalAddOn = .1f;
 
-        [SerializeField] [Tooltip("Random rotation amount to add when item is flying")]
-        private float randomRotationSpeed = 4;
+        // [SerializeField] [Tooltip("Random rotation amount to add when item is flying")]
+        // private float randomRotationSpeed = 4;
 
         [SerializeField] [Tooltip("How much velocity the item will have when reached hand")]
         private float velocitySpeedWhenFinished = 1f;
@@ -417,5 +475,18 @@ namespace MikeNspired.UnityXRHandPoser
         }
 
         #endregion
+
+        private enum ControllerInput
+        {
+            triggerButton = 0,
+            gripButton = 1,
+        };
+
+        // Mapping of the above InputAxes to actual common usage values
+        private static readonly InputFeatureUsage<bool>[] InputAxesToCommonUsage =
+        {
+            CommonUsages.triggerButton,
+            CommonUsages.gripButton,
+        };
     }
 }

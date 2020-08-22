@@ -75,8 +75,7 @@ namespace MikeNspired.UnityXRHandPoser
                 playerHandModel = interactor.GetComponent<HandReference>().hand.GetComponentInChildren<SkinnedMeshRenderer>();
                 originalMaterial = playerHandModel.material;
             }
-
-
+            
             meshCollider.enabled = false;
             playerHandModel.material = newMaterial;
         }

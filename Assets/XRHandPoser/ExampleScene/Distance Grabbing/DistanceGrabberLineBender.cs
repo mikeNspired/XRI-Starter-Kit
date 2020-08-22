@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) MikeNspired. All Rights Reserved.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,7 +13,6 @@ public class DistanceGrabberLineBender : MonoBehaviour
     [SerializeField] private LineRenderer lineRenderer;
     [SerializeField] private int vertexCount = 30;
     private float vertCount = 30;
-
     private Transform Target;
     private float projectionDistance;
 
