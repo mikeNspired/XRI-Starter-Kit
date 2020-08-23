@@ -55,6 +55,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void CheckIfPlayerFacing(XRGrabInteractable grabInteractable, ColliderDisableMoveReturn collider, Transform facingDirection)
         {
+            if (!mainCamera) return;
+            
             Vector3 forward = facingDirection.forward;
             Vector3 toOther = (mainCamera.transform.position - facingDirection.position).normalized;
 

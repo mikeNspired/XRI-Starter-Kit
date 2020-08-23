@@ -493,7 +493,6 @@ GameObject:
   - component: {fileID: 6223891697608085561}
   - component: {fileID: 6223891697608085563}
   - component: {fileID: 6223891697608085562}
-  - component: {fileID: 3366319599141234228}
   - component: {fileID: 544131307}
   - component: {fileID: -913717229406001207}
   - component: {fileID: 6223891697608085564}
@@ -668,20 +667,6 @@ MonoBehaviour:
   maxVolume: 0.4
   timeTillCanPlayAgain: 0.1
   maxVelocity: 5
---- !u!114 &3366319599141234228
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6223891697608085566}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a4e8d4ba05e4cd4ab11827fc2c5ef66, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canInventory: 1
-  maxStackSize: 0
 --- !u!114 &544131307
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -696,7 +681,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   xrGrabInteractable: {fileID: 6223891697608085560}
   highlightModel: {fileID: 919132149187189007}
-  disableHighlighting: 0
 --- !u!114 &-913717229406001207
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -726,7 +710,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 3
 --- !u!1 &6766030078366012720
 GameObject:
   m_ObjectHideFlags: 0

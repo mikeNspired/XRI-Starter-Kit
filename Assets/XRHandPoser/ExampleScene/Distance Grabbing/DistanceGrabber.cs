@@ -2,25 +2,21 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
-    [ExecuteInEditMode]
     public class DistanceGrabber : MonoBehaviour
     {
         [Header("Main")] [SerializeField] private XRController controller = null;
         [SerializeField] private XRDirectInteractor directInteractor = null;
         [SerializeField] private ControllerInput buttonControllerInput = ControllerInput.gripButton;
-        [SerializeField] private DistanceGrabberLineBender lineEffect;
+        [SerializeField] private DistanceGrabberLineBender lineEffect = null;
         [SerializeField] private AudioRandomize launchAudio = null;
         [SerializeField] private SphereCollider mainHandCollider = null;
-
-
+        
         [SerializeField] [Tooltip("If item is less than this distance from hand, it will ignore the item")]
         private float minDistanceToAllowGrab = .2f;
 
@@ -40,13 +36,12 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] [Tooltip("How far RayCast will go")]
         private float sphereCastRadius = .5f;
 
-        [SerializeField] private LayerMask rayCastMask;
+        [SerializeField] private LayerMask rayCastMask = 1;
 
         [SerializeField] private bool showDebug = false;
 
         [SerializeField] [Tooltip("Shows the distance and how large the Physics.SphereCast is")]
         private Transform debugSphereCast = null;
-
 
         [Header("Line Canceling")] [SerializeField] [Tooltip("When to cancel trying to grab item based on rotation. A value of 0 lets you rotate this perpendicular to pointing at the item before canceling.")]
         private float dotProductCancel = .2f;
@@ -428,7 +423,7 @@ namespace MikeNspired.UnityXRHandPoser
         private Vector3 currentSmoothedRotation;
         private float currentRotationMagnitude;
 
-        void WristRotationReset()
+        private void WristRotationReset()
         {
             lastFrameRotation = transform.rotation;
             Array.Clear(smoothingFrameTimes, 0, smoothingFrameTimes.Length);
@@ -436,14 +431,14 @@ namespace MikeNspired.UnityXRHandPoser
             smoothingCurrentFrame = 0;
         }
 
-        void SetCurrentRotationMagnitude()
+        private void SetCurrentRotationMagnitude()
         {
             Vector3 smoothedAngularVelocity = getSmoothedVelocityValue(smoothingAngularVelocityFrames);
             currentSmoothedRotation = smoothedAngularVelocity;
             currentRotationMagnitude = currentSmoothedRotation.magnitude;
         }
 
-        void UpdateRotationFrames()
+        private void UpdateRotationFrames()
         {
             smoothingFrameTimes[smoothingCurrentFrame] = Time.time;
 
@@ -457,7 +452,7 @@ namespace MikeNspired.UnityXRHandPoser
             lastFrameRotation = transform.rotation;
         }
 
-        Vector3 getSmoothedVelocityValue(Vector3[] velocityFrames)
+        private Vector3 getSmoothedVelocityValue(Vector3[] velocityFrames)
         {
             Vector3 calcVelocity = new Vector3();
             int frameCounter = 0;
@@ -494,7 +489,7 @@ namespace MikeNspired.UnityXRHandPoser
         private static readonly InputFeatureUsage<bool>[] InputAxesToCommonUsage =
         {
             CommonUsages.triggerButton,
-            CommonUsages.gripButton,
+            CommonUsages.gripButton
         };
     }
 }

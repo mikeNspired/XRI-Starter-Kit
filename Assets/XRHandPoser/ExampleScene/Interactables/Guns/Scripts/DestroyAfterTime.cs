@@ -7,7 +7,7 @@ namespace MikeNspired.UnityXRHandPoser
     public class DestroyAfterTime : MonoBehaviour
     {
         public float timeTillDestroy = 1f;
-        [SerializeField] private bool destroyAfterFrame;
+        [SerializeField] private bool destroyAfterFrame = false;
 
         private void Start()
         {

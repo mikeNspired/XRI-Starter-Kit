@@ -494,7 +494,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7177199588867152967}
-  - component: {fileID: 5547051752471418874}
   - component: {fileID: 7177199588867152966}
   - component: {fileID: 7177199588867152970}
   m_Layer: 0
@@ -521,20 +520,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
---- !u!114 &5547051752471418874
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7177199588867152965}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 995e7e53aa4fea14685e128a8e82efe0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  note: This is setup for the Windows Rig. Assign the left and right direct interactors
-    from the rig you are using.
 --- !u!114 &7177199588867152966
 MonoBehaviour:
   m_ObjectHideFlags: 0

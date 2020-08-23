@@ -6,9 +6,9 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class SetRigidBodyCenterOfMass : MonoBehaviour
 {
-    [SerializeField] private XRGrabInteractable xrGrabInteractable;
-    [SerializeField] private new Rigidbody rigidBody;
-    [SerializeField] private Vector3 newCenterOfMass;
+    [SerializeField] private XRGrabInteractable xrGrabInteractable = null;
+    [SerializeField] private Rigidbody rigidBody = null;
+    [SerializeField] private Vector3 newCenterOfMass = Vector3.zero;
 
     private void Start()
     {

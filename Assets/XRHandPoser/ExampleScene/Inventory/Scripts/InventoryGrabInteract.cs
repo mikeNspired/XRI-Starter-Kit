@@ -78,9 +78,7 @@ namespace MyNamespace
                     CheckControllerGrip(controller, ref rightIsGripped);
             }
         }
-
-        private bool isGrippedCheckerBitches = false;
-
+        
         private void CheckControllerGrip(XRController controller, ref bool isGripped)
         {
             inputDevice = controller.inputDevice;
