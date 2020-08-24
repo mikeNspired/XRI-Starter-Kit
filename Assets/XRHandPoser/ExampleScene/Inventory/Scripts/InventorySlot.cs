@@ -120,6 +120,10 @@ namespace MikeNspired.UnityXRHandPoser
 
             var itemHandIsHolding = controller.selectTarget;
 
+            //Check if item is allowed to be added to inventory
+            var itemData = itemHandIsHolding.GetComponent<InteractableItemData>();
+            if (!itemData || !itemData.canInventory) return;
+            
             if (currentSlotItem)
             {
                 DisableItemInHand(controller);
@@ -176,6 +180,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void DisableSlot()
         {
+          
+            
             //Disable hand from adding item when animating to disable slot
             collider.enabled = false;
             if (!isDisabling)
@@ -216,10 +222,6 @@ namespace MikeNspired.UnityXRHandPoser
         {
             var itemHandIsHolding = controller.selectTarget;
             if (!itemHandIsHolding) return;
-
-            var itemData = itemHandIsHolding.GetComponent<InteractableItemData>();
-
-            if (!itemData || !itemData.canInventory) return;
 
             releaseAudio.Play();
 
@@ -414,7 +416,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             this.startingTransformFromHand = startingTransformFromHand;
         }
-
+        
         private void OnTriggerEnter(Collider other)
         {
             var controller = other.GetComponent<XRController>();

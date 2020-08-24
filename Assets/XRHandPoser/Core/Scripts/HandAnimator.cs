@@ -44,7 +44,7 @@ namespace MikeNspired.UnityXRHandPoser
         public bool isGrabbed;
 
         //The joints of the rootBone. These are the joints that are being animated.
-        private List<Transform> currentJoints = new List<Transform>();
+        public List<Transform> currentJoints = new List<Transform>();
 
         //The joints of the pose being animated to. 
         private List<Transform> goalPoseJoints = new List<Transform>();
@@ -266,7 +266,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void AnimateInstantly(Pose animation)
         {
-            if (currentJoints.Count == 0)
+            if (currentJoints.Count == 0 || currentJoints[0] == null)
                 SetBones();
 
             if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);

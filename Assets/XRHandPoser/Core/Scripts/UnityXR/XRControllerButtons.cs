@@ -1,4 +1,6 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
+
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR;
@@ -24,18 +26,21 @@ namespace MikeNspired.UnityXRHandPoser
         private InputDevice inputDevice;
         private bool IsGripped;
 
-        void Start()
+        private void Start()
         {
-            xrController = GetComponentInParent<XRController>();
-
+            OnValidate();
             if (xrController)
                 inputDevice = xrController.inputDevice;
             else
                 enabled = false;
-
         }
 
-        void Update()
+        private void OnValidate()
+        {
+            if (!xrController) xrController = GetComponentInParent<XRController>();
+        }
+
+        private void Update()
         {
             inputDevice = xrController.inputDevice;
             inputDevice.TryGetFeatureValue(CommonUsages.trigger, out triggerValue);
@@ -48,7 +53,6 @@ namespace MikeNspired.UnityXRHandPoser
                 {
                     IsGripped = true;
                     OnGripPressed.Invoke();
-
                 }
                 else if (IsGripped && !gripValue)
                 {
@@ -56,10 +60,8 @@ namespace MikeNspired.UnityXRHandPoser
                     OnGripRelease.Invoke();
                 }
             }
-
         }
     }
-
 
 
     [System.Serializable]
