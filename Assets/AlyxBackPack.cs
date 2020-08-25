@@ -14,6 +14,8 @@ public class AlyxBackPack : MonoBehaviour
     [SerializeField] private XRGrabInteractable magazine2;
     [SerializeField] private GunType gunType1;
     [SerializeField] private GunType gunType2;
+    [SerializeField] private float itemGrabTimeout = .5f; 
+    private float itemGrabTimeoutTimer;
 
     private bool leftIsGripped, rightIsGripped;
     private List<XRController> controllers = new List<XRController>();
@@ -62,8 +64,11 @@ public class AlyxBackPack : MonoBehaviour
 
     private void Update()
     {
+        itemGrabTimeoutTimer += Time.deltaTime;
+        
         if (controllers.Count == 0) return;
 
+        if (itemGrabTimeoutTimer <= itemGrabTimeout) return;
         foreach (var controller in controllers)
         {
             CheckController(controller);
@@ -73,7 +78,9 @@ public class AlyxBackPack : MonoBehaviour
     private void CheckController(XRController controller)
     {
         if (interactButton == InteractButton.trigger)
-            CheckControllerTrigger(controller);
+        {
+            
+        }
         else
         {
             if (controller.controllerNode == XRNode.LeftHand)
@@ -97,8 +104,6 @@ public class AlyxBackPack : MonoBehaviour
         else if (isGripped && !gripValue)
         {
             isGripped = false;
-            if (IsControllerHoldingObject(controller))
-                TryGrabAmmo(controller.GetComponent<XRBaseInteractor>());
         }
     }
 
@@ -109,14 +114,6 @@ public class AlyxBackPack : MonoBehaviour
 
     private void CheckControllerTrigger(XRController controller)
     {
-        inputDevice = controller.inputDevice;
-        if (!inputDevice.TryGetFeatureValue(CommonUsages.triggerButton, out bool gripValue)) return;
-
-        if (gripValue)
-        {
-            if (!controller.GetComponent<XRDirectInteractor>().selectTarget)
-                TryGrabAmmo(controller.GetComponent<XRBaseInteractor>());
-        }
     }
 
     private void TryGrabAmmo(XRBaseInteractor interactor)
@@ -136,8 +133,10 @@ public class AlyxBackPack : MonoBehaviour
 
         //Check if hand not interacting with pack is holding weapon
         if (!handHoldingWeapon.selectTarget) return;
-        
-        var gunType = interactor.selectTarget.GetComponentInChildren<MagazineAttachPoint>()?.GunType;
+        if (currentInteractor.selectTarget) return;
+
+
+        var gunType = handHoldingWeapon.selectTarget.GetComponentInChildren<MagazineAttachPoint>()?.GunType;
         if (!gunType) return;
 
         XRGrabInteractable newMagazine;
@@ -147,7 +146,17 @@ public class AlyxBackPack : MonoBehaviour
             newMagazine = Instantiate(magazine2);
         else newMagazine = Instantiate(magazine2);
 
-        newMagazine.transform.position = transform.position;
+        newMagazine.transform.position = currentInteractor.transform.position;
+        newMagazine.transform.forward = currentInteractor.transform.forward;
+
+        StartCoroutine(GrabItem(currentInteractor, newMagazine));
+    }
+
+    IEnumerator GrabItem(XRBaseInteractor currentInteractor, XRGrabInteractable newMagazine)
+    {
+        yield return new WaitForFixedUpdate();
+        if (currentInteractor.selectTarget) yield break;
         interactionManager.SelectEnter_public(currentInteractor, newMagazine);
+        itemGrabTimeoutTimer = 0;
     }
 }

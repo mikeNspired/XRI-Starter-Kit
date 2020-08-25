@@ -390,6 +390,8 @@ namespace MikeNspired.UnityXRHandPoser
         private Transform handPositionTarget;
         private bool setPosition;
 
+        [BeforeRenderOrder(102)]
+
         private void OnBeforeRender()
         {
             if (setPosition)

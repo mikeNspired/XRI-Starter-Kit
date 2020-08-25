@@ -11,10 +11,12 @@ namespace MyNamespace
     public class InventoryGrabInteract : MonoBehaviour
     {
         [SerializeField] private InteractButton interactButton = InteractButton.grip;
+        [SerializeField] private bool autoGrabIfGripping = true;
 
         private bool leftIsGripped, rightIsGripped;
         private List<XRController> controllers = new List<XRController>();
         private InventorySlot inventorySlot;
+        private InputDevice inputDevice;
 
         private enum InteractButton
         {
@@ -28,10 +30,21 @@ namespace MyNamespace
             if (controller && !controllers.Contains(controller))
             {
                 controllers.Add(controller);
-                if (controller.controllerNode == XRNode.LeftHand)
-                    leftIsGripped = true;
+
+                if (!autoGrabIfGripping)
+                {
+                    if (controller.controllerNode == XRNode.LeftHand)
+                        leftIsGripped = true;
+                    else
+                        rightIsGripped = true;
+                }
                 else
-                    rightIsGripped = true;
+                {
+                    if (controller.controllerNode == XRNode.LeftHand)
+                        leftIsGripped = false;
+                    else
+                        rightIsGripped = false;
+                }
             }
         }
 
@@ -52,8 +65,6 @@ namespace MyNamespace
             if (!inventorySlot)
                 inventorySlot = GetComponent<InventorySlot>();
         }
-
-        private InputDevice inputDevice;
 
 
         private void Update()
@@ -78,7 +89,7 @@ namespace MyNamespace
                     CheckControllerGrip(controller, ref rightIsGripped);
             }
         }
-        
+
         private void CheckControllerGrip(XRController controller, ref bool isGripped)
         {
             inputDevice = controller.inputDevice;
@@ -87,7 +98,7 @@ namespace MyNamespace
             if (!isGripped && gripValue) // && !isGrippedCheckerBitches)
             {
                 isGripped = true;
-                if (!IsControllerHoldingObject(controller))
+                if (autoGrabIfGripping || !IsControllerHoldingObject(controller))
                     inventorySlot.TryInteractWithSlot(controller.GetComponent<XRBaseInteractor>());
             }
             else if (isGripped && !gripValue)

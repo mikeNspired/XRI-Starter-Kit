@@ -5,6 +5,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.WSA.Input;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -16,7 +17,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private DistanceGrabberLineBender lineEffect = null;
         [SerializeField] private AudioRandomize launchAudio = null;
         [SerializeField] private SphereCollider mainHandCollider = null;
-        
+
         [SerializeField] [Tooltip("If item is less than this distance from hand, it will ignore the item")]
         private float minDistanceToAllowGrab = .2f;
 
@@ -37,6 +38,9 @@ namespace MikeNspired.UnityXRHandPoser
         private float sphereCastRadius = .5f;
 
         [SerializeField] private LayerMask rayCastMask = 1;
+
+        [SerializeField] private bool rayCastSearch = true;
+        [SerializeField] private bool sphereCastSearch = true;
 
         [SerializeField] private bool showDebug = false;
 
@@ -123,27 +127,32 @@ namespace MikeNspired.UnityXRHandPoser
             if (showDebug)
                 Debug.DrawRay(transform.position, transform.forward * rayCastLength, Color.cyan);
 
-            if (Physics.Raycast(transform.position, transform.forward, out RaycastHit rayCastHit, rayCastLength, rayCastMask, QueryTriggerInteraction.Ignore))
+            if (rayCastSearch)
             {
-                rayCastDebugPosition = rayCastHit.point;
-                Collider[] closestHits = Physics.OverlapSphere(rayCastHit.point, overlapSphereRadius, rayCastMask, QueryTriggerInteraction.Ignore);
-                Transform[] potentialGrabbaleItems = Array.ConvertAll(closestHits, s => s.transform);
-                if (CheckForNearest(potentialGrabbaleItems, rayCastHit.point))
-                    return;
+                if (Physics.Raycast(transform.position, transform.forward, out RaycastHit rayCastHit, rayCastLength, rayCastMask, QueryTriggerInteraction.Ignore))
+                {
+                    rayCastDebugPosition = rayCastHit.point;
+                    Collider[] closestHits = Physics.OverlapSphere(rayCastHit.point, overlapSphereRadius, rayCastMask, QueryTriggerInteraction.Ignore);
+                    Transform[] potentialGrabbaleItems = Array.ConvertAll(closestHits, s => s.transform);
+                    if (CheckForNearest(potentialGrabbaleItems, rayCastHit.point))
+                        return;
+                }
+                else
+                    rayCastDebugPosition = Vector3.zero;
             }
-            else
-                rayCastDebugPosition = Vector3.zero;
 
-
-            //If nothing found, try SphereCasting incase on a small area like a podium where raycasting is hard to hit
-            Array.Clear(raycastHits, 0, 10);
-            Physics.SphereCastNonAlloc(transform.position, sphereCastRadius, transform.forward, raycastHits, rayCastLength, rayCastMask, QueryTriggerInteraction.Ignore);
-            if (raycastHits.Length > 0)
+            if (rayCastSearch)
             {
-                Transform[] potentialGrabbaleItems = Array.ConvertAll(raycastHits, s => s.transform);
-                if (CheckForNearest(potentialGrabbaleItems, transform.position))
-                    return;
+                //If nothing found, try SphereCasting incase on a small area like a podium where raycasting is hard to hit
+                RaycastHit[] sphereCastHits = Physics.SphereCastAll(transform.position, sphereCastRadius, transform.forward, rayCastLength, rayCastMask, QueryTriggerInteraction.Ignore);
+                if (sphereCastHits.Length > 0)
+                {
+                    Transform[] potentialGrabbaleItems = Array.ConvertAll(sphereCastHits, s => s.transform);
+                    if (CheckForNearest(potentialGrabbaleItems, transform.position))
+                        return;
+                }
             }
+
 
             StopHighlight(currentTarget);
             currentTarget = null;
@@ -234,6 +243,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void Reset(XRBaseInteractable arg0)
         {
             CancelTarget(currentTarget);
+            isLaunching = false;
             mainHandCollider.radius = mainHandColliderStartingSize;
         }
 
@@ -391,6 +401,7 @@ namespace MikeNspired.UnityXRHandPoser
                     break;
 
                 elapse_time += Time.deltaTime;
+                TryToAutoGrab();
                 yield return null;
             }
 
@@ -491,5 +502,34 @@ namespace MikeNspired.UnityXRHandPoser
             CommonUsages.triggerButton,
             CommonUsages.gripButton
         };
+
+
+        [SerializeField] private bool autoGrabIfGripping;
+        [SerializeField] private float distanceToAutoGrab = .1f;
+        private XRInteractionManager interactionManager;
+
+        private void TryToAutoGrab()
+        {
+            if (!autoGrabIfGripping) return;
+            if (directInteractor.selectTarget) return;
+            if (Vector3.Distance(currentTarget.position, transform.position) >= distanceToAutoGrab) return;
+
+            controller.inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out bool gripValue);
+            if (!gripValue) return;
+
+            interactionManager = FindObjectOfType<XRInteractionManager>();
+            StopAllCoroutines();
+            currentTarget.transform.SetPositionAndRotation(directInteractor.transform.position, directInteractor.transform.rotation);
+            StartCoroutine(GrabItem(directInteractor, currentTarget.GetComponent<XRBaseInteractable>()));
+        }
+
+        IEnumerator GrabItem(XRBaseInteractor currentInteractor, XRBaseInteractable newMagazine)
+        {
+            yield return new WaitForFixedUpdate();
+            Reset(newMagazine);
+            mainHandCollider.radius = mainHandColliderStartingSize;
+            if (currentInteractor.selectTarget || directInteractor.selectTarget) yield break;
+            interactionManager.SelectEnter_public(currentInteractor, newMagazine);
+        }
     }
 }

@@ -74,7 +74,7 @@ public class GunCocking : MonoBehaviour
 
     private void ReleaseIfMainHandReleased(XRBaseInteractor hand)
     {
-        if (currentHand)
+        if (currentHand && xrGrabInteractable)
             interactionManager.SelectExit_public(currentHand, xrGrabInteractable);
     }
 
@@ -130,12 +130,15 @@ public class GunCocking : MonoBehaviour
         isSelected = true;
         grabbedOffset = interactor.transform.position - transform.position;
         grabbingInteractor = interactor;
+        transform.localPosition = startPoint;
     }
 
     private void OnRelease(XRBaseInteractor interactor)
     {
         currentHand = null;
         isSelected = false;
+        transform.localPosition = startPoint;
+
     }
 
 

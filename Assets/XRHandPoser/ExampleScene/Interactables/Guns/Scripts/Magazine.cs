@@ -49,6 +49,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void EnableCollider()
         {
+            ReturnMovedColliders();
             collider.enabled = true;
         }
 

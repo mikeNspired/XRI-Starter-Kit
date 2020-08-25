@@ -97,7 +97,10 @@ namespace MikeNspired.UnityXRHandPoser
                 disableOnGrab.gameObject.SetActive(false);
 
             if (enableOnGrab)
+            {
                 enableOnGrab.gameObject.SetActive(true);
+                enableOnGrab.transform.localPosition = enableOnGrabStartPosition;
+            }
         }
 
         private IEnumerator MoveDisableAndReturn(Transform objectToMove)

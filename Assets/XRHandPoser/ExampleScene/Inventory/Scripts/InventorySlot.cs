@@ -40,7 +40,9 @@ namespace MikeNspired.UnityXRHandPoser
         private InventoryManager inventoryManager;
 
         //Animation
-        private int disableAnimatorHash, enableAnimatorHash;
+        private int disableAnimatorHash, enableAnimatorHash, onHoverAnimatorHash, resetAnimatorHash;
+
+
         private bool isBusy, isDisabling;
         private Animator addItemAnimator, hasItemAnimator;
         private TransformStruct startingTransformFromHand;
@@ -53,6 +55,8 @@ namespace MikeNspired.UnityXRHandPoser
 
             disableAnimatorHash = Animator.StringToHash("Disable");
             enableAnimatorHash = Animator.StringToHash("Enable");
+            onHoverAnimatorHash = Animator.StringToHash("OnHover");
+            resetAnimatorHash = Animator.StringToHash("Reset");
         }
 
         public IEnumerator CreateStartingItemAndDisable()
@@ -85,6 +89,35 @@ namespace MikeNspired.UnityXRHandPoser
             if (!hasItemAnimator)
                 hasItemAnimator = slotDisplayWhenContainsItem.GetComponent<Animator>();
         }
+
+        public void DisableSlot()
+        {
+            //Disable hand from adding item when animating to disable slot
+            collider.enabled = false;
+            if (!isDisabling)
+                StartCoroutine(DisableAfterAnimation(AnimationDisableLength));
+        }
+
+        public void EnableSlot()
+        {
+            StopAllCoroutines();
+            OnEnable();
+            ResetAnimationState(hasItemAnimator, true);
+            ResetAnimationState(addItemAnimator, true);
+            //Start animations if the gameobject is turned on
+            addItemAnimator.SetTrigger(enableAnimatorHash);
+            hasItemAnimator.SetTrigger(enableAnimatorHash);
+        }
+
+        private void ResetAnimationState(Animator anim, bool setToStartingAnimState)
+        {
+            anim.ResetTrigger(enableAnimatorHash);
+            anim.ResetTrigger(disableAnimatorHash);
+            anim.SetBool(onHoverAnimatorHash, false);
+            if (setToStartingAnimState)
+                hasItemAnimator.SetTrigger(resetAnimatorHash);
+        }
+
 
         private void OnEnable()
         {
@@ -121,9 +154,12 @@ namespace MikeNspired.UnityXRHandPoser
             var itemHandIsHolding = controller.selectTarget;
 
             //Check if item is allowed to be added to inventory
-            var itemData = itemHandIsHolding.GetComponent<InteractableItemData>();
-            if (!itemData || !itemData.canInventory) return;
-            
+            if (itemHandIsHolding)
+            {
+                var itemData = itemHandIsHolding.GetComponent<InteractableItemData>();
+                if (!itemData || !itemData.canInventory) return;
+            }
+
             if (currentSlotItem)
             {
                 DisableItemInHand(controller);
@@ -178,31 +214,14 @@ namespace MikeNspired.UnityXRHandPoser
         }
 
 
-        public void DisableSlot()
-        {
-          
-            
-            //Disable hand from adding item when animating to disable slot
-            collider.enabled = false;
-            if (!isDisabling)
-                StartCoroutine(DisableAfterAnimation(AnimationDisableLength));
-        }
-
-        public void EnableSlot()
-        {
-            StopAllCoroutines();
-            OnEnable();
-            //Start animations if the gameobject is turned on
-            addItemAnimator.SetTrigger(enableAnimatorHash);
-            hasItemAnimator.SetTrigger(enableAnimatorHash);
-        }
-
-
         private IEnumerator DisableAfterAnimation(float seconds)
         {
+            ResetAnimationState(addItemAnimator, false);
+            ResetAnimationState(hasItemAnimator, false);
+            
             addItemAnimator.SetTrigger(disableAnimatorHash);
             hasItemAnimator.SetTrigger(disableAnimatorHash);
-
+            
             isDisabling = true;
             float timer = 0;
             float animationLength = .75f;
@@ -213,7 +232,7 @@ namespace MikeNspired.UnityXRHandPoser
                 yield return new WaitForSeconds(Time.deltaTime);
                 timer += Time.deltaTime;
             }
-
+            
             isDisabling = false;
             gameObject.SetActive(false);
         }
@@ -416,14 +435,14 @@ namespace MikeNspired.UnityXRHandPoser
         {
             this.startingTransformFromHand = startingTransformFromHand;
         }
-        
+
         private void OnTriggerEnter(Collider other)
         {
             var controller = other.GetComponent<XRController>();
             if (controller)
             {
-                slotDisplayToAddItem.GetComponent<Animator>().SetBool("OnHover", true);
-                slotDisplayWhenContainsItem.GetComponent<Animator>().SetBool("OnHover", true);
+                slotDisplayToAddItem.GetComponent<Animator>().SetBool(onHoverAnimatorHash, true);
+                slotDisplayWhenContainsItem.GetComponent<Animator>().SetBool(onHoverAnimatorHash, true);
             }
         }
 
@@ -432,8 +451,8 @@ namespace MikeNspired.UnityXRHandPoser
             var controller = other.GetComponent<XRController>();
             if (controller)
             {
-                slotDisplayToAddItem.GetComponent<Animator>().SetBool("OnHover", false);
-                slotDisplayWhenContainsItem.GetComponent<Animator>().SetBool("OnHover", false);
+                slotDisplayToAddItem.GetComponent<Animator>().SetBool(onHoverAnimatorHash, false);
+                slotDisplayWhenContainsItem.GetComponent<Animator>().SetBool(onHoverAnimatorHash, false);
             }
         }
     }

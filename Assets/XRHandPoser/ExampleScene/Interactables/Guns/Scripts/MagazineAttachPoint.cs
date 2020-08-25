@@ -22,6 +22,8 @@ namespace MikeNspired.UnityXRHandPoser
         private XRInteractionManager interactionManager;
         private Magazine magazine;
         public Magazine Magazine => magazine;
+        public GunType GunType => gunType;
+
 
         private bool ammoIsAttached; //Used to stop from quickly attaching again when removed
         private bool isBeingGrabbed;
@@ -31,11 +33,17 @@ namespace MikeNspired.UnityXRHandPoser
             OnValidate();
 
             //Invoked after a frame to check if the user switched hands
-            xrGrabInteractable.onSelectEnter.AddListener(x => Invoke(nameof(MakeMagazineGrabbable), Time.deltaTime));
-            xrGrabInteractable.onSelectExit.AddListener(x => Invoke(nameof(MakeMagazineGrabbable), Time.deltaTime));
+            xrGrabInteractable.onSelectEnter.AddListener(x => SetMagazineGrabbableState());
+            xrGrabInteractable.onSelectExit.AddListener(x => SetMagazineGrabbableState());
 
             collider.gameObject.SetActive(true);
             if (startingMagazine) CreateStartingMagazine();
+        }
+
+        private void SetMagazineGrabbableState()
+        {
+            CancelInvoke();
+            Invoke(nameof(MakeMagazineGrabbable), Time.deltaTime);
         }
 
         private void MakeMagazineGrabbable()

@@ -153,7 +153,7 @@ namespace MikeNspired.UnityXRHandPoser
             controllerToAttachDelta = transform.position - recoilTracker.transform.position;
             isRecoiling = true;
         }
-
+        [BeforeRenderOrder(101)]
         private void RecoilUpdate()
         {
             if (!isRecoiling) return;
