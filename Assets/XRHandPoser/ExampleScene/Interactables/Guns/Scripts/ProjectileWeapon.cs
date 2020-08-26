@@ -193,6 +193,9 @@ namespace MikeNspired.UnityXRHandPoser
             if (timer > recoilTime)
                 isRecoiling = false;
         }
+        
+    
+
 
 
         private float Remap(float value, float from1, float to1, float from2, float to2)

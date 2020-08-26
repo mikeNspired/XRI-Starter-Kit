@@ -4,9 +4,10 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class PlayerRigMovement : MonoBehaviour
 {
-    [SerializeField] private XRController controller =null;
+    [SerializeField] private XRController controller = null;
     [SerializeField] private InputAxes buttonInput = InputAxes.Primary2DAxis;
     [SerializeField] private CharacterController characterController;
+    private XRRig xrRig;
     private GameObject head;
 
     [Tooltip("How fast or far the player will move")]
@@ -32,7 +33,7 @@ public class PlayerRigMovement : MonoBehaviour
 
     [SerializeField] [Tooltip("Instead of forward being the head direction, forward will be in the controller direction")]
     private bool moveInControllerDirection = false;
-    
+
     [SerializeField] [Tooltip("Moves character only when the pad is clicked instead of touched")]
     private bool moveOnlyOnPadClick = true;
 
@@ -52,7 +53,8 @@ public class PlayerRigMovement : MonoBehaviour
     private void OnValidate()
     {
         if (!characterController) characterController = GetComponent<CharacterController>();
-        if (!head) head = GetComponent<XRRig>().cameraGameObject;
+        if (!xrRig) xrRig = GetComponent<XRRig>();
+        if (!head) head = xrRig.cameraGameObject;
     }
 
     private void Awake() => OnValidate();
@@ -74,7 +76,7 @@ public class PlayerRigMovement : MonoBehaviour
     private Vector2 GetInputAxis()
     {
         Vector2 inputAxis = Vector2.zero;
-        
+
         if (!moveOnlyOnPadClick)
         {
             controller.inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) buttonInput], out inputAxis);
@@ -154,8 +156,7 @@ public class PlayerRigMovement : MonoBehaviour
 
     private void AdjustCharacterControllerSizeToCamera()
     {
-        Vector3 headLocalPos = head.transform.localPosition;
-
+        Vector3 headLocalPos = head.transform.localPosition + xrRig.cameraYOffset * Vector3.up;
         //Set height of collider to camera 
         characterController.height = headLocalPos.y;
 
@@ -183,10 +184,10 @@ public class PlayerRigMovement : MonoBehaviour
     private bool CheckIfTeleportationGround(Vector3 moveDirection)
     {
         if (!moveOnlyOnTeleportArea) return true;
-        
+
         Vector3 startPos = transform.TransformPoint(characterController.center) + moveDirection + Vector3.back * .05f;
         Debug.DrawRay(startPos, (characterController.center.y * Vector3.down) * 2, Color.yellow);
-        
+
         return Physics.Raycast(startPos, Vector3.down, out RaycastHit hit, characterController.center.y + 2)
             ? hit.collider.attachedRigidbody?.GetComponent<TeleportationArea>()
             : false;

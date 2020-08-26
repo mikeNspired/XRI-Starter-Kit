@@ -25,6 +25,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void Start()
         {
             startingColliderPosition = collider.transform.localPosition;
+            
             OnValidate();
             GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(x => OnGrab());
             GetComponent<XRGrabInteractable>().onSelectExit.AddListener(x => isBeingGrabbed = false);
@@ -51,6 +52,8 @@ namespace MikeNspired.UnityXRHandPoser
         {
             ReturnMovedColliders();
             collider.enabled = true;
+            EnableDistanceGrabbing(true);
+
         }
 
         public void SetupForGunAttachment()
@@ -59,7 +62,23 @@ namespace MikeNspired.UnityXRHandPoser
             rigidBody.isKinematic = true;
             rigidBody.velocity = Vector3.zero;
             rigidBody.angularVelocity = Vector3.zero;
+            
+            EnableDistanceGrabbing(false);
         }
+        private void EnableDistanceGrabbing(bool state)
+        {
+            if (state)
+            {
+                GetComponent<Highlight>()?.EnableHighlighting();
+                GetComponent<InteractableItemData>().canDistanceGrab = true;
+            }
+            else
+            {
+                GetComponent<Highlight>()?.DisableHighlighting();
+                GetComponent<InteractableItemData>().canDistanceGrab = false;
+            }
+        }
+        
 
         private void OnValidate()
         {

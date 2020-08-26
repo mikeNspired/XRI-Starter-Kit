@@ -5,18 +5,17 @@ using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
-public class AlyxBackPack : MonoBehaviour
+public class AmmoBackPack : MonoBehaviour
 {
-    [SerializeField] private XRDirectInteractor leftHand, rightHand;
+    [SerializeField] private XRDirectInteractor leftHand = null, rightHand = null;
 
     [SerializeField] private InteractButton interactButton = InteractButton.grip;
-    [SerializeField] private XRGrabInteractable magazine;
-    [SerializeField] private XRGrabInteractable magazine2;
-    [SerializeField] private GunType gunType1;
-    [SerializeField] private GunType gunType2;
+    [SerializeField] private XRGrabInteractable magazine = null;
+    [SerializeField] private XRGrabInteractable magazine2 = null;
+    [SerializeField] private GunType gunType1 = null;
+    [SerializeField] private GunType gunType2 = null;
     [SerializeField] private float itemGrabTimeout = .5f; 
     private float itemGrabTimeoutTimer;
-
     private bool leftIsGripped, rightIsGripped;
     private List<XRController> controllers = new List<XRController>();
     private XRInteractionManager interactionManager;
@@ -135,7 +134,7 @@ public class AlyxBackPack : MonoBehaviour
         if (!handHoldingWeapon.selectTarget) return;
         if (currentInteractor.selectTarget) return;
 
-
+  
         var gunType = handHoldingWeapon.selectTarget.GetComponentInChildren<MagazineAttachPoint>()?.GunType;
         if (!gunType) return;
 

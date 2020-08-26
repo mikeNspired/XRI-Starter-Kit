@@ -76,11 +76,15 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void DisableMainInteractableHand(XRBaseInteractor hand)
         {
+            if (currentHand) //Release if main hand lets go{
+            {
+                Debug.Log(currentHand + " ||||| " + interactable);
+                Debug.Log("Called release");
+                interactionManager.SelectExit_public(currentHand, interactable);
+            }
             ResetMainHandAttachTransform();
             mainGripHand = null;
 
-            if (currentHand) //Release if main hand lets go
-                interactionManager.SelectExit_public(currentHand, interactable);
         }
 
         private void ResetMainHandAttachTransform()

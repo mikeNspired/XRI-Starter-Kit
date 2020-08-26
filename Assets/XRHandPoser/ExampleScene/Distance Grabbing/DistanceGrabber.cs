@@ -21,12 +21,17 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] [Tooltip("If item is less than this distance from hand, it will ignore the item")]
         private float minDistanceToAllowGrab = .2f;
 
-        [SerializeField] [Tooltip("Disables flicking and enables button holding to easily grab item")]
+        [Header("Easy Mode Settings")] [SerializeField] [Tooltip("Disables flicking and enables button holding to easily grab item")]
         private bool easyModeGrabNoWristFlick = false;
 
         [SerializeField] [Tooltip("Time holding button to grab item")]
         private float easyModeTimeTillGrab = .4f;
 
+        [SerializeField] [Tooltip("When item gets within distance to hand during launch, it will autoGrab if grip is held down")]
+        private bool autoGrabIfGripping = false;
+
+        [SerializeField] [Tooltip("Distance before autoGrabbing if grip is held down and autoGrabIfGripping is true")]
+        private float distanceToAutoGrab = .1f;
 
         [Header("Item Searching")] [SerializeField] [Tooltip("How far RayCast will go")]
         private float rayCastLength = 10;
@@ -39,9 +44,13 @@ namespace MikeNspired.UnityXRHandPoser
 
         [SerializeField] private LayerMask rayCastMask = 1;
 
-        [SerializeField] private bool rayCastSearch = true;
-        [SerializeField] private bool sphereCastSearch = true;
+        [SerializeField] [Tooltip("Use a rayCast, where rayCastHit, will do a overLapSphere to search for items")]
+        private bool rayCastSearch = true;
+        
+        [SerializeField] [Tooltip("Typically Fires after rayCast if nothing found, this will shoot a SphereCast, works well for items on desks that is hard to hit with raycast")]
+        private bool sphereCastSearch = true;
 
+        [Header("Debug")]
         [SerializeField] private bool showDebug = false;
 
         [SerializeField] [Tooltip("Shows the distance and how large the Physics.SphereCast is")]
@@ -50,11 +59,11 @@ namespace MikeNspired.UnityXRHandPoser
         [Header("Line Canceling")] [SerializeField] [Tooltip("When to cancel trying to grab item based on rotation. A value of 0 lets you rotate this perpendicular to pointing at the item before canceling.")]
         private float dotProductCancel = .2f;
 
+        private XRInteractionManager interactionManager = null;
         private RaycastHit[] rayCastHits;
         private Transform currentTarget;
         private bool isActive = false, isLaunching = false;
         private float mainHandColliderStartingSize;
-        RaycastHit[] raycastHits = new RaycastHit[20];
         private Vector3 rayCastDebugPosition;
         private bool isGripping;
 
@@ -75,6 +84,9 @@ namespace MikeNspired.UnityXRHandPoser
                 controller = GetComponentInParent<XRController>();
             if (!directInteractor)
                 directInteractor = GetComponentInParent<XRDirectInteractor>();
+            if (!interactionManager)
+                interactionManager = FindObjectOfType<XRInteractionManager>();
+
             if (debugSphereCast)
                 debugSphereCast.gameObject.SetActive(showDebug);
         }
@@ -141,7 +153,7 @@ namespace MikeNspired.UnityXRHandPoser
                     rayCastDebugPosition = Vector3.zero;
             }
 
-            if (rayCastSearch)
+            if (sphereCastSearch)
             {
                 //If nothing found, try SphereCasting incase on a small area like a podium where raycasting is hard to hit
                 RaycastHit[] sphereCastHits = Physics.SphereCastAll(transform.position, sphereCastRadius, transform.forward, rayCastLength, rayCastMask, QueryTriggerInteraction.Ignore);
@@ -504,10 +516,6 @@ namespace MikeNspired.UnityXRHandPoser
         };
 
 
-        [SerializeField] private bool autoGrabIfGripping;
-        [SerializeField] private float distanceToAutoGrab = .1f;
-        private XRInteractionManager interactionManager;
-
         private void TryToAutoGrab()
         {
             if (!autoGrabIfGripping) return;
@@ -517,7 +525,6 @@ namespace MikeNspired.UnityXRHandPoser
             controller.inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out bool gripValue);
             if (!gripValue) return;
 
-            interactionManager = FindObjectOfType<XRInteractionManager>();
             StopAllCoroutines();
             currentTarget.transform.SetPositionAndRotation(directInteractor.transform.position, directInteractor.transform.rotation);
             StartCoroutine(GrabItem(directInteractor, currentTarget.GetComponent<XRBaseInteractable>()));

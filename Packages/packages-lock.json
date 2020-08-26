@@ -48,11 +48,12 @@
       "depth": 0,
       "source": "builtin",
       "dependencies": {
-        "com.unity.modules.ui": "1.0.0"
+        "com.unity.modules.ui": "1.0.0",
+        "com.unity.modules.imgui": "1.0.0"
       }
     },
     "com.unity.xr.arsubsystems": {
-      "version": "2.1.2",
+      "version": "4.0.1",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -97,13 +98,13 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.windowsmr": {
-      "version": "2.3.0",
+      "version": "4.0.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {
         "com.unity.xr.management": "3.0.6",
         "com.unity.xr.interactionsubsystems": "1.0.1",
-        "com.unity.xr.arsubsystems": "2.1.2"
+        "com.unity.xr.arsubsystems": "4.0.1"
       },
       "url": "https://packages.unity.com"
     },
@@ -240,6 +241,18 @@
       "depth": 0,
       "source": "builtin",
       "dependencies": {
+        "com.unity.modules.ui": "1.0.0",
+        "com.unity.modules.imgui": "1.0.0",
+        "com.unity.modules.jsonserialize": "1.0.0",
+        "com.unity.modules.uielementsnative": "1.0.0"
+      }
+    },
+    "com.unity.modules.uielementsnative": {
+      "version": "1.0.0",
+      "depth": 1,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.modules.ui": "1.0.0",
         "com.unity.modules.imgui": "1.0.0",
         "com.unity.modules.jsonserialize": "1.0.0"
       }

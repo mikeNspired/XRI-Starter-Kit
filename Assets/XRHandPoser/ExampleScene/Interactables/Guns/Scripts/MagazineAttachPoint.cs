@@ -24,7 +24,6 @@ namespace MikeNspired.UnityXRHandPoser
         public Magazine Magazine => magazine;
         public GunType GunType => gunType;
 
-
         private bool ammoIsAttached; //Used to stop from quickly attaching again when removed
         private bool isBeingGrabbed;
 
@@ -44,6 +43,12 @@ namespace MikeNspired.UnityXRHandPoser
         {
             CancelInvoke();
             Invoke(nameof(MakeMagazineGrabbable), Time.deltaTime);
+            Invoke(nameof(EnableOrDisableAttachCollider), Time.deltaTime);
+        }
+
+        private void EnableOrDisableAttachCollider()
+        {
+            collider.gameObject.SetActive(xrGrabInteractable.isSelected);
         }
 
         private void MakeMagazineGrabbable()
@@ -103,7 +108,6 @@ namespace MikeNspired.UnityXRHandPoser
             magazine.GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(AmmoRemoved);
             magazine.SetupForGunAttachment();
             magazine.transform.parent = transform;
-            EnableDistanceGrabbing(false);
         }
 
 
@@ -122,28 +126,12 @@ namespace MikeNspired.UnityXRHandPoser
         private void AmmoRemoved(XRBaseInteractor arg0)
         {
             StopAllCoroutines();
-            EnableDistanceGrabbing(true);
             magazine.GetComponent<XRGrabInteractable>().onSelectEnter.RemoveListener(AmmoRemoved);
             magazine.transform.parent = null;
             magazine = null;
             unloadAudio.Play();
-            // ammoIsAttached = false;
 
             Invoke(nameof(PreventAutoAttach), .15f);
-        }
-
-        private void EnableDistanceGrabbing(bool state)
-        {
-            if (state)
-            {
-                magazine.GetComponent<Highlight>().EnableHighlighting();
-                magazine.GetComponent<InteractableItemData>().canDistanceGrab = true;
-            }
-            else
-            {
-                magazine.GetComponent<Highlight>().DisableHighlighting();
-                magazine.GetComponent<InteractableItemData>().canDistanceGrab = false;
-            }
         }
 
         private void PreventAutoAttach()

@@ -11,7 +11,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// Its main purpose is to quickly setup hand poses for each item, and then assign those poses to the hand when the item is grabbed.
     /// This script is driven by the XRGrabInteractable to be used with UnityXR. It uses the onSelectEnter and onSelectExit to work.
     /// </summary>
-    [DefaultExecutionOrder(-8000)]
+    //[DefaultExecutionOrder(-8000)]
     public class XRHandPoser : HandPoser
     {
         public XRGrabInteractable interactable;
@@ -23,9 +23,9 @@ namespace MikeNspired.UnityXRHandPoser
         protected override void Awake()
         {
             base.Awake();
-
+            
             OnValidate();
-
+            
             SubscribeToSelection();
 
         }
@@ -41,14 +41,20 @@ namespace MikeNspired.UnityXRHandPoser
             interactable.onSelectExit.AddListener(x => rb.ResetCenterOfMass());
         }
 
+        private void OnDrawGizmosSelected()
+        {
+            // interactable = GetComponent<XRGrabInteractable>();
+           /// rb = interactable.GetComponent<Rigidbody>();
+        }
+
         private void OnValidate()
         {
             if (!interactable)
                 interactable = GetComponent<XRGrabInteractable>();
-
+            
             if (!interactable)
                 Debug.LogWarning(gameObject + " XRGrabPoser does not have an XRGrabInteractable assigned." + "  (Parent name) " + transform.parent);
-
+            
             if (!rb && interactable)
                 rb = interactable.GetComponent<Rigidbody>();
         }
@@ -75,6 +81,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         protected override void BeginNewHandPoses(HandAnimator hand)
         {
+
             if (!hand) return;
             if (!CheckIfCorrectHand(hand)) return;
 
