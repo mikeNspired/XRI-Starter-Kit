@@ -16,7 +16,7 @@ namespace MikeNspired.UnityXRHandPoser
         public Renderer rend;
         public Light flashLight;
         public bool isEnabled = true;
-        private float minBrightness = .5f, maxBrightness = 5;
+        public float minBrightness = .5f, maxBrightness = 5;
         private void Start()
         {
             flashLight.enabled = isEnabled;

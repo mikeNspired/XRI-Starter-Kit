@@ -149,6 +149,7 @@ public class AmmoBackPack : MonoBehaviour
         newMagazine.transform.forward = currentInteractor.transform.forward;
 
         StartCoroutine(GrabItem(currentInteractor, newMagazine));
+        
     }
 
     IEnumerator GrabItem(XRBaseInteractor currentInteractor, XRGrabInteractable newMagazine)
