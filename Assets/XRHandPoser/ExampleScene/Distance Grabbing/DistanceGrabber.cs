@@ -17,6 +17,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private DistanceGrabberLineBender lineEffect = null;
         [SerializeField] private AudioRandomize launchAudio = null;
         [SerializeField] private SphereCollider mainHandCollider = null;
+        [SerializeField] private GameObject EnableOnActive = null;
 
         [SerializeField] [Tooltip("If item is less than this distance from hand, it will ignore the item")]
         private float minDistanceToAllowGrab = .2f;
@@ -46,12 +47,11 @@ namespace MikeNspired.UnityXRHandPoser
 
         [SerializeField] [Tooltip("Use a rayCast, where rayCastHit, will do a overLapSphere to search for items")]
         private bool rayCastSearch = true;
-        
+
         [SerializeField] [Tooltip("Typically Fires after rayCast if nothing found, this will shoot a SphereCast, works well for items on desks that is hard to hit with raycast")]
         private bool sphereCastSearch = true;
 
-        [Header("Debug")]
-        [SerializeField] private bool showDebug = false;
+        [Header("Debug")] [SerializeField] private bool showDebug = false;
 
         [SerializeField] [Tooltip("Shows the distance and how large the Physics.SphereCast is")]
         private Transform debugSphereCast = null;
@@ -74,6 +74,7 @@ namespace MikeNspired.UnityXRHandPoser
             directInteractor.onSelectEnter.AddListener(Reset);
             if (mainHandCollider)
                 mainHandColliderStartingSize = mainHandCollider.radius;
+            EnableOnActive.SetActive(false);
         }
 
         private void OnValidate()
@@ -295,7 +296,7 @@ namespace MikeNspired.UnityXRHandPoser
             var dot = Vector3.Dot(transform.forward, targetDirection.normalized);
 
             if (dot < dotProductCancel)
-                CancelTarget(currentTarget);
+                StopLine();
         }
 
 
@@ -323,18 +324,21 @@ namespace MikeNspired.UnityXRHandPoser
                 target.GetComponent<Rigidbody>().drag = 0;
             }
 
-            lineEffect.Stop();
+            StopLine();
             isActive = false;
         }
 
         private void SetupLine()
         {
+            if (!currentTarget) return;
             lineEffect.Start(currentTarget);
+            EnableOnActive.SetActive(true);
         }
 
         private void StopLine()
         {
             lineEffect.Stop();
+            EnableOnActive.SetActive(false);
         }
 
 

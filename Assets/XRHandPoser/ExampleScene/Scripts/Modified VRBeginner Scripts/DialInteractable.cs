@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -49,7 +51,7 @@ public class DialInteractable : XRGrabInteractable
     [SerializeField] private float startingAngle = 0;
     [SerializeField] private bool callEventsOnStartingAngle = false;
     public bool SnapOnRelease = true;
-    public float percentageComplete;
+
     public AudioClip SnapAudioClip;
     public AudioSource AudioSource;
     public DialTurnedAngleEvent OnDialAngleChanged;
@@ -70,7 +72,9 @@ public class DialInteractable : XRGrabInteractable
     float m_StepSize;
     Transform m_SyncTransform;
     Transform m_OriginalTransform;
-
+    public float percentageComplete;
+    public bool ReturnToStart;
+    public float returnSpeed = 20;
 
     void Start()
     {
@@ -93,6 +97,7 @@ public class DialInteractable : XRGrabInteractable
         else m_StepSize = 0.0f;
 
         SetStartingPosition(startingAngle);
+        transform.Rotate(LocalRotationAxis * CurrentAngle, Space.Self);
     }
 
     private void OnValidate()
@@ -189,6 +194,7 @@ public class DialInteractable : XRGrabInteractable
                 m_SyncTransform.transform.rotation = newRot;
 
                 m_GrabbedRotation = m_GrabbingInteractor.transform.rotation;
+
                 CalculateRotationPercentage();
             }
         }
@@ -196,8 +202,6 @@ public class DialInteractable : XRGrabInteractable
 
     private void SetStartingPosition(float angle)
     {
-        transform.Rotate(LocalRotationAxis * CurrentAngle, Space.Self);
-
         float finalAngle = angle;
         if (!SnapOnRelease && Steps > 0)
         {
@@ -229,6 +233,30 @@ public class DialInteractable : XRGrabInteractable
         }
     }
 
+
+    private IEnumerator ReturnToStartPosition()
+    {
+        if(Steps > 0) yield break;
+        while (Math.Abs(CurrentAngle - startingAngle) > .1f)
+        {
+            float newAngle = 1;
+            if (CurrentAngle - startingAngle > 0)
+                newAngle = -1;
+
+            newAngle *= .01f * returnSpeed * Math.Abs(CurrentAngle - startingAngle);
+
+            transform.Rotate(LocalRotationAxis * newAngle, Space.Self);
+
+            m_CurrentAngle += newAngle;
+            CalculateRotationPercentage();
+            yield return new WaitForSeconds(Time.deltaTime);
+        }
+
+        m_CurrentAngle = startingAngle;
+        CalculateRotationPercentage();
+
+    }
+
     private void CalculateRotationPercentage()
     {
         percentageComplete = Remap(m_CurrentAngle, 0, RotationAngleMaximum, 0, 1);
@@ -242,6 +270,8 @@ public class DialInteractable : XRGrabInteractable
 
     protected override void OnSelectEnter(XRBaseInteractor interactor)
     {
+        StopAllCoroutines();
+
         m_GrabbedRotation = interactor.transform.rotation;
         m_GrabbingInteractor = interactor;
 
@@ -302,6 +332,8 @@ public class DialInteractable : XRGrabInteractable
             }
         }
 
+        if (ReturnToStart)
+            StartCoroutine(ReturnToStartPosition());
         Destroy(m_SyncTransform.gameObject);
     }
 

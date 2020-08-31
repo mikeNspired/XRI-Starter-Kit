@@ -398,7 +398,7 @@ namespace MikeNspired.UnityXRHandPoser
                 boundCenterTransform.localScale = Vector3.Lerp(boundCenterTransform.localScale, goalScale, timer / AnimationLengthItemToSlot);
                 boundCenterTransform.localRotation = Quaternion.Lerp(boundCenterTransform.localRotation, Quaternion.Euler(new Vector3(0, 90, 0)), timer / AnimationLengthItemToSlot);
 
-                yield return new WaitForSeconds(Time.deltaTime);
+                yield return null;
                 timer += Time.deltaTime;
             }
 
