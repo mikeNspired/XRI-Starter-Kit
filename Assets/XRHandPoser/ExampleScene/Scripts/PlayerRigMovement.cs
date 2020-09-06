@@ -187,9 +187,9 @@ public class PlayerRigMovement : MonoBehaviour
 
         Vector3 startPos = transform.TransformPoint(characterController.center) + moveDirection + Vector3.back * .05f;
         Debug.DrawRay(startPos, (characterController.center.y * Vector3.down) * 2, Color.yellow);
-
+        //Physics.Raycast(startPos, Vector3.down, out RaycastHit hit2, characterController.center.y + 2);
         return Physics.Raycast(startPos, Vector3.down, out RaycastHit hit, characterController.center.y + 2)
-            ? hit.collider.attachedRigidbody?.GetComponent<TeleportationArea>()
+            ? hit.collider.GetComponentInParent<TeleportationArea>()
             : false;
     }
 }

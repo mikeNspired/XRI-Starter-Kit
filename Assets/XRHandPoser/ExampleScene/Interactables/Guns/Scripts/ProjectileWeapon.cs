@@ -35,11 +35,17 @@ namespace MikeNspired.UnityXRHandPoser
         {
             OnValidate();
             interactable.onActivate.AddListener(FireBullets);
+            interactable.onSelectEnter.AddListener(TestShit);
             interactable.onSelectEnter.AddListener(SetupRecoilVariables);
             interactable.onSelectExit.AddListener(DestroyRecoilTracker);
 
             if (gunCocking)
                 gunCocking.GunCockedEvent.AddListener(() => gunCocked = true);
+        }
+
+        private void TestShit(XRBaseInteractor arg0)
+        {
+           transform.parent = arg0.GetComponentInParent<XRRig>().transform;
         }
 
         private void OnValidate()

@@ -1,4 +1,8 @@
 // Copyright (c) MikeNspired. All Rights Reserved.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -23,8 +27,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void Start()
         {
-            mainCamera = Camera.main.transform;
-
             leftGrabCollider = leftXRGrabInteractable.GetComponent<ColliderDisableMoveReturn>();
             rightGrabCollider = rightXRGrabInteractable.GetComponent<ColliderDisableMoveReturn>();
 
@@ -35,6 +37,17 @@ namespace MikeNspired.UnityXRHandPoser
             rightXRGrabInteractable.onSelectEnter.AddListener(x => currentGrabbedInteractable = rightXRGrabInteractable);
             rightXRGrabInteractable.onSelectEnter.AddListener(call: x => isFollowActive = true);
             rightXRGrabInteractable.onSelectExit.AddListener(call: OnRelease);
+            StartCoroutine(GetMainCamera());
+        }
+
+        private IEnumerator GetMainCamera()
+        {
+            while (!mainCamera)
+            {
+                yield return new WaitForEndOfFrame();
+                try {mainCamera = Camera.main.transform;}
+                catch{ }
+            }
         }
 
         private void OnRelease(XRBaseInteractor x)
@@ -56,7 +69,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void CheckIfPlayerFacing(XRGrabInteractable grabInteractable, ColliderDisableMoveReturn collider, Transform facingDirection)
         {
             if (!mainCamera) return;
-            
+
             Vector3 forward = facingDirection.forward;
             Vector3 toOther = (mainCamera.transform.position - facingDirection.position).normalized;
 

@@ -6,14 +6,13 @@ using UnityEngine.Events;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
-public class TestScript : MonoBehaviour
+public class AutoEnablePlayerRig : MonoBehaviour
 {
     [SerializeField] private GameObject viveRig;
     [SerializeField] private GameObject oculusRig;
     [SerializeField] private GameObject windowsRig;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         StartCoroutine(EnableCorrectRig());
     }
@@ -21,6 +20,8 @@ public class TestScript : MonoBehaviour
     IEnumerator EnableCorrectRig()
     {
         var hmdList = new List<InputDevice>();
+        InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, hmdList);
+
         while (hmdList.Count == 0)
         {
             InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, hmdList);
@@ -29,12 +30,17 @@ public class TestScript : MonoBehaviour
 
         var headSetName = hmdList[0].name.ToLower();
 
-        if (headSetName.Contains("windows"))
+        if (headSetName.Contains("windows") || headSetName.Contains("wmr"))
             SetRigActive(windowsRig);
-        else if (headSetName.Contains("vive"))
+        else if (headSetName.Contains("vive") ||  headSetName.Contains("openvr"))
             SetRigActive(viveRig);
         else
             SetRigActive(oculusRig);
+        
+        
+        yield return new WaitForEndOfFrame();
+
+        SetAllCanvasesToRig();
     }
 
     private void SetRigActive(GameObject rig)
@@ -44,6 +50,15 @@ public class TestScript : MonoBehaviour
         windowsRig.SetActive(false);
 
         rig.SetActive(true);
+    }
+
+    private void SetAllCanvasesToRig()
+    {
+        var canvases = FindObjectsOfType<Canvas>();
+        foreach (var canvas in canvases)
+        {
+            canvas.worldCamera = Camera.main;
+        }
     }
 
 
@@ -69,7 +84,8 @@ public class InputManager2 : MonoBehaviour
     //Normal Buttons
     //Joystick clicking
 
-
+    //Teleportation Type : Joystick forward release, Touchpad Click, button press
+    
     private void Update()
     {
     
@@ -109,7 +125,3 @@ public class InputManager2 : MonoBehaviour
     }
 }
 
-[Serializable]
-public class Vector2Event : UnityEvent<Vector2>
-{
-}

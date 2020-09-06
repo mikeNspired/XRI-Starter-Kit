@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class FilmingCamera : MonoBehaviour
 {
     [SerializeField] private float lerpSpeed = 5;
@@ -17,7 +18,7 @@ public class FilmingCamera : MonoBehaviour
     private void Update()
     {
         Vector3 goalPosition = playerCamera.TransformPoint(playerCamera.localPosition + offSet);
-        transform.position = Vector3.Lerp(transform.position, goalPosition, Time.deltaTime * lerpSpeed);
+        transform.position = Vector3.Lerp(transform.position, playerCamera.position, Time.deltaTime * lerpSpeed);
         transform.rotation = Quaternion.Lerp(transform.rotation, playerCamera.rotation, Time.deltaTime * lerpSpeed);
     }
 }

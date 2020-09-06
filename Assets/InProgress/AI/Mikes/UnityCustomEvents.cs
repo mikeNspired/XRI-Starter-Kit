@@ -32,6 +32,10 @@ public static class UnityCustomEvents
     [System.Serializable]
     public class UnityEventVector3 : UnityEvent<Vector3>
     {
+    } 
+    [System.Serializable]
+    public class UnityEventVector2 : UnityEvent<Vector3>
+    {
     }
 
     [System.Serializable]

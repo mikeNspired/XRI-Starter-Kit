@@ -129,7 +129,6 @@ Transform:
   m_Children:
   - {fileID: 7114672792230528178}
   - {fileID: 948567563752449015}
-  - {fileID: 948567563388878998}
   - {fileID: 948567563414175169}
   m_Father: {fileID: 948567562202115333}
   m_RootOrder: 1
@@ -248,7 +247,7 @@ MonoBehaviour:
   hasAnimationPose: 0
   currentLeftHand: {fileID: 0}
   currentRightHand: {fileID: 0}
-  grabAttachPoints: {fileID: 948567563388878998}
+  grabAttachPoints: {fileID: 0}
   interactable: {fileID: 948567562111743403}
   WaitForHandToAnimateToPosition: 0
   DisableHandAttachTransforms: 0
@@ -268,7 +267,12 @@ MonoBehaviour:
   rotationPoint: {fileID: 948567563752449015}
   maxAngle: 60
   shaftLength: 0.25
+  returnToStartOnRelease: 1
   returnSpeed: 5
+  startingPosition: {x: 0, y: 0}
+  returnToPosition: {x: 0, y: 0}
+  xAxis: 1
+  yAxis: 1
   OnValueChanged:
     m_PersistentCalls:
       m_Calls:
@@ -284,6 +288,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  OnSingleValuesChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &948567562111743401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -361,7 +368,7 @@ Transform:
   m_LocalScale: {x: 0.02281356, y: -0.23204799, z: 0.02281356}
   m_Children: []
   m_Father: {fileID: 948567563752449015}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &948567562168633379
 MeshFilter:
@@ -506,10 +513,9 @@ Transform:
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.244658, z: 0}
   m_LocalScale: {x: 0.07611861, y: 0.07611861, z: 0.07611861}
-  m_Children:
-  - {fileID: 948567563202660280}
+  m_Children: []
   m_Father: {fileID: 948567563752449015}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!33 &948567562787624147
 MeshFilter:
@@ -691,44 +697,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 948567563202660281}
-  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 13.137391, y: 13.137388, z: 13.137388}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.24465793, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 948567564083752390}
   - {fileID: 948567562141836338}
-  m_Father: {fileID: 948567562787624174}
+  m_Father: {fileID: 948567563752449015}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &948567563388878999
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 948567563388878998}
-  m_Layer: 0
-  m_Name: GrabAttachPoints
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &948567563388878998
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 948567563388878999}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 948567562111743398}
-  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &948567563414175198
 GameObject:
@@ -759,7 +735,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 948567562111743398}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &948567563414175168
 AudioSource:
@@ -888,7 +864,7 @@ Transform:
   m_LocalScale: {x: 0.062537, y: 0.062537, z: 0.062537}
   m_Children: []
   m_Father: {fileID: 948567563752449015}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &948567563425407164
 MeshFilter:
@@ -1212,6 +1188,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
+  - {fileID: 948567563202660280}
   - {fileID: 948567562787624174}
   - {fileID: 948567562168633377}
   - {fileID: 948567563425407163}
