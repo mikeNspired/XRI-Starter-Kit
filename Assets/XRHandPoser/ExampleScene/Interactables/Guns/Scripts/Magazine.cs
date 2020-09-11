@@ -53,9 +53,16 @@ namespace MikeNspired.UnityXRHandPoser
             ReturnMovedColliders();
             collider.enabled = true;
             EnableDistanceGrabbing(true);
-
         }
 
+        public void ResetToGrabbableObject()
+        {
+            EnableCollider();
+            isBeingGrabbed = false;
+            collider.isTrigger = false;
+            rigidBody.isKinematic = false;
+            transform.parent = null;
+        }
         public void SetupForGunAttachment()
         {
             collider.isTrigger = true;

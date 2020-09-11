@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &490378420
+--- !u!114 &1548467423
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 995e7e53aa4fea14685e128a8e82efe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  note: 
+  note: Remove Offset On XRRig if using deprecated XR Player
 --- !u!1001 &5481495367895506028
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20,6 +20,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 215515596, guid: ba97101e13c459b49abea1a64a75d60f, type: 3}
+      propertyPath: activationButton
+      value: 15
+      objectReference: {fileID: 0}
     - target: {fileID: 5126563915070674738, guid: ba97101e13c459b49abea1a64a75d60f,
         type: 3}
       propertyPath: TurningInput

@@ -7,13 +7,12 @@
     <e p="C:\Users\mikeN\Desktop\Git\XRHandPoser\XRHandPoser" t="IncludeRecursive">
       <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
       <e p="Assets" t="Include">
-        <e p="AutoEnablePlayerRig.cs" t="Include" />
-        <e p="BowlingLaneManager.cs" t="Include" />
         <e p="Development Aid Scripts" t="Include">
           <e p="Filming Camera" t="Include">
             <e p="FilmingCamera.cs" t="Include" />
           </e>
         </e>
+        <e p="GrabInteractableButtonEvents.cs" t="Include" />
         <e p="InProgress" t="Include">
           <e p="AI" t="Include">
             <e p="3DGamekit" t="Include">
@@ -97,20 +96,18 @@
             <e p="InputManager.cs" t="Include" />
           </e>
         </e>
+        <e p="InputManager2.cs" t="Include" />
         <e p="Joystick" t="Include">
           <e p="Joystick.cs" t="Include" />
           <e p="Lever.cs" t="Include" />
-          <e p="LeverTest.cs" t="Include" />
+          <e p="LeverExample.cs" t="Include" />
         </e>
         <e p="JoystickTut.cs" t="Include" />
         <e p="MoveToFloorOnStart.cs" t="Include" />
         <e p="PHF_Detonator.cs" t="Include" />
         <e p="PHF_Detonator_Reactor.cs" t="Include" />
-        <e p="Pin.cs" t="Include" />
-        <e p="ScoreCard.cs" t="Include" />
-        <e p="ScoreSlot.cs" t="Include" />
+        <e p="PlayerCrouch.cs" t="Include" />
         <e p="SetWorldLighting.cs" t="Include" />
-        <e p="UIDetector.cs" t="Include" />
         <e p="XRHandPoser" t="Include">
           <e p="Core" t="Include">
             <e p="Audio" t="Include">
@@ -145,12 +142,6 @@
             </e>
           </e>
           <e p="ExampleScene" t="Include">
-            <e p="Distance Grabbing" t="Include">
-              <e p="DistanceGrabber.cs" t="Include" />
-              <e p="DistanceGrabberLineBender.cs" t="Include" />
-              <e p="Highlight.cs" t="Include" />
-              <e p="InteractableItemData.cs" t="Include" />
-            </e>
             <e p="EffectExamples" t="Include">
               <e p="FireExplosionEffects" t="Include">
                 <e p="SurfaceShader_VC.shader" t="Include" />
@@ -162,6 +153,23 @@
                 <e p="Shaders" t="Include">
                   <e p="Dissolve.shader" t="Include" />
                   <e p="Respawn.shader" t="Include" />
+                </e>
+              </e>
+            </e>
+            <e p="Features" t="Include">
+              <e p="Distance Grabbing" t="Include">
+                <e p="DistanceGrabber.cs" t="Include" />
+                <e p="DistanceGrabberLineBender.cs" t="Include" />
+                <e p="Highlight.cs" t="Include" />
+                <e p="InteractableItemData.cs" t="Include" />
+              </e>
+              <e p="Inventory" t="Include">
+                <e p="Scripts" t="Include">
+                  <e p="InventoryGrabInteract.cs" t="Include" />
+                  <e p="InventoryManager.cs" t="Include" />
+                  <e p="InventorySlot.cs" t="Include" />
+                  <e p="InventorySlotTextUpdater.cs" t="Include" />
+                  <e p="InventoryTouchInteract.cs" t="Include" />
                 </e>
               </e>
             </e>
@@ -194,35 +202,37 @@
                   <e p="XRInteractionManager_PublicSelectMethods.cs" t="Include" />
                 </e>
               </e>
-              <e p="MiniGames" t="Include">
-                <e p="BottleBreak" t="Include">
-                  <e p="Bottle.cs" t="Include" />
-                  <e p="BottleBreakGame.cs" t="Include" />
-                  <e p="BottleTargetSpawner.cs" t="Include" />
-                </e>
-                <e p="Multiuse" t="Include">
-                  <e p="AnimateTransform.cs" t="Include" />
-                  <e p="FloatSO.cs" t="Include" />
-                  <e p="FloatSoSetText.cs" t="Include" />
-                  <e p="IDamageable.cs" t="Include" />
-                </e>
-                <e p="Targets" t="Include">
-                  <e p="AnimateBounce.cs" t="Include" />
-                  <e p="Target.cs" t="Include" />
-                  <e p="TargetManager.cs" t="Include" />
+            </e>
+            <e p="MiniGames" t="Include">
+              <e p="BottleBreak" t="Include">
+                <e p="Bottle.cs" t="Include" />
+                <e p="BottleBreakGame.cs" t="Include" />
+                <e p="BottleTargetSpawner.cs" t="Include" />
+              </e>
+              <e p="Bowling" t="Include">
+                <e p="Scripts" t="Include">
+                  <e p="BowlingBall.cs" t="Include" />
+                  <e p="BowlingLaneManager.cs" t="Include" />
+                  <e p="Lane.cs" t="Include" />
+                  <e p="Pin.cs" t="Include" />
+                  <e p="ScoreCard.cs" t="Include" />
+                  <e p="ScoreSlot.cs" t="Include" />
                 </e>
               </e>
-            </e>
-            <e p="Inventory" t="Include">
-              <e p="Scripts" t="Include">
-                <e p="InventoryGrabInteract.cs" t="Include" />
-                <e p="InventoryManager.cs" t="Include" />
-                <e p="InventorySlot.cs" t="Include" />
-                <e p="InventorySlotTextUpdater.cs" t="Include" />
-                <e p="InventoryTouchInteract.cs" t="Include" />
+              <e p="Multiuse" t="Include">
+                <e p="AnimateTransform.cs" t="Include" />
+                <e p="FloatSO.cs" t="Include" />
+                <e p="FloatSoSetText.cs" t="Include" />
+                <e p="IDamageable.cs" t="Include" />
+              </e>
+              <e p="Targets" t="Include">
+                <e p="AnimateBounce.cs" t="Include" />
+                <e p="Target.cs" t="Include" />
+                <e p="TargetManager.cs" t="Include" />
               </e>
             </e>
             <e p="Scripts" t="Include">
+              <e p="AutoEnablePlayerRig.cs" t="Include" />
               <e p="CollidersSetToTrigger.cs" t="Include" />
               <e p="CollisionSound.cs" t="Include" />
               <e p="EnableDisableRepeat.cs" t="Include" />

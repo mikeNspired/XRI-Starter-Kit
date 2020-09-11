@@ -29,23 +29,19 @@ namespace MikeNspired.UnityXRHandPoser
         public float bulletSpreadAngle = 1;
         public float bulletSpeed = 150;
         public bool infiniteAmmo = false;
+        public float hapticDuration = .1f;
+        public float hapticStrength = .5f;
         private XRBaseInteractor controller;
 
         private void Awake()
         {
             OnValidate();
             interactable.onActivate.AddListener(FireBullets);
-            interactable.onSelectEnter.AddListener(TestShit);
             interactable.onSelectEnter.AddListener(SetupRecoilVariables);
             interactable.onSelectExit.AddListener(DestroyRecoilTracker);
 
             if (gunCocking)
                 gunCocking.GunCockedEvent.AddListener(() => gunCocked = true);
-        }
-
-        private void TestShit(XRBaseInteractor arg0)
-        {
-           transform.parent = arg0.GetComponentInParent<XRRig>().transform;
         }
 
         private void OnValidate()
@@ -61,15 +57,19 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnDisable() => Application.onBeforeRender -= RecoilUpdate;
 
 
-        //private void LateUpdate() if (Input.GetKeyDown(KeyCode.Space)) FireBullets(null);
+        private void LateUpdate()
+        {
+            if (Input.GetKeyDown(KeyCode.Space)) FireBullets(null);
+        }
 
 
         public void FireBullets(XRBaseInteractor interactor)
         {
             if (bulletsPerShot < 1) return;
 
-            if (magazineAttach && !infiniteAmmo && ( CheckIfGunCocked() || !magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
+            if (magazineAttach && !infiniteAmmo && (CheckIfGunCocked() || !magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
             {
+                gunCocking.SetOpened();
                 outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
                 gunCocked = false;
                 return;
@@ -87,6 +87,8 @@ namespace MikeNspired.UnityXRHandPoser
                 var bullet = Instantiate(projectilePrefab);
                 bullet.transform.SetPositionAndRotation(firePoint.position, Quaternion.LookRotation(shotDirection));
                 bullet.AddForce((bullet.transform.forward * bulletSpeed), ForceMode.VelocityChange);
+                controller.GetComponent<XRController>().SendHapticImpulse(hapticStrength, hapticDuration);
+
                 StopAllCoroutines();
                 StartRecoil();
             }
@@ -105,7 +107,6 @@ namespace MikeNspired.UnityXRHandPoser
         {
             return gunCocking && !gunCocked;
         }
-
 
 
         private void SetupRecoilVariables(XRBaseInteractor interactor)
@@ -159,6 +160,7 @@ namespace MikeNspired.UnityXRHandPoser
             controllerToAttachDelta = transform.position - recoilTracker.transform.position;
             isRecoiling = true;
         }
+
         [BeforeRenderOrder(101)]
         private void RecoilUpdate()
         {
@@ -199,9 +201,6 @@ namespace MikeNspired.UnityXRHandPoser
             if (timer > recoilTime)
                 isRecoiling = false;
         }
-        
-    
-
 
 
         private float Remap(float value, float from1, float to1, float from2, float to2)

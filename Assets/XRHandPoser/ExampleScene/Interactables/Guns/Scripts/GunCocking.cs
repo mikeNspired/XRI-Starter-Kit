@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.Events;
@@ -21,16 +22,14 @@ public class GunCocking : MonoBehaviour
 
     private XRBaseInteractor currentHand;
     private XRInteractionManager interactionManager;
-    private Vector3 endPoint;
-    private Vector3 startPoint;
-    private Vector3 grabbedOffset;
-    private float currentDistance;
     private XRBaseInteractor grabbingInteractor;
     private Transform originalParent;
+    private Vector3 grabbedOffset, endPoint, startPoint;
+    private float currentDistance;
     private bool hasReachedEnd, isSelected;
     public UnityEvent GunCockedEvent;
 
-    void Start()
+    private void Start()
     {
         OnValidate();
 
@@ -66,6 +65,8 @@ public class GunCocking : MonoBehaviour
 
     public void FixedUpdate()
     {
+        if (stopAnimation) return;
+
         if (isSelected)
             SlideFromHandPosition();
         else
@@ -89,14 +90,11 @@ public class GunCocking : MonoBehaviour
 
         Vector3 targetPoint;
         if (projected > 0)
-        {
             targetPoint = Vector3.MoveTowards(transform.localPosition, endPoint, projected);
-        }
-        else
-        {
-            targetPoint = Vector3.MoveTowards(transform.localPosition, startPoint, -projected);
-        }
 
+        else
+            targetPoint = Vector3.MoveTowards(transform.localPosition, startPoint, -projected);
+        
         Vector3 move = targetPoint - transform.localPosition;
 
         transform.localPosition = transform.localPosition + move;
@@ -113,7 +111,7 @@ public class GunCocking : MonoBehaviour
         Vector3 targetPoint = Vector3.MoveTowards(transform.localPosition, startPoint, ReturnSpeed * Time.deltaTime);
         Vector3 move = targetPoint - transform.localPosition;
 
-        transform.localPosition = transform.localPosition + move;
+        transform.localPosition += move;
 
         if (hasReachedEnd && (transform.localPosition - startPoint).magnitude <= .001f)
         {
@@ -123,9 +121,21 @@ public class GunCocking : MonoBehaviour
         }
     }
 
+    private bool stopAnimation;
+
+    public void SetOpened()
+    {
+        transform.localPosition = endPoint;
+        stopAnimation = true;
+    }
+    public void SetClosed()
+    {
+        stopAnimation = false;
+    }
 
     private void OnGrabbed(XRBaseInteractor interactor)
     {
+        stopAnimation = false;
         currentHand = interactor;
         isSelected = true;
         grabbedOffset = interactor.transform.position - transform.position;
@@ -138,11 +148,9 @@ public class GunCocking : MonoBehaviour
         currentHand = null;
         isSelected = false;
         transform.localPosition = startPoint;
-
     }
 
-
-    void OnDrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
         Vector3 end = transform.position + transform.TransformDirection(LocalAxis.normalized) * AxisLength;
         Gizmos.DrawLine(transform.position, end);

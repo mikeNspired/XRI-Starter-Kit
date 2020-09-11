@@ -60,7 +60,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: b872710b89e45204e9dfc253c2cf770a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -104,13 +104,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 948567562111743398}
-  - component: {fileID: 948567562111743403}
-  - component: {fileID: 948567562111743405}
-  - component: {fileID: 948567562111743402}
   - component: {fileID: 948567562111743400}
   - component: {fileID: 948567562111743401}
+  - component: {fileID: 948567562111743403}
+  - component: {fileID: 948567562111743402}
+  - component: {fileID: 948567562111743405}
   m_Layer: 0
-  m_Name: Lever
+  m_Name: Lever -Scripts
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -131,8 +131,65 @@ Transform:
   - {fileID: 948567563752449015}
   - {fileID: 948567563414175169}
   m_Father: {fileID: 948567562202115333}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &948567562111743400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 948567562111743399}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5042f86ec399b14dafd00fa6b5ec557, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  xrGrabInteractable: {fileID: 948567562111743403}
+  rotationPoint: {fileID: 948567563752449015}
+  maxAngle: 60
+  shaftLength: 0.25
+  returnToStartOnRelease: 1
+  returnSpeed: 5
+  startingPosition: {x: 0, y: 0}
+  returnToPosition: {x: 0, y: 0}
+  xAxis: 1
+  yAxis: 1
+  OnValueChanged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 948567562111743401}
+        m_TargetAssemblyTypeName: LeverTest, Assembly-CSharp
+        m_MethodName: SetVector
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnSingleValuesChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &948567562111743401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 948567562111743399}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 468a442e6c4779c4bb0fd2fbf17c4d58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentSpeed: 0
+  text: {fileID: 948567563539880229}
+  maxSpeed: 100
+  minSpeed: 0
+  CurrentVector: {x: 0, y: 0}
 --- !u!114 &948567562111743403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -208,22 +265,6 @@ MonoBehaviour:
   m_ThrowAngularVelocityScale: 0.25
   m_GravityOnDetach: 0
   m_RetainTransformParent: 1
---- !u!54 &948567562111743405
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 948567562111743399}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!114 &948567562111743402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -251,63 +292,22 @@ MonoBehaviour:
   interactable: {fileID: 948567562111743403}
   WaitForHandToAnimateToPosition: 0
   DisableHandAttachTransforms: 0
---- !u!114 &948567562111743400
-MonoBehaviour:
+--- !u!54 &948567562111743405
+Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 948567562111743399}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5042f86ec399b14dafd00fa6b5ec557, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  xrGrabInteractable: {fileID: 948567562111743403}
-  rotationPoint: {fileID: 948567563752449015}
-  maxAngle: 60
-  shaftLength: 0.25
-  returnToStartOnRelease: 1
-  returnSpeed: 5
-  startingPosition: {x: 0, y: 0}
-  returnToPosition: {x: 0, y: 0}
-  xAxis: 1
-  yAxis: 1
-  OnValueChanged:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 948567562111743401}
-        m_TargetAssemblyTypeName: LeverTest, Assembly-CSharp
-        m_MethodName: SetVector
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  OnSingleValuesChanged:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &948567562111743401
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 948567562111743399}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 468a442e6c4779c4bb0fd2fbf17c4d58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  CurrentSpeed: 0
-  text: {fileID: 948567563539880229}
-  maxSpeed: 100
-  minSpeed: 0
-  CurrentVector: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &948567562141836339
 GameObject:
   m_ObjectHideFlags: 0
@@ -397,7 +397,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 10deb281a6c0e9f4c84e75e85f3007e2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -446,8 +446,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0.961, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 948567562374626737}
   - {fileID: 948567562111743398}
+  - {fileID: 948567562374626737}
   - {fileID: 948567563656724800}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -482,7 +482,7 @@ Transform:
   - {fileID: 948567563132932478}
   - {fileID: 948567562023502004}
   m_Father: {fileID: 948567562202115333}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &948567562787624175
 GameObject:
@@ -544,7 +544,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 706d3c29ccde3e140bfd1585bfd7d858, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -639,7 +639,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 10deb281a6c0e9f4c84e75e85f3007e2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -893,7 +893,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: dbbf06bddd3deb440a29742bccb0f3c1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
