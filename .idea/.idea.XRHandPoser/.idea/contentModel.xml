@@ -12,7 +12,6 @@
             <e p="FilmingCamera.cs" t="Include" />
           </e>
         </e>
-        <e p="GrabInteractableButtonEvents.cs" t="Include" />
         <e p="InProgress" t="Include">
           <e p="AI" t="Include">
             <e p="3DGamekit" t="Include">
@@ -97,17 +96,10 @@
           </e>
         </e>
         <e p="InputManager2.cs" t="Include" />
-        <e p="Joystick" t="Include">
-          <e p="Joystick.cs" t="Include" />
-          <e p="Lever.cs" t="Include" />
-          <e p="LeverExample.cs" t="Include" />
-        </e>
         <e p="JoystickTut.cs" t="Include" />
         <e p="MoveToFloorOnStart.cs" t="Include" />
         <e p="PHF_Detonator.cs" t="Include" />
         <e p="PHF_Detonator_Reactor.cs" t="Include" />
-        <e p="PlayerCrouch.cs" t="Include" />
-        <e p="SetWorldLighting.cs" t="Include" />
         <e p="XRHandPoser" t="Include">
           <e p="Core" t="Include">
             <e p="Audio" t="Include">
@@ -158,10 +150,10 @@
             </e>
             <e p="Features" t="Include">
               <e p="Distance Grabbing" t="Include">
-                <e p="DistanceGrabber.cs" t="Include" />
-                <e p="DistanceGrabberLineBender.cs" t="Include" />
-                <e p="Highlight.cs" t="Include" />
-                <e p="InteractableItemData.cs" t="Include" />
+                <e p="Scripts" t="Include">
+                  <e p="DistanceGrabber.cs" t="Include" />
+                  <e p="DistanceGrabberLineBender.cs" t="Include" />
+                </e>
               </e>
               <e p="Inventory" t="Include">
                 <e p="Scripts" t="Include">
@@ -189,18 +181,19 @@
               </e>
               <e p="Guns" t="Include">
                 <e p="Scripts" t="Include">
-                  <e p="DestroyAfterTime.cs" t="Include" />
                   <e p="GunCocking.cs" t="Include" />
                   <e p="GunType.cs" t="Include" />
-                  <e p="IReturnMovedColliders.cs" t="Include" />
+                  <e p="HandGunFireAnimation.cs" t="Include" />
                   <e p="Magazine.cs" t="Include" />
                   <e p="MagazineAttachPoint.cs" t="Include" />
                   <e p="MatchTransform.cs" t="Include" />
                   <e p="ProjectileWeapon.cs" t="Include" />
                   <e p="SimpleCollisionDamage.cs" t="Include" />
-                  <e p="UnparentAfterTime.cs" t="Include" />
-                  <e p="XRInteractionManager_PublicSelectMethods.cs" t="Include" />
                 </e>
+              </e>
+              <e p="JoystickLever" t="Include">
+                <e p="Joystick.cs" t="Include" />
+                <e p="LeverExample.cs" t="Include" />
               </e>
             </e>
             <e p="MiniGames" t="Include">
@@ -232,14 +225,17 @@
               </e>
             </e>
             <e p="Scripts" t="Include">
-              <e p="AutoEnablePlayerRig.cs" t="Include" />
               <e p="CollidersSetToTrigger.cs" t="Include" />
               <e p="CollisionSound.cs" t="Include" />
+              <e p="DestroyAfterTime.cs" t="Include" />
               <e p="EnableDisableRepeat.cs" t="Include" />
               <e p="FadeAudioAfterTime.cs" t="Include" />
               <e p="GameObjectListActivator.cs" t="Include" />
-              <e p="IgnoreCharacterControllerCollider.cs" t="Include" />
+              <e p="GrabInteractableButtonEvents.cs" t="Include" />
+              <e p="Highlight.cs" t="Include" />
               <e p="InteractableForceActionTrigger.cs" t="Include" />
+              <e p="InteractableItemData.cs" t="Include" />
+              <e p="IReturnMovedColliders.cs" t="Include" />
               <e p="MatchHandRotationOnSelect.cs" t="Include" />
               <e p="Modified VRBeginner Scripts" t="Include">
                 <e p="AxisDragInteractable.cs" t="Include" />
@@ -247,17 +243,26 @@
                 <e p="DialInteractable.cs" t="Include" />
               </e>
               <e p="OnGrabEnableDisable.cs" t="Include" />
-              <e p="PlayerRigMovement.cs" t="Include" />
+              <e p="Player" t="Include">
+                <e p="AutoEnablePlayerRig.cs" t="Include" />
+                <e p="IgnoreCharacterControllerCollider.cs" t="Include" />
+                <e p="PlayerCrouch.cs" t="Include" />
+                <e p="PlayerRigMovement.cs" t="Include" />
+                <e p="PlayerRigMovementNoCC_WIP.cs" t="Include" />
+                <e p="TeleportRayEnabler.cs" t="Include" />
+              </e>
               <e p="RotateOverTime.cs" t="Include" />
               <e p="SetRigidBodyCenterOfMass.cs" t="Include" />
+              <e p="SetWorldLighting.cs" t="Include" />
               <e p="SpawnIfNothingBlocking.cs" t="Include" />
               <e p="StopParticlesystemAfterTime.cs" t="Include" />
-              <e p="TeleportRayEnabler.cs" t="Include" />
               <e p="TwoHanded Grabbing" t="Include">
                 <e p="GrabAnywhereOnPole.cs" t="Include" />
                 <e p="RecoilReduceOnInteractableGrab.cs" t="Include" />
                 <e p="SecondaryGrabFollow.cs" t="Include" />
               </e>
+              <e p="UnparentAfterTime.cs" t="Include" />
+              <e p="XRInteractionManager_PublicSelectMethods.cs" t="Include" />
             </e>
             <e p="WIP" t="Include">
               <e p="AmmoBackPack.cs" t="Include" />

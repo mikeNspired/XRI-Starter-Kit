@@ -28,6 +28,7 @@ public class GunCocking : MonoBehaviour
     private float currentDistance;
     private bool hasReachedEnd, isSelected;
     public UnityEvent GunCockedEvent;
+    
 
     private void Start()
     {
@@ -62,6 +63,10 @@ public class GunCocking : MonoBehaviour
         if (!projectileWeapon)
             projectileWeapon = GetComponentInParent<ProjectileWeapon>();
     }
+
+    public Vector3 GetEndPoint() => endPoint;
+    public Vector3 GetStartPoint() => startPoint;
+
 
     public void FixedUpdate()
     {
@@ -122,12 +127,7 @@ public class GunCocking : MonoBehaviour
     }
 
     private bool stopAnimation;
-
-    public void SetOpened()
-    {
-        transform.localPosition = endPoint;
-        stopAnimation = true;
-    }
+    
     public void SetClosed()
     {
         stopAnimation = false;
@@ -155,5 +155,10 @@ public class GunCocking : MonoBehaviour
         Vector3 end = transform.position + transform.TransformDirection(LocalAxis.normalized) * AxisLength;
         Gizmos.DrawLine(transform.position, end);
         Gizmos.DrawSphere(end, 0.01f);
+    }
+
+    public void Pause()
+    {
+        stopAnimation = true;
     }
 }

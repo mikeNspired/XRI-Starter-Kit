@@ -10,7 +10,7 @@ PrefabInstance:
     - target: {fileID: 3288981761183804418, guid: a1ede2801e8d09b4bb8c60adb8d7cf6e,
         type: 3}
       propertyPath: m_Name
-      value: PlayerBulletFlash 1 Variant
+      value: RifleFlash
       objectReference: {fileID: 0}
     - target: {fileID: 3291491095213760984, guid: a1ede2801e8d09b4bb8c60adb8d7cf6e,
         type: 3}
@@ -82,6 +82,16 @@ PrefabInstance:
       propertyPath: InitialModule.startColor.maxColor.b
       value: 0.37949452
       objectReference: {fileID: 0}
+    - target: {fileID: 3415575091008778756, guid: a1ede2801e8d09b4bb8c60adb8d7cf6e,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3415645583098212508, guid: a1ede2801e8d09b4bb8c60adb8d7cf6e,
+        type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4678264379917821304, guid: a1ede2801e8d09b4bb8c60adb8d7cf6e,
         type: 3}
       propertyPath: m_Color.r
@@ -96,6 +106,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Color.g
       value: 0.8750098
+      objectReference: {fileID: 0}
+    - target: {fileID: 9016415609036221719, guid: a1ede2801e8d09b4bb8c60adb8d7cf6e,
+        type: 3}
+      propertyPath: destroyAfterFrame
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9016415609036221719, guid: a1ede2801e8d09b4bb8c60adb8d7cf6e,
+        type: 3}
+      propertyPath: timeTillDestroy
+      value: 0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a1ede2801e8d09b4bb8c60adb8d7cf6e, type: 3}

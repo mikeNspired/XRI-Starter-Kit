@@ -36,6 +36,7 @@ public class BowlingLaneManager : MonoBehaviour
         ballCounter = 0;
         pinCounter = 0;
         scoreCard.Reset();
+        StopAllCoroutines();
         ResetPins();
     }
 
@@ -45,26 +46,26 @@ public class BowlingLaneManager : MonoBehaviour
 
         pinCounter++;
         pinScoreCounter++;
-        if (pinCounter >= 10)
-        {
-            scoreCard.PinsHit(pinScoreCounter);
-            pinScoreCounter = 0;
-            ResetPins();
-        }
+        // if (pinCounter >= 10) //Remove this. Let the scorecard handle it when it detects a ball 
+        // {
+        //     scoreCard.PinsHit(pinScoreCounter);
+        //     pinScoreCounter = 0;
+        //     ResetPins();
+        // }
     }
 
     private GameObject currentCollider;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (paused) return;
         if (!other.attachedRigidbody) return;
         if (!other.attachedRigidbody.GetComponent<BowlingBall>()) return;
         if (other.attachedRigidbody.gameObject == currentCollider) return;
 
         currentCollider = other.attachedRigidbody.gameObject;
-
         Invoke(nameof(RespawnBall), 1);
+
+        if (paused) return;
 
         scoreCard.PinsHit(pinScoreCounter);
         pinScoreCounter = 0;
@@ -84,17 +85,20 @@ public class BowlingLaneManager : MonoBehaviour
     private void ResetPins()
     {
         pinRemover.SetTrigger("Activate");
+        StopAllCoroutines();
         StartCoroutine(AnimatePinResetter());
     }
 
     private float currentTimer = 0;
 
+    private GameObject pins;
     private IEnumerator AnimatePinResetter()
     {
         paused = true;
         yield return new WaitForSeconds(4);
 
-        var pins = Instantiate(newPins);
+        DestroyImmediate(pins);
+        pins = Instantiate(newPins);
         pins.transform.parent = transform.parent;
         pins.transform.localPosition = startingPinsLocation;
         DisableRigidBody(pins.transform, true);

@@ -6152,8 +6152,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18ad55086cb948e4da109d5c7dd7daca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftHandPose: {fileID: 739776603457476536, guid: f6630aa3d4d12934babf0b91b1077bc9, type: 3}
-  rightHandPose: {fileID: 739776603457476536, guid: f6630aa3d4d12934babf0b91b1077bc9, type: 3}
+  leftHandPose: {fileID: 739776603457476536, guid: f6630aa3d4d12934babf0b91b1077bc9,
+    type: 3}
+  rightHandPose: {fileID: 739776603457476536, guid: f6630aa3d4d12934babf0b91b1077bc9,
+    type: 3}
   LeftHandAnimationPose: {fileID: 0}
   RightHandAnimationPose: {fileID: 0}
   leftHandAttach: {fileID: 6334681853016767343}
@@ -6817,11 +6819,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   firePoint: {fileID: 6334681853353615189}
-  projectilePrefab: {fileID: 1277569234665110449, guid: 9f4bf21a112af234da4451493e741800, type: 3}
+  projectilePrefab: {fileID: 1277569234665110449, guid: 9f4bf21a112af234da4451493e741800,
+    type: 3}
   cartridgeEjection: {fileID: 6334681853956033865}
   fireAudio: {fileID: 6334681854159810298}
   outOfAmmoAudio: {fileID: 6334681852499585844}
-  bulletFlash: {fileID: 8827744101140687833, guid: b75c213e31b6bb1419fdcf25eb5155b2, type: 3}
+  bulletFlash: {fileID: 8827744101140687833, guid: b75c213e31b6bb1419fdcf25eb5155b2,
+    type: 3}
   gunCocking: {fileID: 4385779036868036463}
   magazineAttach: {fileID: 6334681853077592970}
   recoilAmount: -0.75
@@ -6831,6 +6835,17 @@ MonoBehaviour:
   bulletSpreadAngle: 0
   bulletSpeed: 150
   infiniteAmmo: 0
+  hapticDuration: 0.1
+  hapticStrength: 0.7
+  BulletFiredEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OutOfAmmoEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  FiredLastBulletEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &6334681852911358581
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6843,10 +6858,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18ad55086cb948e4da109d5c7dd7daca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftHandPose: {fileID: 3768126852996227840, guid: 271e3c7e8e5961b4089b66399a303b55, type: 3}
-  rightHandPose: {fileID: 3768126852996227840, guid: 271e3c7e8e5961b4089b66399a303b55, type: 3}
-  LeftHandAnimationPose: {fileID: 6161992844006716103, guid: 66e2f49132027654d9e3776a710838cd, type: 3}
-  RightHandAnimationPose: {fileID: 6161992844006716103, guid: 66e2f49132027654d9e3776a710838cd, type: 3}
+  leftHandPose: {fileID: 3768126852996227840, guid: 271e3c7e8e5961b4089b66399a303b55,
+    type: 3}
+  rightHandPose: {fileID: 3768126852996227840, guid: 271e3c7e8e5961b4089b66399a303b55,
+    type: 3}
+  LeftHandAnimationPose: {fileID: 6161992844006716103, guid: 66e2f49132027654d9e3776a710838cd,
+    type: 3}
+  RightHandAnimationPose: {fileID: 6161992844006716103, guid: 66e2f49132027654d9e3776a710838cd,
+    type: 3}
   leftHandAttach: {fileID: 6334681853599469324}
   rightHandAttach: {fileID: 6334681853851507113}
   hasAnimationPose: 1
@@ -7381,8 +7400,10 @@ MonoBehaviour:
   loadAudio: {fileID: 6334681852901366085}
   unloadAudio: {fileID: 6334681854377034989}
   gunType: {fileID: 11400000, guid: 28e951b9ddb12e045826cb58c8ba0ad6, type: 2}
-  startingMagazine: {fileID: 3217367507161224162, guid: 218a9e5f1d2b164439ff4f3f968ea65b, type: 3}
+  startingMagazine: {fileID: 3217367507161224162, guid: 218a9e5f1d2b164439ff4f3f968ea65b,
+    type: 3}
   collider: {fileID: 6334681853156700612}
+  removeByGrabbing: 1
 --- !u!54 &6334681853077592969
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -14027,8 +14048,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18ad55086cb948e4da109d5c7dd7daca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415, type: 3}
-  rightHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415, type: 3}
+  leftHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
+    type: 3}
+  rightHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
+    type: 3}
   LeftHandAnimationPose: {fileID: 0}
   RightHandAnimationPose: {fileID: 0}
   leftHandAttach: {fileID: 3249990804494301576}

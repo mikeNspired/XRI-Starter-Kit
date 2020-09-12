@@ -91,7 +91,7 @@ MonoBehaviour:
   maxPitchChange: 0.1
   maxVolume: 1
   timeTillCanPlayAgain: 0.1
-  maxVelocity: 5
+  maxVelocity: 9
 --- !u!1 &546626538142790098
 GameObject:
   m_ObjectHideFlags: 0
@@ -514,9 +514,9 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 674.38
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0

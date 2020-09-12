@@ -33,10 +33,11 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void PinsHit(int pinsHit)
         {
+            if (currentSlot > 10) return;
             currentRoll++;
             currentPinsHit += pinsHit;
             currentScoreToAdd += pinsHit;
-
+            
             if (pinsHit == 10)
             {
                 Strike();
@@ -131,6 +132,8 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 slot.Reset();
             }
+
+            currentSlot = 0;
         }
     }
 }

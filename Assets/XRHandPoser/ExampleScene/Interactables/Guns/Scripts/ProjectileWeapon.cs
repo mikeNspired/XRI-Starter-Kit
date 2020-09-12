@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
@@ -33,6 +34,10 @@ namespace MikeNspired.UnityXRHandPoser
         public float hapticStrength = .5f;
         private XRBaseInteractor controller;
 
+        public UnityEvent BulletFiredEvent;
+        public UnityEvent OutOfAmmoEvent;
+        public UnityEvent FiredLastBulletEvent;
+
         private void Awake()
         {
             OnValidate();
@@ -59,7 +64,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void LateUpdate()
         {
-            if (Input.GetKeyDown(KeyCode.Space)) FireBullets(null);
+            //if (Input.GetKeyDown(KeyCode.Space)) FireBullets(null);
         }
 
 
@@ -69,7 +74,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             if (magazineAttach && !infiniteAmmo && (CheckIfGunCocked() || !magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
             {
-                gunCocking.SetOpened();
+                OutOfAmmoEvent.Invoke();
                 outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
                 gunCocked = false;
                 return;
@@ -77,6 +82,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             if (gunCocking && !gunCocked)
             {
+                OutOfAmmoEvent.Invoke();
                 outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
                 return;
             }
@@ -87,11 +93,16 @@ namespace MikeNspired.UnityXRHandPoser
                 var bullet = Instantiate(projectilePrefab);
                 bullet.transform.SetPositionAndRotation(firePoint.position, Quaternion.LookRotation(shotDirection));
                 bullet.AddForce((bullet.transform.forward * bulletSpeed), ForceMode.VelocityChange);
+                
                 controller.GetComponent<XRController>().SendHapticImpulse(hapticStrength, hapticDuration);
 
+                BulletFiredEvent.Invoke();
                 StopAllCoroutines();
                 StartRecoil();
             }
+
+            if (magazineAttach && magazineAttach.Magazine && magazineAttach.Magazine.CurrentAmmo == 0)
+                FiredLastBulletEvent.Invoke();
 
             var flash = Instantiate(bulletFlash);
             flash.positionToMatch = firePoint; //Follow gun barrel on update
