@@ -5,9 +5,9 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class InventoryManager : MonoBehaviour
     {
-         private InventorySlot[] inventorySlots;
+        private InventorySlot[] inventorySlots;
         [SerializeField] private InputHelpers.Button activationButton = InputHelpers.Button.MenuButton;
-        [SerializeField] private XRController leftController = null, rightController = null;
+        public XRController leftController = null, rightController = null;
         [SerializeField] private AudioSource enableAudio = null, disableAudio = null;
 
         [SerializeField] private bool lookAtController = false;
@@ -28,7 +28,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void Update()
         {
-            CheckController();
+            if (leftController && rightController)
+                CheckController();
         }
 
         private bool buttonClicked;

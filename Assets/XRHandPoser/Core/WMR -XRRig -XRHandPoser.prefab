@@ -1346,9 +1346,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 860e23bb55993684fb7b0a15342e2a6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_System: {fileID: 0}
   controller: {fileID: 8037807109004260641}
   buttonInput: 1
-  characterController: {fileID: 1423496601}
   MovementSpeed: 1.5
   movementAcceleration: 6
   GravityMultiplier: 1
@@ -1358,6 +1358,10 @@ MonoBehaviour:
   moveOnlyOnTeleportArea: 1
   moveInControllerDirection: 0
   moveOnlyOnPadClick: 0
+  applyFallGravity: 0
+  pauseGravity: 0
+  pauseColliderAdjustment: 0
+  characterController: {fileID: 1423496601}
 --- !u!114 &215515596
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1376,6 +1380,7 @@ MonoBehaviour:
   activationThreshold: 0.5
   crouchOffSetReduction: 0.65
   toggleOnActivate: 1
+  xrRig: {fileID: 0}
 --- !u!143 &1423496601
 CharacterController:
   m_ObjectHideFlags: 0
@@ -3575,6 +3580,23 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5903939651475246378, guid: 6bb922801c5a8c64a961c26152eebfb2,
+        type: 3}
+      propertyPath: DefaultPose
+      value: 
+      objectReference: {fileID: 1105901071688771305, guid: a52ba483d4377724eb54ddb26a12402b,
+        type: 3}
+    - target: {fileID: 5903939651475246378, guid: 6bb922801c5a8c64a961c26152eebfb2,
+        type: 3}
+      propertyPath: AnimationPose
+      value: 
+      objectReference: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
+        type: 3}
+    - target: {fileID: 5903939651475246378, guid: 6bb922801c5a8c64a961c26152eebfb2,
+        type: 3}
+      propertyPath: isGrabbed
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8333224977003873828, guid: 6bb922801c5a8c64a961c26152eebfb2,
         type: 3}

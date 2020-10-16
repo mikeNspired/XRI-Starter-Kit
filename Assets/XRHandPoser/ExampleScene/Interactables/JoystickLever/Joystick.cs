@@ -8,8 +8,8 @@ using UnityEngine.XR.Interaction.Toolkit;
 [ExecuteInEditMode]
 public class Joystick : MonoBehaviour
 {
-    [SerializeField] private XRGrabInteractable xrGrabInteractable;
-    [SerializeField] private Transform rotationPoint;
+    [SerializeField] private XRGrabInteractable xrGrabInteractable = null;
+    [SerializeField] private Transform rotationPoint= null;
     [SerializeField] private float maxAngle = 60;
     [SerializeField] private float shaftLength = .2f;
     [SerializeField] private bool returnToStartOnRelease = true;
@@ -20,8 +20,7 @@ public class Joystick : MonoBehaviour
 
     private Transform hand;
     private Vector2 currentVector;
-
-
+    
     public Vector2 CurrentVector => currentVector;
     public UnityEventVector2 OnValueChanged;
     public UnityEventFloat OnSingleValuesChanged;

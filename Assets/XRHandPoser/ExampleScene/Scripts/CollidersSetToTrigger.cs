@@ -21,7 +21,7 @@ namespace MikeNspired.UnityXRHandPoser
             foreach (var c in colliders)
                 c.collider.isTrigger = true;
         }
-
+  
         public void ReturnToDefaultState()
         {
             foreach (var c in colliders)

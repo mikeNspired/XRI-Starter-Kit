@@ -33,7 +33,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void PinsHit(int pinsHit)
         {
-            if (currentSlot > 10) return;
+            if (currentSlot > 9) return;
             currentRoll++;
             currentPinsHit += pinsHit;
             currentScoreToAdd += pinsHit;

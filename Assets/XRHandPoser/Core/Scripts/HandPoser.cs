@@ -71,6 +71,7 @@ namespace MikeNspired.UnityXRHandPoser
             currentHandGrabbing.ReleaseItemPoses();
             currentHandGrabbing.ReturnAnimationsToOriginal();
             currentHandGrabbing.ReturnToDefaultPosing();
+            currentHandGrabbing = null;
         }
 
 

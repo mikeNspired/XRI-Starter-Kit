@@ -8,7 +8,7 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class ScoreSlot : MonoBehaviour
     {
-        [SerializeField] private TextMeshProUGUI mainScore, firstScore, secondScore;
+        [SerializeField] private TextMeshProUGUI mainScore = null, firstScore = null, secondScore = null;
 
         public void SetFirstScore(string score)
         {

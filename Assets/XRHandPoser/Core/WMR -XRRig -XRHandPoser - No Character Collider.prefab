@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a338eb7f57f4a81af324155a8a2f262, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_System: {fileID: 0}
   controller: {fileID: 8602048574229291820}
   buttonInput: 1
   MovementSpeed: 1
@@ -22,12 +23,14 @@ MonoBehaviour:
   instantMove: 0
   moveOnlyOnTeleportArea: 1
   moveInControllerDirection: 0
-  applyFallGravity: 1
   moveOnlyOnPadClick: 0
+  applyFallGravity: 1
+  pauseGravity: 0
+  pauseColliderAdjustment: 0
   maxStepHeight: 0.1
-  layerMask:
+  checkGroundLayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 1
 --- !u!1001 &1795981190295541261
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35,6 +38,23 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4495444754422721364, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: DefaultPose
+      value: 
+      objectReference: {fileID: 1105901071688771305, guid: a52ba483d4377724eb54ddb26a12402b,
+        type: 3}
+    - target: {fileID: 4495444754422721364, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: AnimationPose
+      value: 
+      objectReference: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
+        type: 3}
+    - target: {fileID: 4495444754422721364, guid: ba97101e13c459b49abea1a64a75d60f,
+        type: 3}
+      propertyPath: isGrabbed
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8037807108969324664, guid: ba97101e13c459b49abea1a64a75d60f,
         type: 3}
       propertyPath: m_Name

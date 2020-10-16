@@ -7,7 +7,7 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class Pin : MonoBehaviour
     {
-        [SerializeField] private float distance;
+        [SerializeField] private float distance = 0.04f;
         public UnityEvent pinKnockedOver;
 
         public bool isActive;

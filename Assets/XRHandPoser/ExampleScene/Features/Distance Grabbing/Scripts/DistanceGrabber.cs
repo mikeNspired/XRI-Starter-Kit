@@ -21,7 +21,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] [Tooltip("If item is less than this distance from hand, it will ignore the item")]
         private float minDistanceToAllowGrab = .2f;
 
-        
+
         [Header("Easy Mode Settings")] [SerializeField] [Tooltip("Disables flicking and enables button holding to easily grab item")]
         private bool easyModeGrabNoWristFlick = false;
 
@@ -34,8 +34,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] [Tooltip("Distance before autoGrabbing if grip is held down and autoGrabIfGripping is true")]
         private float distanceToAutoGrab = .1f;
 
-        
-        
+
         [Header("Item Searching")] [SerializeField] [Tooltip("How far RayCast will go")]
         private float rayCastLength = 10;
 
@@ -43,14 +42,14 @@ namespace MikeNspired.UnityXRHandPoser
         private float overlapSphereRadius = 1;
 
         [SerializeField] [Tooltip("distance to start shrinking overlapsphere, prevents grabbing items nearby when hand is close to table")]
-        private float distanceStartShrinkingOverlap;
+        private float distanceStartShrinkingOverlap = 2f;
 
         [SerializeField] [Tooltip("Min size when fully shrunk of overlap sphere")]
         private float overlapSphereRadiusMinSize = .1f;
 
         [SerializeField] private LayerMask rayCastMask = 1;
 
-        
+
         [SerializeField] [Tooltip("How far RayCast will go")]
         private float sphereCastRadius = .5f;
 
@@ -60,8 +59,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] [Tooltip("Typically Fires after rayCast if nothing found, this will shoot a SphereCast, works well for items on desks that is hard to hit with raycast")]
         private bool sphereCastSearch = true;
 
-        
-        
+
         [Header("Debug")] [SerializeField] private bool showDebug = false;
 
         [SerializeField] [Tooltip("Shows the distance and how large the Physics.SphereCast is")]
@@ -70,11 +68,9 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] [Tooltip("Shows the size of sphere overlap")]
         private Transform debugOverLapSphere = null;
 
-        
-        
+
         [Header("Line Canceling")] [SerializeField] [Tooltip("When to cancel trying to grab item based on rotation. A value of 0 lets you rotate this perpendicular to pointing at the item before canceling.")]
         private float dotProductCancel = .2f;
-
 
 
         private float sphereStartingSize, sphereCastStartingSize;
@@ -112,7 +108,6 @@ namespace MikeNspired.UnityXRHandPoser
 
             debugSphereCast.gameObject.SetActive(showDebug);
             debugOverLapSphere.gameObject.SetActive(showDebug);
-            
         }
 
         private void Update()
@@ -211,7 +206,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             var distance = Vector3.Distance(transform.position, rayCastDebugPosition);
             overlapSphereRadius = Mathf.Lerp(overlapSphereRadiusMinSize, sphereStartingSize, distance / distanceStartShrinkingOverlap);
-            
+
             sphereCastRadius = Mathf.Lerp(overlapSphereRadiusMinSize, sphereCastStartingSize, distance / distanceStartShrinkingOverlap);
         }
 
@@ -513,7 +508,6 @@ namespace MikeNspired.UnityXRHandPoser
         {
             smoothingFrameTimes[smoothingCurrentFrame] = Time.time;
 
-
             Quaternion VelocityDiff = (transform.rotation * Quaternion.Inverse(lastFrameRotation));
             smoothingAngularVelocityFrames[smoothingCurrentFrame] = (new Vector3(Mathf.DeltaAngle(0, VelocityDiff.eulerAngles.x),
                                                                          Mathf.DeltaAngle(0, VelocityDiff.eulerAngles.y), Mathf.DeltaAngle(0, VelocityDiff.eulerAngles.z))
@@ -547,7 +541,7 @@ namespace MikeNspired.UnityXRHandPoser
             else
                 return Vector3.zero;
         }
-
+        
         #endregion
 
         private enum ControllerInput
@@ -578,13 +572,13 @@ namespace MikeNspired.UnityXRHandPoser
             StartCoroutine(GrabItem(directInteractor, currentTarget.GetComponent<XRBaseInteractable>()));
         }
 
-        IEnumerator GrabItem(XRBaseInteractor currentInteractor, XRBaseInteractable newMagazine)
+        IEnumerator GrabItem(XRBaseInteractor currentInteractor, XRBaseInteractable interactable)
         {
             yield return new WaitForFixedUpdate();
-            Reset(newMagazine);
+            Reset(interactable);
             mainHandCollider.radius = mainHandColliderStartingSize;
             if (currentInteractor.selectTarget || directInteractor.selectTarget) yield break;
-            interactionManager.SelectEnter_public(currentInteractor, newMagazine);
+            interactionManager.SelectEnter_public(currentInteractor, interactable);
         }
     }
 }

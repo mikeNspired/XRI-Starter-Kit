@@ -11,10 +11,10 @@ namespace MikeNspired.UnityXRHandPoser
     public class GrabInteractableButtonEvents : MonoBehaviour
     {
         [SerializeField] private XRGrabInteractable xrGrabInteractable = null;
-        [SerializeField] private XRController controller;
-        [SerializeField] private InputHelpers.Button activationButton;
+        [SerializeField] private XRController controller = null;
+        [SerializeField] private InputHelpers.Button activationButton = InputHelpers.Button.SecondaryButton;
         [SerializeField] private float activationThreshold = .5f;
-        [SerializeField] private bool toggleOnActivate;
+        [SerializeField] private bool toggleOnActivate = true;
         private bool isButtonHeld;
         public UnityEvent OnButtonPressed;
         public UnityEvent OnButtonReleased;
@@ -40,7 +40,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (controller)
                 CheckController(controller, ref isButtonHeld);
         }
-        
+
         private void CheckController(XRController controller, ref bool isGripped)
         {
             if (!controller.inputDevice.IsPressed(activationButton, out bool isActive, activationThreshold)) return;

@@ -81,6 +81,11 @@
             <e p="SetNewPathOnCollision.cs" t="Include" />
           </e>
           <e p="ForceReleaseItem.cs" t="Include" />
+          <e p="HandPhysics" t="Include">
+            <e p="HandFollowColliders.cs" t="Include" />
+            <e p="HandJointColliders.cs" t="Include" />
+            <e p="HandPhysics.cs" t="Include" />
+          </e>
           <e p="InProgress.asmdef" t="Include" />
         </e>
         <e p="Input" t="Include">
@@ -95,11 +100,9 @@
             <e p="InputManager.cs" t="Include" />
           </e>
         </e>
-        <e p="InputManager2.cs" t="Include" />
-        <e p="JoystickTut.cs" t="Include" />
-        <e p="MoveToFloorOnStart.cs" t="Include" />
-        <e p="PHF_Detonator.cs" t="Include" />
-        <e p="PHF_Detonator_Reactor.cs" t="Include" />
+        <e p="Knob.cs" t="Include" />
+        <e p="Test.cs" t="Include" />
+        <e p="Wheel.cs" t="Include" />
         <e p="XRHandPoser" t="Include">
           <e p="Core" t="Include">
             <e p="Audio" t="Include">
@@ -114,9 +117,6 @@
                 <e p="HandAnimatorEditor.cs" t="Include" />
                 <e p="MikeNspired.XRHandPoser.Editor.asmdef" t="Include" />
                 <e p="XRHandPoserEditor.cs" t="Include" />
-              </e>
-              <e p="Experimental" t="Include">
-                <e p="HandJointColliders.cs" t="Include" />
               </e>
               <e p="HandAnimator.cs" t="Include" />
               <e p="HandPoser.cs" t="Include" />
@@ -134,20 +134,6 @@
             </e>
           </e>
           <e p="ExampleScene" t="Include">
-            <e p="EffectExamples" t="Include">
-              <e p="FireExplosionEffects" t="Include">
-                <e p="SurfaceShader_VC.shader" t="Include" />
-              </e>
-              <e p="Misc Effects" t="Include">
-                <e p="Scripts" t="Include">
-                  <e p="SpawnEffect.cs" t="Include" />
-                </e>
-                <e p="Shaders" t="Include">
-                  <e p="Dissolve.shader" t="Include" />
-                  <e p="Respawn.shader" t="Include" />
-                </e>
-              </e>
-            </e>
             <e p="Features" t="Include">
               <e p="Distance Grabbing" t="Include">
                 <e p="Scripts" t="Include">
@@ -224,10 +210,29 @@
                 <e p="TargetManager.cs" t="Include" />
               </e>
             </e>
+            <e p="Official Unity Assets" t="Include">
+              <e p="EffectExamples" t="Include">
+                <e p="FireExplosionEffects" t="Include">
+                  <e p="SurfaceShader_VC.shader" t="Include" />
+                </e>
+                <e p="Misc Effects" t="Include">
+                  <e p="Scripts" t="Include">
+                    <e p="SpawnEffect.cs" t="Include" />
+                  </e>
+                  <e p="Shaders" t="Include">
+                    <e p="Dissolve.shader" t="Include" />
+                    <e p="Respawn.shader" t="Include" />
+                  </e>
+                </e>
+              </e>
+            </e>
             <e p="Scripts" t="Include">
+              <e p="CanvasGetEventCamera.cs" t="Include" />
               <e p="CollidersSetToTrigger.cs" t="Include" />
               <e p="CollisionSound.cs" t="Include" />
               <e p="DestroyAfterTime.cs" t="Include" />
+              <e p="DisableAtStart.cs" t="Include" />
+              <e p="DisableScriptOnSelectEnter.cs" t="Include" />
               <e p="EnableDisableRepeat.cs" t="Include" />
               <e p="FadeAudioAfterTime.cs" t="Include" />
               <e p="GameObjectListActivator.cs" t="Include" />
@@ -247,8 +252,9 @@
                 <e p="AutoEnablePlayerRig.cs" t="Include" />
                 <e p="IgnoreCharacterControllerCollider.cs" t="Include" />
                 <e p="PlayerCrouch.cs" t="Include" />
-                <e p="PlayerRigMovement.cs" t="Include" />
-                <e p="PlayerRigMovementNoCC_WIP.cs" t="Include" />
+                <e p="PlayerMovement.cs" t="Include" />
+                <e p="PlayerMovementCharacterController.cs" t="Include" />
+                <e p="PlayerMovementNoCC.cs" t="Include" />
                 <e p="TeleportRayEnabler.cs" t="Include" />
               </e>
               <e p="RotateOverTime.cs" t="Include" />
@@ -265,7 +271,20 @@
               <e p="XRInteractionManager_PublicSelectMethods.cs" t="Include" />
             </e>
             <e p="WIP" t="Include">
-              <e p="AmmoBackPack.cs" t="Include" />
+              <e p="AmmoBackPack" t="Include">
+                <e p="AmmoBackPack.cs" t="Include" />
+              </e>
+              <e p="Climbing" t="Include">
+                <e p="ClimbingHealthHandStamina.cs" t="Include" />
+                <e p="Ladder" t="Include">
+                  <e p="ClimbGrabPoint.cs" t="Include" />
+                  <e p="MoveToLocation.cs" t="Include" />
+                  <e p="PlayerClimbing.cs" t="Include" />
+                </e>
+              </e>
+              <e p="ConfigureHeadSetControls.cs" t="Include" />
+              <e p="HeadSetConfiguration.cs" t="Include" />
+              <e p="VelocityTracker.cs" t="Include" />
             </e>
             <e p="XR-Interaction-Toolkit-Assets" t="Include">
               <e p="VR" t="Include">

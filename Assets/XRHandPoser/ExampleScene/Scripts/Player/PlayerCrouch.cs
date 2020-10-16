@@ -7,15 +7,14 @@ namespace MikeNspired.UnityXRHandPoser
     //Thanks to David Goodman 
     public class PlayerCrouch : MonoBehaviour
     {
-        [SerializeField] private XRController leftController, rightController;
-        [SerializeField] private InputHelpers.Button activationButton;
+        [SerializeField] private XRController leftController = null, rightController = null;
+        public InputHelpers.Button activationButton = InputHelpers.Button.SecondaryAxis2DDown;
         [SerializeField] private float activationThreshold = .5f, crouchOffSetReduction = .65f;
-        [SerializeField] private bool toggleOnActivate;
-        private XRRig xrRig;
+        [SerializeField] private bool toggleOnActivate = true;
+        public XRRig xrRig;
         private bool leftIsGripped, rightIsGripped, isCrouched;
         private float crouchOffset;
 
-    
         private void Awake()
         {
             OnValidate();
@@ -23,7 +22,10 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnValidate()
         {
+            if (!gameObject.activeInHierarchy) return;
+
             if (!xrRig) xrRig = GetComponent<XRRig>();
+            if (!xrRig) xrRig = GetComponentInParent<XRRig>();   
             crouchOffset = xrRig.cameraYOffset;
         }
 
@@ -48,7 +50,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (rightController)
                 CheckController(rightController, ref rightIsGripped);
         }
-        
+
         private void CheckController(XRController controller, ref bool isGripped)
         {
             if (!controller.inputDevice.IsPressed(activationButton, out bool isActive, activationThreshold)) return;
@@ -68,4 +70,3 @@ namespace MikeNspired.UnityXRHandPoser
         }
     }
 }
-

@@ -4,31 +4,23 @@ using UnityEngine;
 
 public class HandGunFireAnimation : MonoBehaviour
 {
-    [SerializeField] private GunCocking gunCocking;
-    [SerializeField] private float movePositionAnimationTime;
+    [SerializeField] private GunCocking gunCocking = null;
+    [SerializeField] private float movePositionAnimationTime = 0.03f;
 
-    [SerializeField] private Transform slider;
-    [SerializeField] private Transform sliderGoalPosition;
-    
-    [SerializeField] private Transform keyBangor;
-    [SerializeField] private Transform keyBangorOpen;
-    private Vector3 keyBangorStartPosition;
-    private Quaternion keyBangorStartRotation;
+    [SerializeField] private Transform slider = null;
+    [SerializeField] private Transform sliderGoalPosition = null;
+
+    [SerializeField] private Transform hammer = null;
+    [SerializeField] private Transform hammerOpen = null;
+    private Vector3 hammerStartPosition;
+    private Quaternion hammerStartRotation;
 
     private void Start()
     {
-        keyBangorStartPosition = keyBangor.transform.localPosition;
-        keyBangorStartRotation = keyBangor.transform.localRotation;
+        hammerStartPosition = hammer.transform.localPosition;
+        hammerStartRotation = hammer.transform.localRotation;
     }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            StartCoroutine(MoveSlider(slider, sliderGoalPosition));
-        }
-    }
-
+    
     private IEnumerator MoveSlider(Transform mover, Transform goalPosition)
     {
         float timer = 0;
@@ -86,13 +78,13 @@ public class HandGunFireAnimation : MonoBehaviour
 
     public void SetKeyBangerOpen()
     {
-        keyBangor.transform.position = keyBangorOpen.transform.position;
-        keyBangor.transform.rotation = keyBangorOpen.transform.rotation;
+        hammer.transform.position = hammerOpen.transform.position;
+        hammer.transform.rotation = hammerOpen.transform.rotation;
     }
 
     public void SetKeyBangerClosed()
     {
-        keyBangor.transform.localPosition = keyBangorStartPosition;
-        keyBangor.transform.localRotation = keyBangorStartRotation;
+        hammer.transform.localPosition = hammerStartPosition;
+        hammer.transform.localRotation = hammerStartRotation;
     }
 }

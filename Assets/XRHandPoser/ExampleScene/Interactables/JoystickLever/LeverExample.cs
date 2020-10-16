@@ -8,7 +8,7 @@ public class LeverExample : MonoBehaviour
     public float CurrentSpeed;
     public TextMeshProUGUI text;
 
-    [SerializeField] private float maxSpeed, minSpeed;
+    [SerializeField] private float maxSpeed = 1, minSpeed = -1;
 
     public Vector2 CurrentVector;
 

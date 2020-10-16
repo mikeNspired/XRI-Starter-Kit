@@ -8,7 +8,7 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class TeleportRayEnabler : MonoBehaviour
     {
-        public XRController leftController, rightController;
+        [SerializeField] private XRController leftController = null, rightController = null;
 
         public InputHelpers.Button activationButton;
 

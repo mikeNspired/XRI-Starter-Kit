@@ -1350,6 +1350,7 @@ GameObject:
   - component: {fileID: 1493911588}
   - component: {fileID: 4483885167824385832}
   - component: {fileID: 2271206862250411918}
+  - component: {fileID: 3194092439659294861}
   m_Layer: 0
   m_Name: HandGun
   m_TagString: Untagged
@@ -1525,7 +1526,7 @@ MonoBehaviour:
   bulletSpreadAngle: 0
   bulletSpeed: 150
   infiniteAmmo: 0
-  hapticDuration: 1
+  hapticDuration: 0.05
   hapticStrength: 1
   BulletFiredEvent:
     m_PersistentCalls:
@@ -1685,6 +1686,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 3
+--- !u!114 &3194092439659294861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2271206862250411953}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1887aab64a7b4b8e9403afbd3ed8ad9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3046133900042295892
 GameObject:
   m_ObjectHideFlags: 0
@@ -3413,8 +3426,8 @@ MonoBehaviour:
   movePositionAnimationTime: 0.03
   slider: {fileID: 5387411159340223287}
   sliderGoalPosition: {fileID: 9152978269750547778}
-  keyBangor: {fileID: 6145563117216106575}
-  keyBangorOpen: {fileID: 7325498145180684571}
+  hammer: {fileID: 6145563117216106575}
+  hammerOpen: {fileID: 7325498145180684571}
 --- !u!1 &5387411159568294285
 GameObject:
   m_ObjectHideFlags: 0

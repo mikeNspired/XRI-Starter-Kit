@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
+using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class AutoEnablePlayerRig : MonoBehaviour
     {
-        [SerializeField] private bool isEnabled;
-        [SerializeField] private GameObject viveRig;
-        [SerializeField] private GameObject oculusRig;
-        [SerializeField] private GameObject windowsRig;
+        [SerializeField] private bool isEnabled = true;
+        [SerializeField] private GameObject viveRig = null;
+        [SerializeField] private GameObject oculusRig = null;
+        [SerializeField] private GameObject windowsRig = null;
+        [SerializeField] private InventoryManager inventoryManager = null;
+        [SerializeField] private AmmoBackPack ammoBackPack = null;
 
         private void Awake()
         {
@@ -37,10 +40,6 @@ namespace MikeNspired.UnityXRHandPoser
                 SetRigActive(viveRig);
             else
                 SetRigActive(oculusRig);
-
-            yield return new WaitForEndOfFrame();
-
-            SetAllCanvasesToRig();
         }
 
         private void SetRigActive(GameObject rig)
@@ -50,15 +49,33 @@ namespace MikeNspired.UnityXRHandPoser
             windowsRig.SetActive(false);
 
             rig.SetActive(true);
+
+            SetVariables(rig);
         }
 
-        private void SetAllCanvasesToRig()
+        private void SetVariables(GameObject rig)
         {
-            var canvases = FindObjectsOfType<Canvas>();
-            // foreach (var canvas in canvases)
-            // {
-            //     canvas.worldCamera = Camera.main;
-            // }
+            var directInteractors = GetComponentsInChildren<XRDirectInteractor>();
+            foreach (var interactor in directInteractors)
+            {
+                var controller = interactor.GetComponent<XRController>();
+                if (controller.controllerNode == XRNode.LeftHand)
+                {
+                    if (inventoryManager)
+                        inventoryManager.leftController = controller;
+                    if (ammoBackPack)
+                        ammoBackPack.leftHand = interactor;
+                }
+                else
+                {
+                    if (inventoryManager)
+                        inventoryManager.rightController = controller;
+                    if (ammoBackPack)
+                        ammoBackPack.rightHand = interactor;
+                }
+            }
+
+            ammoBackPack.ClearControllers();
         }
     }
 }

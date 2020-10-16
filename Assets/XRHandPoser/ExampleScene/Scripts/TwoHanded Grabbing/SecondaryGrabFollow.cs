@@ -78,8 +78,6 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (currentHand) //Release if main hand lets go{
             {
-                Debug.Log(currentHand + " ||||| " + interactable);
-                Debug.Log("Called release");
                 interactionManager.SelectExit_public(currentHand, interactable);
             }
             ResetMainHandAttachTransform();

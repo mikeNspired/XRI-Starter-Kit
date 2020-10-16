@@ -25,11 +25,11 @@ namespace MikeNspired.UnityXRHandPoser
 
         private InputDevice inputDevice;
         private bool IsGripped;
-
+  
         private void Start()
         {
             OnValidate();
-            if (xrController)
+            if (xrController) 
                 inputDevice = xrController.inputDevice;
             else
                 enabled = false;
