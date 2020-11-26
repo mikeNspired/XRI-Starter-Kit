@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class VelocityTracker : MonoBehaviour
 {
-    [SerializeField] private Transform controller;
+    [SerializeField] private Transform trackedObject;
     [SerializeField] private bool isActive = false;
 
     const int k_ThrowSmoothingFrameCount = 20;
@@ -36,7 +36,7 @@ public class VelocityTracker : MonoBehaviour
 
     public void SetController(Transform controller)
     {
-        this.controller = controller;
+        this.trackedObject = controller;
     }
     public void StartTracking()
     {
@@ -61,8 +61,8 @@ public class VelocityTracker : MonoBehaviour
     
     void SmoothVelocityStart()
     {
-        m_LastPosition = controller.position;
-        m_LastRotation = controller.rotation;
+        m_LastPosition = trackedObject.position;
+        m_LastRotation = trackedObject.rotation;
         Array.Clear(m_ThrowSmoothingFrameTimes, 0, m_ThrowSmoothingFrameTimes.Length);
         Array.Clear(m_ThrowSmoothingVelocityFrames, 0, m_ThrowSmoothingVelocityFrames.Length);
         Array.Clear(m_ThrowSmoothingAngularVelocityFrames, 0, m_ThrowSmoothingAngularVelocityFrames.Length);
@@ -80,15 +80,15 @@ public class VelocityTracker : MonoBehaviour
     void SmoothVelocityUpdate()
     {
         m_ThrowSmoothingFrameTimes[m_ThrowSmoothingCurrentFrame] = Time.time;
-        m_ThrowSmoothingVelocityFrames[m_ThrowSmoothingCurrentFrame] = (controller.position - m_LastPosition) / Time.deltaTime;
+        m_ThrowSmoothingVelocityFrames[m_ThrowSmoothingCurrentFrame] = (trackedObject.position - m_LastPosition) / Time.deltaTime;
 
-        Quaternion VelocityDiff = (controller.rotation * Quaternion.Inverse(m_LastRotation));
+        Quaternion VelocityDiff = (trackedObject.rotation * Quaternion.Inverse(m_LastRotation));
         m_ThrowSmoothingAngularVelocityFrames[m_ThrowSmoothingCurrentFrame] = (new Vector3(Mathf.DeltaAngle(0, VelocityDiff.eulerAngles.x), Mathf.DeltaAngle(0, VelocityDiff.eulerAngles.y), Mathf.DeltaAngle(0, VelocityDiff.eulerAngles.z))
                                                                                / Time.deltaTime) * Mathf.Deg2Rad;
 
         m_ThrowSmoothingCurrentFrame = (m_ThrowSmoothingCurrentFrame + 1) % k_ThrowSmoothingFrameCount;
-        m_LastPosition = controller.position;
-        m_LastRotation = controller.rotation;
+        m_LastPosition = trackedObject.position;
+        m_LastRotation = trackedObject.rotation;
     }
 
     Vector3 getSmoothedVelocityValue(Vector3[] velocityFrames)
