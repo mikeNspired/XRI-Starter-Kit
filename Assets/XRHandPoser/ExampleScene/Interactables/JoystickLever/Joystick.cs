@@ -5,11 +5,10 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
-[ExecuteInEditMode]
 public class Joystick : MonoBehaviour
 {
     [SerializeField] private XRGrabInteractable xrGrabInteractable = null;
-    [SerializeField] private Transform rotationPoint= null;
+    [SerializeField] private Transform rotationPoint = null;
     [SerializeField] private float maxAngle = 60;
     [SerializeField] private float shaftLength = .2f;
     [SerializeField] private bool returnToStartOnRelease = true;
@@ -20,13 +19,18 @@ public class Joystick : MonoBehaviour
 
     private Transform hand;
     private Vector2 currentVector;
-    
+    private Transform originalPositionTracker;
     public Vector2 CurrentVector => currentVector;
     public UnityEventVector2 OnValueChanged;
     public UnityEventFloat OnSingleValuesChanged;
 
     private void Start()
     {
+        originalPositionTracker = new GameObject("originalPositionTracker").transform;
+        originalPositionTracker.parent = transform.parent;
+        originalPositionTracker.localPosition = transform.localPosition;
+        originalPositionTracker.localRotation = transform.localRotation;
+
         OnValidate();
         xrGrabInteractable.onSelectEnter.AddListener(OnGrab);
         xrGrabInteractable.onSelectExit.AddListener((x) => hand = null);
@@ -54,11 +58,15 @@ public class Joystick : MonoBehaviour
 
     private void Update()
     {
+        transform.position = originalPositionTracker.position;
+        transform.rotation = originalPositionTracker.rotation;
+
         if (!hand) return;
+
         //Projection
         Vector3 positionToProject = hand.position;
         Vector3 v = positionToProject - transform.position;
-        Vector3 projection = Vector3.ProjectOnPlane(v, transform.up);
+        Vector3 projection = Vector3.ProjectOnPlane(v, originalPositionTracker.up);
 
         Vector3 projectedPoint;
         if (xAxis & yAxis)
@@ -67,8 +75,6 @@ public class Joystick : MonoBehaviour
             projectedPoint = transform.position + new Vector3(Mathf.Clamp(projection.x, -1, 1), 0, Mathf.Clamp(projection.z, -1, 1));
 
         var locRot = transform.InverseTransformPoint(projectedPoint);
-
-       // locRot = Vector3.ClampMagnitude(locRot, shaftLength);
 
         SetPosition(locRot);
     }
@@ -80,20 +86,12 @@ public class Joystick : MonoBehaviour
 
         if (xAxis & yAxis)
             currentVector = Vector2.ClampMagnitude(new Vector2(x, z), 1);
-        
+
         if (!xAxis)
             currentVector = new Vector2(0, Mathf.Clamp(z, -1, 1));
-        if (!yAxis) 
-                currentVector = new Vector2(Mathf.Clamp(x,-1,1), 0);
+        if (!yAxis)
+            currentVector = new Vector2(Mathf.Clamp(x, -1, 1), 0);
 
-
-        // if (xAxis & yAxis)
-        //     currentVector = Vector2.ClampMagnitude(new Vector2(x, z), 1);
-        //
-        // if (!xAxis)
-        //     currentVector = new Vector2(0, Mathf.Clamp(z,-1,1));
-        // if (!yAxis) 
-        //     currentVector = new Vector2(Mathf.Clamp(x,-1,1), 0);
         rotationPoint.localEulerAngles = new Vector3(currentVector.y * maxAngle, 0, -currentVector.x * maxAngle);
 
         InvokeEvents(currentVector);
@@ -111,7 +109,7 @@ public class Joystick : MonoBehaviour
     private IEnumerator ReturnToZero()
     {
         if (!returnToStartOnRelease) yield break;
-
+        
         while (currentVector.magnitude >= .01f)
         {
             currentVector = Vector2.Lerp(currentVector, returnToPosition, Time.deltaTime * returnSpeed);
@@ -119,7 +117,7 @@ public class Joystick : MonoBehaviour
             OnValueChanged.Invoke(currentVector);
             yield return null;
         }
-
+        
         currentVector = Vector2.zero;
         rotationPoint.localEulerAngles = Vector3.zero;
         OnValueChanged.Invoke(currentVector);
