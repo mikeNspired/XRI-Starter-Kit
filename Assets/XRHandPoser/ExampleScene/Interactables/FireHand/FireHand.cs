@@ -30,8 +30,8 @@ namespace MikeNspired.UnityXRHandPoser
 
             grabInteractable = GetComponent<XRGrabInteractable>();
 
-            grabInteractable.onSelectEnter.AddListener(call: OnGrab);
-            grabInteractable.onSelectExit.AddListener(call: OnRelease);
+            grabInteractable.onSelectEntered.AddListener(call: OnGrab);
+            grabInteractable.onSelectExited.AddListener(call: OnRelease);
 
             grabInteractable.onActivate.AddListener(call: StartPower);
             grabInteractable.onDeactivate.AddListener(call: StopPower);

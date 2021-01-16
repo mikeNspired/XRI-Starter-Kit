@@ -19,11 +19,11 @@ namespace MikeNspired.UnityXRHandPoser
         private void Awake()
         {
             OnValidate();
-            interactable.onSelectEnter.AddListener(SetupHandHoldingThis);
-            interactable.onSelectExit.AddListener(DisableHandHoldingThis);
+            interactable.onSelectEntered.AddListener(SetupHandHoldingThis);
+            interactable.onSelectExited.AddListener(DisableHandHoldingThis);
 
-            mainInteractable.onSelectEnter.AddListener(SetupMainInteractableHand);
-            mainInteractable.onSelectExit.AddListener(DisableMainInteractableHand);
+            mainInteractable.onSelectEntered.AddListener(SetupMainInteractableHand);
+            mainInteractable.onSelectExited.AddListener(DisableMainInteractableHand);
 
             //Set starting position, rotation, and parent of interactable to return to when released
             interactableStartingTransformData.SetTransformStruct(interactable.transform.localPosition,
@@ -78,7 +78,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (currentHand) //Release if main hand lets go{
             {
-                interactionManager.SelectExit_public(currentHand, interactable);
+                interactionManager.SelectExit(currentHand, interactable);
             }
             ResetMainHandAttachTransform();
             mainGripHand = null;

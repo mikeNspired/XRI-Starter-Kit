@@ -10,7 +10,7 @@ public class HeadSetConfiguration : ScriptableObject
     public float teleportRayEnablerActivation = .9f;
     public InputHelpers.Button teleportInteractor = InputHelpers.Button.Grip;
     public float teleportActivationThreshold = .75f;
-    public SnapTurnProvider.InputAxes snapTurn = SnapTurnProvider.InputAxes.Primary2DAxis;
+   // public SnapTurnProvider.InputAxes snapTurn = SnapTurnProvider.InputAxes.Primary2DAxis;
     public PlayerMovementCharacterController.InputAxes playerMovement = PlayerMovementCharacterController.InputAxes.Primary2DAxis;
     public bool movePlayerOnPadClick = false;
     public InputHelpers.Button playerCrouch = InputHelpers.Button.SecondaryAxis2DDown;

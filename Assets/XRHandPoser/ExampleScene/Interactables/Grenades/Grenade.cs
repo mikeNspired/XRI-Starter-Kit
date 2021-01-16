@@ -23,7 +23,7 @@ public class Grenade : MonoBehaviour
         OnValidate();
         interactable = GetComponent<XRGrabInteractable>();
         interactable.onActivate.AddListener(TurnOnGrenade);
-        interactable.onSelectExit.AddListener(Activate);
+        interactable.onSelectExited.AddListener(Activate);
         if (meshLightActivation)
             meshLightActivation.SetActive(false);
     }
@@ -59,7 +59,7 @@ public class Grenade : MonoBehaviour
         Explosion.transform.localEulerAngles = Vector3.zero;
 
         if (interactable.selectingInteractor)
-            interactionManager.SelectExit_public(interactable.selectingInteractor, interactable);
+            interactionManager.SelectExit(interactable.selectingInteractor, interactable);
 
         StartCoroutine(MoveAndDisableCollider());
         //gameObject.SetActive(false);

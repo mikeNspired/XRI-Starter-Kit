@@ -290,10 +290,10 @@ namespace MikeNspired.UnityXRHandPoser
         }
 
         private void ReleaseItemFromHand(XRBaseInteractor interactor, XRBaseInteractable interactable) =>
-            interactionManager.SelectExit_public(interactor, interactable);
+            interactionManager.SelectExit(interactor, interactable);
 
         private void GrabNewItem(XRBaseInteractor interactor, XRBaseInteractable interactable) =>
-            interactionManager.SelectEnter_public(interactor, interactable);
+            interactionManager.SelectEnter(interactor, interactable);
 
 
         private void SetupNewMeshClone(XRBaseInteractable itemHandIsHolding)
@@ -438,7 +438,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnTriggerEnter(Collider other)
         {
-            var controller = other.GetComponent<XRController>();
+            var controller = other.GetComponent<ActionBasedController>();
             if (controller)
             {
                 slotDisplayToAddItem.GetComponent<Animator>().SetBool(onHoverAnimatorHash, true);
@@ -448,7 +448,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnTriggerExit(Collider other)
         {
-            var controller = other.GetComponent<XRController>();
+            var controller = other.GetComponent<ActionBasedController>();
             if (controller)
             {
                 slotDisplayToAddItem.GetComponent<Animator>().SetBool(onHoverAnimatorHash, false);

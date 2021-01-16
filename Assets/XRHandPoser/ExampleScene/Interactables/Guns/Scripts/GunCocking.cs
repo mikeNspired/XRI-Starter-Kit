@@ -34,9 +34,9 @@ public class GunCocking : MonoBehaviour
     {
         OnValidate();
 
-        xrGrabInteractable.onSelectEnter.AddListener(OnGrabbed);
-        xrGrabInteractable.onSelectExit.AddListener(OnRelease);
-        mainGrabInteractable.onSelectExit.AddListener(ReleaseIfMainHandReleased);
+        xrGrabInteractable.onSelectEntered.AddListener(OnGrabbed);
+        xrGrabInteractable.onSelectExited.AddListener(OnRelease);
+        mainGrabInteractable.onSelectExited.AddListener(ReleaseIfMainHandReleased);
 
         originalParent = transform.parent;
         LocalAxis.Normalize();
@@ -81,7 +81,7 @@ public class GunCocking : MonoBehaviour
     private void ReleaseIfMainHandReleased(XRBaseInteractor hand)
     {
         if (currentHand && xrGrabInteractable)
-            interactionManager.SelectExit_public(currentHand, xrGrabInteractable);
+            interactionManager.SelectExit(currentHand, xrGrabInteractable);
     }
 
     private void SlideFromHandPosition()

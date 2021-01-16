@@ -18,8 +18,8 @@ namespace MikeNspired.UnityXRHandPoser
         {
             OnValidate();
             highlightModel.SetActive(false);
-            xrGrabInteractable.onSelectEnter.AddListener(x => DisableHighlighting());
-            xrGrabInteractable.onSelectExit.AddListener(x => EnableHighlighting());
+            xrGrabInteractable.onSelectEntered.AddListener(x => DisableHighlighting());
+            xrGrabInteractable.onSelectExited.AddListener(x => EnableHighlighting());
         }
 
         private void OnValidate()

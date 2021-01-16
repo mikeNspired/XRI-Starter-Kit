@@ -268,7 +268,7 @@ public class DialInteractable : XRGrabInteractable
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
 
-    protected override void OnSelectEnter(XRBaseInteractor interactor)
+    protected override void OnSelectEntered(XRBaseInteractor interactor)
     {
         StopAllCoroutines();
 
@@ -290,12 +290,12 @@ public class DialInteractable : XRGrabInteractable
             m_SyncTransform.position = transform.position;
         }
 
-        base.OnSelectEnter(interactor);
+        base.OnSelectEntered(interactor);
     }
 
-    protected override void OnSelectExit(XRBaseInteractor interactor)
+    protected override void OnSelectExited(XRBaseInteractor interactor)
     {
-        base.OnSelectExit(interactor);
+        base.OnSelectExited(interactor);
         if (SnapOnRelease && Steps > 0)
         {
             Vector3 right = transform.TransformDirection(LocalAxisStart);

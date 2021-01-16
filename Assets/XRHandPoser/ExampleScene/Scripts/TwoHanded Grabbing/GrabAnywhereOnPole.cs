@@ -26,10 +26,10 @@ namespace MikeNspired.UnityXRHandPoser
         private void Start()
         {
             OnValidate();
-            Interactable.onSelectEnter.AddListener(controller => EnableFollowOnHand(controller, false));
-            Interactable.onSelectEnter.AddListener(SetHand);
-            Interactable.onSelectExit.AddListener(controller => EnableFollowOnHand(controller, true));
-            Interactable.onSelectExit.AddListener(ReleaseHand);
+            Interactable.onSelectEntered.AddListener(controller => EnableFollowOnHand(controller, false));
+            Interactable.onSelectEntered.AddListener(SetHand);
+            Interactable.onSelectExited.AddListener(controller => EnableFollowOnHand(controller, true));
+            Interactable.onSelectExited.AddListener(ReleaseHand);
         }
 
 
@@ -72,7 +72,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void EnableFollowOnHand(XRBaseInteractor hand, bool state)
         {
             currentGrabber = hand.transform;
-            if (hand.GetComponent<XRController>().controllerNode == XRNode.LeftHand)
+            if (hand.GetComponent<HandReference>().LeftRight == LeftRight.Left)
                 leftFollow = state;
             else
                 rightFollow = state;

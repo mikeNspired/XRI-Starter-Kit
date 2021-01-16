@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\MikenSpired\.Rider2019.3\config\extensions" t="IncludeRecursive" />
+    <e p="C:\Users\MikenSpired\.Rider2019.3\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\MikenSpired\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_XRHandPoser - Copy.70561808.00" t="ExcludeRecursive" />
+    <e p="C:\Users\MikenSpired\Desktop\Git\XRHandPoser\XRHandPoser - Copy" t="IncludeRecursive">
+      <e p="Assembly-CSharp.csproj" t="IncludeRecursive" />
+      <e p="Assets" t="Include">
+        <e p="com.unity.xr.interaction.toolkit@1.0.0-pre.1" t="Include">
+          <e p="Runtime" t="Include">
+            <e p="AR" t="Include">
+              <e p="Gestures" t="Include">
+                <e p="DragGesture.cs" t="Include" />
+                <e p="DragGestureRecognizer.cs" t="Include" />
+                <e p="Gesture.cs" t="Include" />
+                <e p="GestureRecognizer.cs" t="Include" />
+                <e p="GestureTouchesUtility.cs" t="Include" />
+                <e p="PinchGesture.cs" t="Include" />
+                <e p="PinchGestureRecognizer.cs" t="Include" />
+                <e p="TapGesture.cs" t="Include" />
+                <e p="TapGestureRecognizer.cs" t="Include" />
+                <e p="TwistGesture.cs" t="Include" />
+                <e p="TwistGestureRecognizer.cs" t="Include" />
+                <e p="TwoFingerDragGesture.cs" t="Include" />
+                <e p="TwoFingerDragGestureRecognizer.cs" t="Include" />
+              </e>
+              <e p="Interactables" t="Include">
+                <e p="ARAnnotationInteractable.cs" t="Include" />
+                <e p="ARBaseGestureInteractable.cs" t="Include" />
+                <e p="ARPlacementInteractable.cs" t="Include" />
+                <e p="ARRotationInteractable.cs" t="Include" />
+                <e p="ARScaleInteractable.cs" t="Include" />
+                <e p="ARSelectionInteractable.cs" t="Include" />
+                <e p="ARTranslationInteractable.cs" t="Include" />
+                <e p="GestureTransformationUtility.cs" t="Include" />
+              </e>
+              <e p="Interactors" t="Include">
+                <e p="ARGestureInteractor.cs" t="Include" />
+              </e>
+            </e>
+            <e p="AssemblyInfo.cs" t="Include" />
+            <e p="Inputs" t="Include">
+              <e p="CardinalUtility.cs" t="Include" />
+              <e p="InputActionManager.cs" t="Include" />
+              <e p="InputActionPropertyExtensions.cs" t="Include" />
+              <e p="Interactions" t="Include">
+                <e p="SectorInteraction.cs" t="Include" />
+              </e>
+              <e p="Simulation" t="Include">
+                <e p="SimulatedInputLayoutLoader.cs" t="Include" />
+                <e p="XRDeviceSimulator.cs" t="Include" />
+                <e p="XRSimulatedController.cs" t="Include" />
+                <e p="XRSimulatedControllerState.cs" t="Include" />
+                <e p="XRSimulatedHMD.cs" t="Include" />
+                <e p="XRSimulatedHMDState.cs" t="Include" />
+              </e>
+            </e>
+            <e p="Interaction" t="Include">
+              <e p="Controllers" t="Include">
+                <e p="ActionBasedController.cs" t="Include" />
+                <e p="XRBaseController.cs" t="Include" />
+                <e p="XRBaseControllerProvider.cs" t="Include" />
+                <e p="XRController.cs" t="Include" />
+                <e p="XRControllerRecorder.cs" t="Include" />
+                <e p="XRControllerRecording.cs" t="Include" />
+              </e>
+              <e p="Interactables" t="Include">
+                <e p="Helpers" t="Include">
+                  <e p="XRTintInteractableVisual.cs" t="Include" />
+                </e>
+                <e p="XRBaseInteractable.cs" t="Include" />
+                <e p="XRGrabInteractable.cs" t="Include" />
+                <e p="XRSimpleInteractable.cs" t="Include" />
+              </e>
+              <e p="Interactors" t="Include">
+                <e p="Helpers" t="Include">
+                  <e p="IXRCustomReticleProvider.cs" t="Include" />
+                  <e p="XRInteractorLineVisual.cs" t="Include" />
+                  <e p="XRInteractorReticleVisual.cs" t="Include" />
+                </e>
+                <e p="XRBaseControllerInteractor.cs" t="Include" />
+                <e p="XRBaseInteractor.cs" t="Include" />
+                <e p="XRDirectInteractor.cs" t="Include" />
+                <e p="XRRayInteractor.cs" t="Include" />
+                <e p="XRSocketInteractor.cs" t="Include" />
+              </e>
+              <e p="XRInteractionManager.cs" t="Include" />
+              <e p="XRInteractionUpdateOrder.cs" t="Include" />
+            </e>
+            <e p="Locomotion" t="Include">
+              <e p="CharacterControllerDriver.cs" t="Include" />
+              <e p="Continuous" t="Include">
+                <e p="ActionBasedContinuousMoveProvider.cs" t="Include" />
+                <e p="ActionBasedContinuousTurnProvider.cs" t="Include" />
+                <e p="ContinuousMoveProviderBase.cs" t="Include" />
+                <e p="ContinuousTurnProviderBase.cs" t="Include" />
+                <e p="DeviceBasedContinuousMoveProvider.cs" t="Include" />
+                <e p="DeviceBasedContinuousTurnProvider.cs" t="Include" />
+              </e>
+              <e p="LocomotionProvider.cs" t="Include" />
+              <e p="LocomotionSystem.cs" t="Include" />
+              <e p="SnapTurn" t="Include">
+                <e p="ActionBasedSnapTurnProvider.cs" t="Include" />
+                <e p="DeviceBasedSnapTurnProvider.cs" t="Include" />
+                <e p="SnapTurnProviderBase.cs" t="Include" />
+              </e>
+              <e p="Teleportation" t="Include">
+                <e p="BaseTeleportationInteractable.cs" t="Include" />
+                <e p="TeleportationAnchor.cs" t="Include" />
+                <e p="TeleportationArea.cs" t="Include" />
+                <e p="TeleportationProvider.cs" t="Include" />
+              </e>
+            </e>
+            <e p="UI" t="Include">
+              <e p="JoystickModel.cs" t="Include" />
+              <e p="MouseModel.cs" t="Include" />
+              <e p="TouchModel.cs" t="Include" />
+              <e p="TrackedDeviceEventData.cs" t="Include" />
+              <e p="TrackedDeviceGraphicRaycaster.cs" t="Include" />
+              <e p="TrackedDeviceModel.cs" t="Include" />
+              <e p="UIInputModule.cs" t="Include" />
+              <e p="XRUIInputModule.cs" t="Include" />
+            </e>
+            <e p="Unity.XR.Interaction.asmdef" t="Include" />
+            <e p="XR" t="Include">
+              <e p="GizmoHelpers.cs" t="Include" />
+              <e p="InputHelpers.cs" t="Include" />
+              <e p="SortingHelpers.cs" t="Include" />
+              <e p="XRRig.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="Development Aid Scripts" t="Include">
+          <e p="Filming Camera" t="Include">
+            <e p="FilmingCamera.cs" t="Include" />
+          </e>
+        </e>
+        <e p="TeleportationAreaManager.cs" t="Include" />
+        <e p="XRHandPoser" t="Include">
+          <e p="Core" t="Include">
+            <e p="Audio" t="Include">
+              <e p="Scripts" t="Include">
+                <e p="AudioRandomize.cs" t="Include" />
+                <e p="GrabAudioEffect.cs" t="Include" />
+              </e>
+            </e>
+            <e p="Scripts" t="Include">
+              <e p="AnimationTransformMove.cs" t="Include" />
+              <e p="Editor" t="Include">
+                <e p="HandAnimatorEditor.cs" t="Include" />
+                <e p="MikeNspired.XRHandPoser.Editor.asmdef" t="Include" />
+                <e p="XRHandPoserEditor.cs" t="Include" />
+              </e>
+              <e p="HandAnimator.cs" t="Include" />
+              <e p="HandPoser.cs" t="Include" />
+              <e p="HandPoserSettings.cs" t="Include" />
+              <e p="HandReference.cs" t="Include" />
+              <e p="HandType.cs" t="Include" />
+              <e p="Note.cs" t="Include" />
+              <e p="Pose.cs" t="Include" />
+              <e p="TransformStruct.cs" t="Include" />
+              <e p="UnityXR" t="Include">
+                <e p="XRControllerButtons.cs" t="Include" />
+                <e p="XRHandPoser.cs" t="Include" />
+                <e p="XRHandPoserHoverActivate.cs" t="Include" />
+              </e>
+            </e>
+          </e>
+          <e p="ExampleScene" t="Include">
+            <e p="Features" t="Include">
+              <e p="Distance Grabbing" t="Include">
+                <e p="Scripts" t="Include">
+                  <e p="DistanceGrabber.cs" t="Include" />
+                  <e p="DistanceGrabberLineBender.cs" t="Include" />
+                </e>
+              </e>
+              <e p="Inventory" t="Include">
+                <e p="Scripts" t="Include">
+                  <e p="InventoryGrabInteract.cs" t="Include" />
+                  <e p="InventoryManager.cs" t="Include" />
+                  <e p="InventorySlot.cs" t="Include" />
+                  <e p="InventorySlotTextUpdater.cs" t="Include" />
+                  <e p="InventoryTouchInteract.cs" t="Include" />
+                </e>
+              </e>
+            </e>
+            <e p="Interactables" t="Include">
+              <e p="Door" t="Include">
+                <e p="ColliderDisableMoveReturn.cs" t="Include" />
+                <e p="Door.cs" t="Include" />
+              </e>
+              <e p="FireHand" t="Include">
+                <e p="FireHand.cs" t="Include" />
+              </e>
+              <e p="FlashLight" t="Include">
+                <e p="FlashLight.cs" t="Include" />
+              </e>
+              <e p="Grenades" t="Include">
+                <e p="Grenade.cs" t="Include" />
+              </e>
+              <e p="Guns" t="Include">
+                <e p="Scripts" t="Include">
+                  <e p="GunCocking.cs" t="Include" />
+                  <e p="GunType.cs" t="Include" />
+                  <e p="HandGunFireAnimation.cs" t="Include" />
+                  <e p="Magazine.cs" t="Include" />
+                  <e p="MagazineAttachPoint.cs" t="Include" />
+                  <e p="MatchTransform.cs" t="Include" />
+                  <e p="ProjectileWeapon.cs" t="Include" />
+                  <e p="SimpleCollisionDamage.cs" t="Include" />
+                </e>
+              </e>
+              <e p="JoystickLever" t="Include">
+                <e p="Joystick.cs" t="Include" />
+                <e p="LeverExample.cs" t="Include" />
+              </e>
+            </e>
+            <e p="MiniGames" t="Include">
+              <e p="BottleBreak" t="Include">
+                <e p="Bottle.cs" t="Include" />
+                <e p="BottleBreakGame.cs" t="Include" />
+                <e p="BottleTargetSpawner.cs" t="Include" />
+              </e>
+              <e p="Bowling" t="Include">
+                <e p="Scripts" t="Include">
+                  <e p="BowlingBall.cs" t="Include" />
+                  <e p="BowlingLaneManager.cs" t="Include" />
+                  <e p="Lane.cs" t="Include" />
+                  <e p="Pin.cs" t="Include" />
+                  <e p="ScoreCard.cs" t="Include" />
+                  <e p="ScoreSlot.cs" t="Include" />
+                </e>
+              </e>
+              <e p="Multiuse" t="Include">
+                <e p="AnimateTransform.cs" t="Include" />
+                <e p="FloatSO.cs" t="Include" />
+                <e p="FloatSoSetText.cs" t="Include" />
+                <e p="IDamageable.cs" t="Include" />
+              </e>
+              <e p="Targets" t="Include">
+                <e p="AnimateBounce.cs" t="Include" />
+                <e p="Target.cs" t="Include" />
+                <e p="TargetManager.cs" t="Include" />
+              </e>
+            </e>
+            <e p="Official Unity Assets" t="Include">
+              <e p="EffectExamples" t="Include">
+                <e p="FireExplosionEffects" t="Include">
+                  <e p="SurfaceShader_VC.shader" t="Include" />
+                </e>
+                <e p="Misc Effects" t="Include">
+                  <e p="Scripts" t="Include">
+                    <e p="SpawnEffect.cs" t="Include" />
+                  </e>
+                  <e p="Shaders" t="Include">
+                    <e p="Dissolve.shader" t="Include" />
+                    <e p="Respawn.shader" t="Include" />
+                  </e>
+                </e>
+              </e>
+            </e>
+            <e p="Scripts" t="Include">
+              <e p="CanvasGetEventCamera.cs" t="Include" />
+              <e p="CollidersSetToTrigger.cs" t="Include" />
+              <e p="CollisionSound.cs" t="Include" />
+              <e p="DestroyAfterTime.cs" t="Include" />
+              <e p="DisableAtStart.cs" t="Include" />
+              <e p="DisableScriptOnSelectEnter.cs" t="Include" />
+              <e p="EnableDisableRepeat.cs" t="Include" />
+              <e p="FadeAudioAfterTime.cs" t="Include" />
+              <e p="GameObjectListActivator.cs" t="Include" />
+              <e p="GrabInteractableButtonEvents.cs" t="Include" />
+              <e p="Highlight.cs" t="Include" />
+              <e p="InteractableForceActionTrigger.cs" t="Include" />
+              <e p="InteractableItemData.cs" t="Include" />
+              <e p="IReturnMovedColliders.cs" t="Include" />
+              <e p="MatchHandRotationOnSelect.cs" t="Include" />
+              <e p="Modified VRBeginner Scripts" t="Include">
+                <e p="AxisDragInteractable.cs" t="Include" />
+                <e p="ButtonInteractable.cs" t="Include" />
+                <e p="DialInteractable.cs" t="Include" />
+              </e>
+              <e p="OnGrabEnableDisable.cs" t="Include" />
+              <e p="Player" t="Include">
+                <e p="AutoEnablePlayerRig.cs" t="Include" />
+                <e p="IgnoreCharacterControllerCollider.cs" t="Include" />
+                <e p="PlayerCrouch.cs" t="Include" />
+                <e p="PlayerMovement.cs" t="Include" />
+                <e p="PlayerMovementCharacterController.cs" t="Include" />
+                <e p="PlayerMovementNoCC.cs" t="Include" />
+                <e p="TeleportRayEnabler.cs" t="Include" />
+              </e>
+              <e p="RotateOverTime.cs" t="Include" />
+              <e p="SetRigidBodyCenterOfMass.cs" t="Include" />
+              <e p="SetWorldLighting.cs" t="Include" />
+              <e p="SpawnIfNothingBlocking.cs" t="Include" />
+              <e p="StopParticlesystemAfterTime.cs" t="Include" />
+              <e p="TwoHanded Grabbing" t="Include">
+                <e p="GrabAnywhereOnPole.cs" t="Include" />
+                <e p="RecoilReduceOnInteractableGrab.cs" t="Include" />
+                <e p="SecondaryGrabFollow.cs" t="Include" />
+              </e>
+              <e p="UnparentAfterTime.cs" t="Include" />
+              <e p="XRToolKit Helper" t="Include">
+                <e p="InputActionReferenceExtensions.cs" t="Include" />
+              </e>
+            </e>
+            <e p="WIP" t="Include">
+              <e p="AmmoBackPack" t="Include">
+                <e p="AmmoBackPack.cs" t="Include" />
+              </e>
+              <e p="Climbing" t="Include">
+                <e p="ClimbingHealthHandStamina.cs" t="Include" />
+                <e p="Ladder" t="Include">
+                  <e p="ClimbGrabPoint.cs" t="Include" />
+                  <e p="MoveToLocation.cs" t="Include" />
+                  <e p="PlayerClimbingXR.cs" t="Include" />
+                </e>
+              </e>
+              <e p="ConfigureHeadSetControls.cs" t="Include" />
+              <e p="HeadSetConfiguration.cs" t="Include" />
+              <e p="VelocityTracker.cs" t="Include" />
+            </e>
+            <e p="XR-Interaction-Toolkit-Assets" t="Include">
+              <e p="VR" t="Include">
+                <e p="Scripts" t="Include">
+                  <e p="ActionBasedControllerManager.cs" t="Include" />
+                  <e p="BubbleGun.cs" t="Include" />
+                  <e p="ComplexCube.cs" t="Include" />
+                  <e p="ControllerManager.cs" t="Include" />
+                  <e p="LocomotionConfigurationMenu.cs" t="Include" />
+                  <e p="LocomotionSchemeManager.cs" t="Include" />
+                  <e p="UpdateControlText.cs" t="Include" />
+                </e>
+                <e p="Shaders" t="Include">
+                  <e p="pulsingEffectShader.shader" t="Include" />
+                  <e p="ReticleShader.shader" t="Include" />
+                  <e p="SimpleTeleportHighlight.shader" t="Include" />
+                  <e p="Unlit-Line-Opaque.shader" t="Include" />
+                </e>
+                <e p="TextMesh Pro" t="Include">
+                  <e p="Fonts" t="Include">
+                    <e p="LiberationSans - OFL.txt" t="Include" />
+                  </e>
+                  <e p="Resources" t="Include">
+                    <e p="LineBreaking Following Characters.txt" t="Include" />
+                    <e p="LineBreaking Leading Characters.txt" t="Include" />
+                    <e p="Shaders" t="Include">
+                      <e p="TMP_Bitmap-Custom-Atlas.shader" t="Include" />
+                      <e p="TMP_Bitmap-Mobile.shader" t="Include" />
+                      <e p="TMP_Bitmap.shader" t="Include" />
+                      <e p="TMP_SDF Overlay.shader" t="Include" />
+                      <e p="TMP_SDF-Mobile Masking.shader" t="Include" />
+                      <e p="TMP_SDF-Mobile Overlay.shader" t="Include" />
+                      <e p="TMP_SDF-Mobile.shader" t="Include" />
+                      <e p="TMP_SDF-Surface-Mobile.shader" t="Include" />
+                      <e p="TMP_SDF-Surface.shader" t="Include" />
+                      <e p="TMP_SDF.shader" t="Include" />
+                      <e p="TMP_Sprite.shader" t="Include" />
+                      <e p="TMPro.cginc" t="Include" />
+                      <e p="TMPro_Properties.cginc" t="Include" />
+                      <e p="TMPro_Surface.cginc" t="Include" />
+                    </e>
+                  </e>
+                  <e p="Sprites" t="Include">
+                    <e p="EmojiOne Attribution.txt" t="Include" />
+                  </e>
+                </e>
+              </e>
+            </e>
+          </e>
+          <e p="MikeNspiredXRHandPoser.Runtime.asmdef" t="Include" />
+        </e>
+      </e>
+      <e p="MikeNspired XR HandPoser Editor.csproj" t="IncludeRecursive" />
+      <e p="MikeNspiredXRHandPoser.Runtime.csproj" t="IncludeRecursive" />
+      <e p="obj" t="ExcludeRecursive" />
+      <e p="Packages" t="ExcludeRecursive" />
+      <e p="Temp\bin" t="ExcludeRecursive" />
+      <e p="Unity.XR.Interaction.Toolkit2.csproj" t="IncludeRecursive" />
+      <e p="XRHandPoser - Copy.sln" t="IncludeFlat" />
+    </e>
+  </component>
+</project>

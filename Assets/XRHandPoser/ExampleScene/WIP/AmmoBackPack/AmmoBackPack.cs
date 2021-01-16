@@ -9,119 +9,45 @@ public class AmmoBackPack : MonoBehaviour
 {
     public XRDirectInteractor leftHand = null, rightHand = null;
 
-    [SerializeField] private InteractButton interactButton = InteractButton.grip;
     [SerializeField] private XRGrabInteractable magazine = null;
     [SerializeField] private XRGrabInteractable magazine2 = null;
     [SerializeField] private GunType gunType1 = null;
     [SerializeField] private GunType gunType2 = null;
     [SerializeField] private float itemGrabTimeout = .5f;
     private float itemGrabTimeoutTimer;
-    private bool leftIsGripped, rightIsGripped;
-    private List<XRController> controllers = new List<XRController>();
     private XRInteractionManager interactionManager;
+    private XRSimpleInteractable simpleInteractable;
 
-
-    private enum InteractButton
-    {
-        trigger,
-        grip
-    };
-
-    private void OnTriggerEnter(Collider other)
-    {
-        var controller = other.GetComponent<XRController>();
-        if (controller && !controllers.Contains(controller))
-        {
-            controllers.Add(controller);
-            if (controller.controllerNode == XRNode.LeftHand)
-                leftIsGripped = true;
-            else
-                rightIsGripped = true;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        var controller = other.GetComponent<XRController>();
-        if (controller)
-            controllers.Remove(controller);
-    }
 
     private void Start()
     {
         OnValidate();
+
+        simpleInteractable.onActivate.AddListener(CheckControllerGrip);
     }
 
-    public void ClearControllers()
-    {
-        controllers.Clear();
-    }
 
     private void OnValidate()
     {
-        if (!interactionManager)
-            interactionManager = FindObjectOfType<XRInteractionManager>();
+        if (!simpleInteractable)
+            simpleInteractable = GetComponent<XRSimpleInteractable>();
     }
 
-    private InputDevice inputDevice;
-
-
-    private void Update()
+    private void CheckControllerGrip(XRBaseInteractor controller)
     {
-        itemGrabTimeoutTimer += Time.deltaTime;
-
-        if (controllers.Count == 0) return;
-
-        if (itemGrabTimeoutTimer <= itemGrabTimeout) return;
-        foreach (var controller in controllers)
-        {
-            CheckController(controller);
-        }
+        if (!IsControllerHoldingObject(controller))
+            TryGrabAmmo(controller.GetComponent<XRBaseInteractor>());
     }
 
-    private void CheckController(XRController controller)
-    {
-        if (interactButton == InteractButton.trigger)
-        {
-        }
-        else
-        {
-            if (controller.controllerNode == XRNode.LeftHand)
-                CheckControllerGrip(controller, ref leftIsGripped);
-            else
-                CheckControllerGrip(controller, ref rightIsGripped);
-        }
-    }
-
-    private void CheckControllerGrip(XRController controller, ref bool isGripped)
-    {
-        inputDevice = controller.inputDevice;
-        if (!inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out bool gripValue)) return;
-
-        if (!isGripped && gripValue) 
-        {
-            isGripped = true;
-            if (!IsControllerHoldingObject(controller))
-                TryGrabAmmo(controller.GetComponent<XRBaseInteractor>());
-        }
-        else if (isGripped && !gripValue)
-        {
-            isGripped = false;
-        }
-    }
-
-    private bool IsControllerHoldingObject(XRController controller)
+    private bool IsControllerHoldingObject(XRBaseInteractor controller)
     {
         return controller.GetComponent<XRDirectInteractor>().selectTarget;
     }
-
-    private void CheckControllerTrigger(XRController controller)
-    {
-    }
-
+    
     private void TryGrabAmmo(XRBaseInteractor interactor)
     {
         XRBaseInteractor currentInteractor;
+
         XRBaseInteractor handHoldingWeapon;
         if (interactor == leftHand)
         {
@@ -138,7 +64,6 @@ public class AmmoBackPack : MonoBehaviour
         if (!handHoldingWeapon || !handHoldingWeapon.selectTarget) return;
         if (currentInteractor.selectTarget) return;
 
-
         var gunType = handHoldingWeapon.selectTarget.GetComponentInChildren<MagazineAttachPoint>()?.GunType;
         if (!gunType) return;
 
@@ -148,18 +73,16 @@ public class AmmoBackPack : MonoBehaviour
         else if (gunType2 == gunType)
             newMagazine = Instantiate(magazine2);
         else newMagazine = Instantiate(magazine2);
-
         newMagazine.transform.position = currentInteractor.transform.position;
         newMagazine.transform.forward = currentInteractor.transform.forward;
-
         StartCoroutine(GrabItem(currentInteractor, newMagazine));
     }
 
-    IEnumerator GrabItem(XRBaseInteractor currentInteractor, XRGrabInteractable newMagazine)
+    private IEnumerator GrabItem(XRBaseInteractor currentInteractor, XRGrabInteractable newMagazine)
     {
         yield return new WaitForFixedUpdate();
         if (currentInteractor.selectTarget) yield break;
-        interactionManager.SelectEnter_public(currentInteractor, newMagazine);
+        interactionManager.SelectEnter(currentInteractor, newMagazine);
         itemGrabTimeoutTimer = 0;
     }
 }

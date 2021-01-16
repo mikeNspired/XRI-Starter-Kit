@@ -13,8 +13,8 @@ public class SetRigidBodyCenterOfMass : MonoBehaviour
     private void Start()
     {
         OnValidate();
-        xrGrabInteractable.onSelectEnter.AddListener((X) => rigidBody.centerOfMass = newCenterOfMass);
-        xrGrabInteractable.onSelectExit.AddListener((X) => rigidBody.ResetCenterOfMass());
+        xrGrabInteractable.onSelectEntered.AddListener((X) => rigidBody.centerOfMass = newCenterOfMass);
+        xrGrabInteractable.onSelectExited.AddListener((X) => rigidBody.ResetCenterOfMass());
     }
 
     private void OnValidate()

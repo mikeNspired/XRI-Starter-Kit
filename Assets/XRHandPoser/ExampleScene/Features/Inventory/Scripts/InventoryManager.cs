@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class InventoryManager : MonoBehaviour
     {
+        [SerializeField]
+        private InputActionReference openMenuInputLeftHand, openMenuInputRightHand;
         private InventorySlot[] inventorySlots;
-        [SerializeField] private InputHelpers.Button activationButton = InputHelpers.Button.MenuButton;
-        public XRController leftController = null, rightController = null;
+        public XRBaseController leftController = null, rightController = null;
         [SerializeField] private AudioSource enableAudio = null, disableAudio = null;
 
         [SerializeField] private bool lookAtController = false;
@@ -19,42 +21,27 @@ namespace MikeNspired.UnityXRHandPoser
 
             foreach (var itemSlot in inventorySlots)
                 itemSlot.StartCoroutine(itemSlot.CreateStartingItemAndDisable());
+            
+            openMenuInputLeftHand.GetInputAction().performed += x => ToggleInventoryAtController(false);
+            openMenuInputRightHand.GetInputAction().performed += x => ToggleInventoryAtController(true);
         }
 
         private void OnValidate()
         {
             inventorySlots = GetComponentsInChildren<InventorySlot>();
         }
-
-        private void Update()
+        private void OnEnable()
         {
-            if (leftController && rightController)
-                CheckController();
+            openMenuInputLeftHand.EnableAction();
+            openMenuInputRightHand.EnableAction();
+        } 
+
+        private void OnDisable()
+        { 
+            openMenuInputLeftHand.DisableAction();
+            openMenuInputRightHand.DisableAction();
         }
-
-        private bool buttonClicked;
-
-        private void CheckController()
-        {
-            float activationThreshold = .5f;
-            bool isRightHand = false;
-
-            leftController.inputDevice.IsPressed(activationButton, out bool isActive, activationThreshold);
-            if (!isActive)
-            {
-                rightController.inputDevice.IsPressed(activationButton, out isActive, activationThreshold);
-                isRightHand = true;
-            }
-
-            if (isActive && !buttonClicked)
-            {
-                buttonClicked = true;
-                ToggleInventoryAtController(isRightHand);
-            }
-            else if (!isActive)
-                buttonClicked = false;
-        }
-
+        
         private void ToggleInventoryAtController(bool isRightHand)
         {
             if (isRightHand)

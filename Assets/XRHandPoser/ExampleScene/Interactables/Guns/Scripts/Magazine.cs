@@ -27,8 +27,8 @@ namespace MikeNspired.UnityXRHandPoser
             startingColliderPosition = collider.transform.localPosition;
             
             OnValidate();
-            GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(x => OnGrab());
-            GetComponent<XRGrabInteractable>().onSelectExit.AddListener(x => isBeingGrabbed = false);
+            GetComponent<XRGrabInteractable>().onSelectEntered.AddListener(x => OnGrab());
+            GetComponent<XRGrabInteractable>().onSelectExited.AddListener(x => isBeingGrabbed = false);
         }
 
         private void OnGrab()

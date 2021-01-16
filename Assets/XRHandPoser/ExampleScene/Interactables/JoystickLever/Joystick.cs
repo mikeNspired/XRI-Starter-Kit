@@ -32,9 +32,9 @@ public class Joystick : MonoBehaviour
         originalPositionTracker.localRotation = transform.localRotation;
 
         OnValidate();
-        xrGrabInteractable.onSelectEnter.AddListener(OnGrab);
-        xrGrabInteractable.onSelectExit.AddListener((x) => hand = null);
-        xrGrabInteractable.onSelectExit.AddListener((x) => StartCoroutine(ReturnToZero()));
+        xrGrabInteractable.onSelectEntered.AddListener(OnGrab);
+        xrGrabInteractable.onSelectExited.AddListener((x) => hand = null);
+        xrGrabInteractable.onSelectExited.AddListener((x) => StartCoroutine(ReturnToZero()));
     }
 
     private void OnValidate()

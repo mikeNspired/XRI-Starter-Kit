@@ -29,8 +29,8 @@ namespace MikeNspired.UnityXRHandPoser
         {
             OnValidate();
 
-            grabInteractable.onSelectEnter.AddListener(x => OnGrab());
-            grabInteractable.onSelectExit.AddListener(x => OnRelease());
+            grabInteractable.onSelectEntered.AddListener(x => OnGrab());
+            grabInteractable.onSelectExited.AddListener(x => OnRelease());
 
             if (disableOnGrab) disableOnGrabStartPosition = disableOnGrab.transform.localPosition;
             if (enableOnGrab) enableOnGrabStartPosition = enableOnGrab.transform.localPosition;

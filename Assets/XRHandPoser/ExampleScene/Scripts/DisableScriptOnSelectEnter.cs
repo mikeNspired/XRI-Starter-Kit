@@ -11,8 +11,8 @@ public class DisableScriptOnSelectEnter : MonoBehaviour
 
     private void Start()
     {
-        xrDirectInteractor.onSelectEnter.AddListener((x) => script.enabled = false);
-        xrDirectInteractor.onSelectExit.AddListener((x) => script.enabled = true);
+        xrDirectInteractor.onSelectEntered.AddListener((x) => script.enabled = false);
+        xrDirectInteractor.onSelectExited.AddListener((x) => script.enabled = true);
     }
 
 }

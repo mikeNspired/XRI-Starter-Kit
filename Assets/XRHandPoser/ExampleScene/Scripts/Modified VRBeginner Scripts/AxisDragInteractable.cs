@@ -147,16 +147,16 @@ public class AxisDragInteractable : XRGrabInteractable
         }
     }
 
-    protected override void OnSelectEnter(XRBaseInteractor interactor)
+    protected override void OnSelectEntered(XRBaseInteractor interactor)
     {
         m_GrabbedOffset = interactor.transform.position - transform.position;
         m_GrabbingInteractor = interactor;
-        base.OnSelectEnter(interactor);
+        base.OnSelectEntered(interactor);
     }
 
-    protected override void OnSelectExit(XRBaseInteractor interactor)
+    protected override void OnSelectExited(XRBaseInteractor interactor)
     {
-        base.OnSelectExit(interactor);
+        base.OnSelectExited(interactor);
 
         if (SnapOnlyOnRelease && Steps != 0)
         {

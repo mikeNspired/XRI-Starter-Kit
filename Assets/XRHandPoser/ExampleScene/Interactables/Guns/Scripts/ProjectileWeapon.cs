@@ -42,8 +42,8 @@ namespace MikeNspired.UnityXRHandPoser
         {
             OnValidate();
             interactable.onActivate.AddListener(FireBullets);
-            interactable.onSelectEnter.AddListener(SetupRecoilVariables);
-            interactable.onSelectExit.AddListener(DestroyRecoilTracker);
+            interactable.onSelectEntered.AddListener(SetupRecoilVariables);
+            interactable.onSelectExited.AddListener(DestroyRecoilTracker);
 
             if (gunCocking)
                 gunCocking.GunCockedEvent.AddListener(() => gunCocked = true);
@@ -94,7 +94,7 @@ namespace MikeNspired.UnityXRHandPoser
                 bullet.transform.SetPositionAndRotation(firePoint.position, Quaternion.LookRotation(shotDirection));
                 bullet.AddForce((bullet.transform.forward * bulletSpeed), ForceMode.VelocityChange);
                 
-                controller.GetComponent<XRController>().SendHapticImpulse(hapticStrength, hapticDuration);
+                controller.GetComponent<ActionBasedController>().SendHapticImpulse(hapticStrength, hapticDuration);
 
                 BulletFiredEvent.Invoke();
                 StopAllCoroutines();

@@ -59,7 +59,7 @@ namespace MikeNspired.UnityXRHandPoser
         private Pose originalPose;
         private Pose originalAnimationPose;
 
-        public UnityAction<bool> NewPoseStarting = delegate {  } ;
+        public UnityAction<bool> NewPoseStarting = delegate { };
 
         //Restore original poses when an item is released
         public void ReleaseItemPoses() => BeginNewPoses(originalPose, originalAnimationPose);
@@ -136,7 +136,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void BeginNewPoses(Pose primaryPose, Pose animationPose)
         {
-            
             NewPoseStarting.Invoke(isGrabbed);
             AnimationPose = animationPose;
 
@@ -300,7 +299,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             //Set hand parent to null to stop player movement from moving hand
             if (waitForHandToAnimateToPosition)
-                yield return new WaitForSeconds(interactableAttachEaseInTime);
+                yield return new WaitForSeconds(interactableAttachEaseInTime * .75f);
 
 
             transform.parent = null;
@@ -391,7 +390,6 @@ namespace MikeNspired.UnityXRHandPoser
         private bool setPosition;
 
         [BeforeRenderOrder(102)]
-
         private void OnBeforeRender()
         {
             if (setPosition)

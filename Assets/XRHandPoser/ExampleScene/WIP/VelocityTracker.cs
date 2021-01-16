@@ -15,6 +15,7 @@ public class VelocityTracker : MonoBehaviour
     public Vector3 CurrentSmoothedAngularVelocity;
 
     [SerializeField] float m_ThrowSmoothingDuration = k_DefaultThrowSmoothingDuration;
+
     [SerializeField] [Tooltip("The curve to use to weight velocity smoothing (most recent frames to the right.")]
     AnimationCurve m_ThrowSmoothingCurve = AnimationCurve.Linear(1f, 1f, 1f, 0f);
 
@@ -34,10 +35,11 @@ public class VelocityTracker : MonoBehaviour
     private bool m_ThrowOnDetach;
 
 
-    public void SetController(Transform controller)
+    public void SetTrackedObject(Transform controller)
     {
         this.trackedObject = controller;
     }
+
     public void StartTracking()
     {
         isActive = true;
@@ -47,9 +49,11 @@ public class VelocityTracker : MonoBehaviour
     {
         isActive = false;
     }
+
     private void Start()
     {
-        SmoothVelocityStart();
+        if (trackedObject)
+            SmoothVelocityStart();
     }
 
     private void Update()
@@ -58,7 +62,7 @@ public class VelocityTracker : MonoBehaviour
         SmoothVelocityUpdate();
         GetSmoothedVelocity();
     }
-    
+
     void SmoothVelocityStart()
     {
         m_LastPosition = trackedObject.position;
@@ -94,10 +98,10 @@ public class VelocityTracker : MonoBehaviour
     Vector3 getSmoothedVelocityValue(Vector3[] velocityFrames)
     {
         Vector3 calcVelocity = new Vector3();
-        
+
         int frameCounter = 0;
         float totalWeights = 0.0f;
-        
+
         for (; frameCounter < k_ThrowSmoothingFrameCount; frameCounter++)
         {
             int frameIdx = (((m_ThrowSmoothingCurrentFrame - frameCounter - 1) % k_ThrowSmoothingFrameCount) + k_ThrowSmoothingFrameCount) % k_ThrowSmoothingFrameCount;
@@ -118,4 +122,3 @@ public class VelocityTracker : MonoBehaviour
             return Vector3.zero;
     }
 }
-

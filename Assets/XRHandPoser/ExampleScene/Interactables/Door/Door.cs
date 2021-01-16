@@ -30,13 +30,13 @@ namespace MikeNspired.UnityXRHandPoser
             leftGrabCollider = leftXRGrabInteractable.GetComponent<ColliderDisableMoveReturn>();
             rightGrabCollider = rightXRGrabInteractable.GetComponent<ColliderDisableMoveReturn>();
 
-            leftXRGrabInteractable.onSelectEnter.AddListener(x => currentGrabbedInteractable = leftXRGrabInteractable);
-            leftXRGrabInteractable.onSelectEnter.AddListener(call: x => isFollowActive = true);
-            leftXRGrabInteractable.onSelectExit.AddListener(call: OnRelease);
+            leftXRGrabInteractable.onSelectEntered.AddListener(x => currentGrabbedInteractable = leftXRGrabInteractable);
+            leftXRGrabInteractable.onSelectEntered.AddListener(call: x => isFollowActive = true);
+            leftXRGrabInteractable.onSelectExited.AddListener(call: OnRelease);
 
-            rightXRGrabInteractable.onSelectEnter.AddListener(x => currentGrabbedInteractable = rightXRGrabInteractable);
-            rightXRGrabInteractable.onSelectEnter.AddListener(call: x => isFollowActive = true);
-            rightXRGrabInteractable.onSelectExit.AddListener(call: OnRelease);
+            rightXRGrabInteractable.onSelectEntered.AddListener(x => currentGrabbedInteractable = rightXRGrabInteractable);
+            rightXRGrabInteractable.onSelectEntered.AddListener(call: x => isFollowActive = true);
+            rightXRGrabInteractable.onSelectExited.AddListener(call: OnRelease);
             StartCoroutine(GetMainCamera());
         }
 

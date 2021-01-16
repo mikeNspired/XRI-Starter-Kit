@@ -164,22 +164,25 @@ MonoBehaviour:
   m_InteractionLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_OnFirstHoverEnter:
+  m_OnFirstHoverEntered:
     m_PersistentCalls:
       m_Calls: []
-  m_OnHoverEnter:
+  m_OnHoverEntered:
     m_PersistentCalls:
       m_Calls: []
-  m_OnHoverExit:
+  m_OnHoverExited:
     m_PersistentCalls:
       m_Calls: []
-  m_OnLastHoverExit:
+  m_OnLastHoverExited:
     m_PersistentCalls:
       m_Calls: []
-  m_OnSelectEnter:
+  m_OnSelectEntered:
     m_PersistentCalls:
       m_Calls: []
-  m_OnSelectExit:
+  m_OnSelectExited:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnSelectCanceled:
     m_PersistentCalls:
       m_Calls: []
   m_OnActivate:
@@ -235,7 +238,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hapticDuration: 0.1
   hapticStrength: 0.1
-  controllerVelocity: {fileID: 3837541909545583755}
+  velocityTracker: {fileID: 3837541909545583755}
 --- !u!114 &3837541909545583755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -248,7 +251,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21110bc60f665f04ba1e3510e6f1705b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 7200736839611136640}
+  trackedObject: {fileID: 0}
   isActive: 0
   CurrentSmoothedVelocity: {x: 0, y: 0, z: 0}
   CurrentSmoothedAngularVelocity: {x: 0, y: 0, z: 0}
@@ -530,6 +533,26 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
         type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.76285
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.76285
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.76285
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
       objectReference: {fileID: 0}
@@ -542,6 +565,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalPosition.z
       value: 0.193
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
         type: 3}
@@ -560,16 +588,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
         type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
-        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
@@ -583,26 +601,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 90
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
-        type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.76285
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.76285
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.76285
-      objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: ddbeaa3a53d22154f8ef71f92e790816,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: a5aaee4111611af43b5abbff184fe5fa, type: 2}
+      objectReference: {fileID: 2100000, guid: 4242f649a09fd4e4d9ee18ca0bb3414f, type: 2}
     - target: {fileID: 919132149155446097, guid: ddbeaa3a53d22154f8ef71f92e790816,
         type: 3}
       propertyPath: m_Name

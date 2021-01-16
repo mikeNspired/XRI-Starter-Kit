@@ -24,7 +24,7 @@ namespace MikeNspired.UnityXRHandPoser
             base.Awake();
             OnValidate();
 
-            mainInteractable.onSelectExit.AddListener((x) => ReleaseHand());
+            mainInteractable.onSelectExited.AddListener((x) => ReleaseHand());
         }
 
         private void OnValidate()

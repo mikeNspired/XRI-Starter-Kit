@@ -19,8 +19,8 @@ namespace MikeNspired.UnityXRHandPoser
             startingRotationRecoil = projectileWeapon.recoilRotation;
 
             if (!interactable) return;
-            interactable.onSelectEnter.AddListener(x => ReduceProjectileWeaponRecoil());
-            interactable.onSelectExit.AddListener(x => ReturnProjectileWeaponRecoil());
+            interactable.onSelectEntered.AddListener(x => ReduceProjectileWeaponRecoil());
+            interactable.onSelectExited.AddListener(x => ReturnProjectileWeaponRecoil());
         }
 
         private void OnValidate()

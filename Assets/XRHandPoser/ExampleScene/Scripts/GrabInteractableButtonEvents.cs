@@ -11,7 +11,7 @@ namespace MikeNspired.UnityXRHandPoser
     public class GrabInteractableButtonEvents : MonoBehaviour
     {
         [SerializeField] private XRGrabInteractable xrGrabInteractable = null;
-        [SerializeField] private XRController controller = null;
+        [SerializeField] private ActionBasedController controller = null;
         [SerializeField] private InputHelpers.Button activationButton = InputHelpers.Button.SecondaryButton;
         [SerializeField] private float activationThreshold = .5f;
         [SerializeField] private bool toggleOnActivate = true;
@@ -21,8 +21,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void Start()
         {
-            xrGrabInteractable.onSelectEnter.AddListener(OnGrabbed);
-            xrGrabInteractable.onSelectExit.AddListener(OnRelease);
+            xrGrabInteractable.onSelectEntered.AddListener(OnGrabbed);
+            xrGrabInteractable.onSelectExited.AddListener(OnRelease);
         }
 
         private void OnRelease(XRBaseInteractor interactor)
@@ -32,7 +32,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnGrabbed(XRBaseInteractor interactor)
         {
-            controller = interactor.GetComponent<XRController>();
+            controller = interactor.GetComponent<ActionBasedController>();
         }
 
         private void Update()
@@ -41,22 +41,22 @@ namespace MikeNspired.UnityXRHandPoser
                 CheckController(controller, ref isButtonHeld);
         }
 
-        private void CheckController(XRController controller, ref bool isGripped)
+        private void CheckController(ActionBasedController controller, ref bool isGripped)
         {
-            if (!controller.inputDevice.IsPressed(activationButton, out bool isActive, activationThreshold)) return;
-
-            if (!isGripped && isActive)
-            {
-                isGripped = true;
-                OnButtonPressed.Invoke();
-            }
-            else if (isGripped && !isActive && !toggleOnActivate)
-            {
-                OnButtonReleased.Invoke();
-            }
-
-            if (!isActive)
-                isGripped = false;
-        }
+        //     if (!controller.inputDevice.IsPressed(activationButton, out bool isActive, activationThreshold)) return;
+        //
+        //     if (!isGripped && isActive)
+        //     {
+        //         isGripped = true;
+        //         OnButtonPressed.Invoke();
+        //     }
+        //     else if (isGripped && !isActive && !toggleOnActivate)
+        //     {
+        //         OnButtonReleased.Invoke();
+        //     }
+        //
+        //     if (!isActive)
+        //         isGripped = false;
+         }
     }
 }

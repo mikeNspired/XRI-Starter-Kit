@@ -22,7 +22,7 @@ public class InteractableItemData : MonoBehaviour
     {
         if (!parentToPlayerOnGrabForSmoothMovement) return;
         interactable = GetComponent<XRGrabInteractable>();
-        interactable.onSelectEnter.AddListener(x => Invoke(nameof(SetParentToPlayerForSmoothMovement), Time.deltaTime));
+        interactable.onSelectEntered.AddListener(x => Invoke(nameof(SetParentToPlayerForSmoothMovement), Time.deltaTime));
     }
 
     private void SetParentToPlayerForSmoothMovement()

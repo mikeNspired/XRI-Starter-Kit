@@ -8,10 +8,10 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class ConfigureHeadSetControls : MonoBehaviour
 {
-    [SerializeField] private TeleportRayEnabler teleportRayEnabler = null;
+//    [SerializeField] private TeleportRayEnabler teleportRayEnabler = null;
     [SerializeField] private XRController leftTeleportInteractor = null;
     [SerializeField] private XRController rightTeleportInteractor = null;
-    [SerializeField] private SnapTurnProvider snapTurnProvider = null;
+//    [SerializeField] private SnapTurnProvider snapTurnProvider = null;
     [SerializeField] private PlayerMovementCharacterController playerMovementCharacterController = null;
     [SerializeField] private PlayerCrouch playerCrouch = null;
     [SerializeField] private HeadSetConfiguration[] headSetConfigs = null;
@@ -57,18 +57,17 @@ public class ConfigureHeadSetControls : MonoBehaviour
 
     private void SetConfig(HeadSetConfiguration config)
     {
-        teleportRayEnabler.activationButton = config.teleportRayEnabler;
-        teleportRayEnabler.activationThreshold = config.teleportRayEnablerActivation;
-        leftTeleportInteractor.selectUsage = config.teleportInteractor;
-        rightTeleportInteractor.selectUsage = config.teleportInteractor;
-        leftTeleportInteractor.axisToPressThreshold = config.teleportActivationThreshold;
-        rightTeleportInteractor.axisToPressThreshold = config.teleportActivationThreshold;
-        snapTurnProvider.turnUsage = config.snapTurn;
-        Debug.Log(playerMovementCharacterController);
-        Debug.Log(config.playerMovement);
-        playerMovementCharacterController.buttonInput = config.playerMovement;
-        playerMovementCharacterController.moveOnlyOnPadClick = config.movePlayerOnPadClick;
-        playerCrouch.activationButton = config.playerCrouch;
-        debugShowCurrentHeadset = config;
+       //  // teleportRayEnabler.activationButton = config.teleportRayEnabler;
+       //  // teleportRayEnabler.activationThreshold = config.teleportRayEnablerActivation;
+       //  leftTeleportInteractor.selectUsage = config.teleportInteractor;
+       //  rightTeleportInteractor.selectUsage = config.teleportInteractor;
+       //  leftTeleportInteractor.axisToPressThreshold = config.teleportActivationThreshold;
+       //  rightTeleportInteractor.axisToPressThreshold = config.teleportActivationThreshold;
+       // // snapTurnProvider.turnUsage = config.snapTurn;
+       //
+       //  playerMovementCharacterController.buttonInput = config.playerMovement;
+       //  playerMovementCharacterController.moveOnlyOnPadClick = config.movePlayerOnPadClick;
+       //  playerCrouch.activationButton = config.playerCrouch;
+       //  debugShowCurrentHeadset = config;
     }
 }

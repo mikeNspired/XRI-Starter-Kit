@@ -3,14 +3,19 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
+using CommonUsages = UnityEngine.XR.CommonUsages;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class DistanceGrabber : MonoBehaviour
     {
-        [Header("Main")] [SerializeField] private XRController controller = null;
+        [Header("Main")] 
+        [SerializeField]
+        private InputActionReference activationInput;
+
         [SerializeField] private XRDirectInteractor directInteractor = null;
         [SerializeField] private ControllerInput buttonControllerInput = ControllerInput.gripButton;
         [SerializeField] private DistanceGrabberLineBender lineEffect = null;
@@ -80,27 +85,28 @@ namespace MikeNspired.UnityXRHandPoser
         private bool isActive = false, isLaunching = false;
         private float mainHandColliderStartingSize;
         private Vector3 rayCastDebugPosition;
-        private bool isGripping;
+        private bool isGripping, isInputActivated;
 
         private void Start()
         {
             OnValidate();
             WristRotationReset();
-            directInteractor.onSelectEnter.AddListener(Reset);
+            directInteractor.onSelectEntered.AddListener(Reset);
             if (mainHandCollider)
                 mainHandColliderStartingSize = mainHandCollider.radius;
             EnableOnActive.SetActive(false);
 
             sphereStartingSize = overlapSphereRadius;
             sphereCastStartingSize = sphereCastRadius;
+
+            activationInput.GetInputAction().performed += x => isInputActivated = true;
+            activationInput.GetInputAction().canceled += x => isInputActivated = false;
         }
 
         private void OnValidate()
         {
             if (!lineEffect)
                 lineEffect = GetComponent<DistanceGrabberLineBender>();
-            if (!controller)
-                controller = GetComponentInParent<XRController>();
             if (!directInteractor)
                 directInteractor = GetComponentInParent<XRDirectInteractor>();
             if (!interactionManager)
@@ -109,6 +115,10 @@ namespace MikeNspired.UnityXRHandPoser
             debugSphereCast.gameObject.SetActive(showDebug);
             debugOverLapSphere.gameObject.SetActive(showDebug);
         }
+
+        private void OnEnable() => activationInput.EnableAction();
+
+        private void OnDisable() => activationInput.DisableAction();
 
         private void Update()
         {
@@ -274,17 +284,14 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void InitiateGrabStartFromTrigger()
         {
-            var inputDevice = controller.inputDevice;
-            if (!inputDevice.TryGetFeatureValue(InputAxesToCommonUsage[(int) buttonControllerInput], out bool gripValue)) return;
-
-            if (gripValue && !isGripping)
+            if (isInputActivated && !isGripping)
             {
                 isGripping = true;
                 isActive = true;
                 currentEasyModeTimer = 0;
                 SetupLine();
             }
-            else if (!gripValue)
+            else if (!isInputActivated)
             {
                 isGripping = false;
                 isActive = false;
@@ -541,7 +548,7 @@ namespace MikeNspired.UnityXRHandPoser
             else
                 return Vector3.zero;
         }
-        
+
         #endregion
 
         private enum ControllerInput
@@ -564,8 +571,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (directInteractor.selectTarget) return;
             if (Vector3.Distance(currentTarget.position, transform.position) >= distanceToAutoGrab) return;
 
-            controller.inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out bool gripValue);
-            if (!gripValue) return;
+            if (!isInputActivated) return;
 
             StopAllCoroutines();
             currentTarget.transform.SetPositionAndRotation(directInteractor.transform.position, directInteractor.transform.rotation);
@@ -578,7 +584,7 @@ namespace MikeNspired.UnityXRHandPoser
             Reset(interactable);
             mainHandCollider.radius = mainHandColliderStartingSize;
             if (currentInteractor.selectTarget || directInteractor.selectTarget) yield break;
-            interactionManager.SelectEnter_public(currentInteractor, interactable);
+            interactionManager.SelectEnter(currentInteractor, interactable);
         }
     }
 }

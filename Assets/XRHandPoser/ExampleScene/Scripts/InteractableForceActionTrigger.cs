@@ -14,27 +14,27 @@ namespace MikeNspired.UnityXRHandPoser
     {
         private XRGrabInteractable interactable;
 
-        public XRBaseControllerInteractor.SelectActionTriggerType ActionTriggerType;
+      //  public XRBaseControllerInteractor.InteractableForceActionTrigger ActionTriggerType;
 
-        private XRBaseControllerInteractor.SelectActionTriggerType originalActionTriggerType;
+       // private XRBaseControllerInteractor.SelectActionTriggerType originalActionTriggerType;
 
         // Start is called before the first frame update
         void Start()
         {
             OnValidate();
-            interactable.onSelectEnter.AddListener(x => SetActionTrigger(x.GetComponent<XRBaseControllerInteractor>()));
-            interactable.onSelectExit.AddListener(x => ReturnToOriginalActionTrigger(x.GetComponent<XRBaseControllerInteractor>()));
+            interactable.onSelectEntered.AddListener(x => SetActionTrigger(x.GetComponent<XRBaseControllerInteractor>()));
+            interactable.onSelectExited.AddListener(x => ReturnToOriginalActionTrigger(x.GetComponent<XRBaseControllerInteractor>()));
         }
 
         private void SetActionTrigger(XRBaseControllerInteractor controller)
         {
-            originalActionTriggerType = controller.selectActionTrigger;
-            controller.selectActionTrigger = ActionTriggerType;
+         //   originalActionTriggerType = controller.selectActionTrigger;
+           // controller.selectActionTrigger = ActionTriggerType;
         }
 
         private void ReturnToOriginalActionTrigger(XRBaseControllerInteractor controller)
         {
-            controller.selectActionTrigger = originalActionTriggerType;
+         //   controller.selectActionTrigger = originalActionTriggerType;
         }
 
 

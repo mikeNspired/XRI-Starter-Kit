@@ -75,7 +75,7 @@ namespace MikeNspired.UnityXRHandPoser
                 }
             }
 
-            ammoBackPack.ClearControllers();
+           // ammoBackPack.ClearControllers();
         }
     }
 }

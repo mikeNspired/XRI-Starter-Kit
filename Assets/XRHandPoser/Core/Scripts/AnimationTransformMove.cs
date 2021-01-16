@@ -33,8 +33,8 @@ namespace MikeNspired.UnityXRHandPoser
             startingPosition.rotation = MovingObject.localRotation;
 
             if (!interactable) interactable = GetComponent<XRGrabInteractable>();
-            interactable.onSelectEnter.AddListener(SetController);
-            interactable.onSelectExit.AddListener(RemoveController);
+            interactable.onSelectEntered.AddListener(SetController);
+            interactable.onSelectExited.AddListener(RemoveController);
         }
 
         private void OnValidate()

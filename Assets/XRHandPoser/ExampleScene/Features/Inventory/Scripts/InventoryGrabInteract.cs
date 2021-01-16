@@ -14,7 +14,7 @@ namespace MyNamespace
         [SerializeField] private bool autoGrabIfGripping = true;
 
         private bool leftIsGripped, rightIsGripped;
-        private List<XRController> controllers = new List<XRController>();
+        private List<ActionBasedController> controllers = new List<ActionBasedController>();
         private InventorySlot inventorySlot;
         private InputDevice inputDevice;
 
@@ -26,21 +26,21 @@ namespace MyNamespace
 
         private void OnTriggerEnter(Collider other)
         {
-            var controller = other.GetComponent<XRController>();
+            var controller = other.GetComponent<ActionBasedController>();
             if (controller && !controllers.Contains(controller))
             {
                 controllers.Add(controller);
 
                 if (!autoGrabIfGripping)
                 {
-                    if (controller.controllerNode == XRNode.LeftHand)
+                    if (controller.GetComponent<HandReference>().LeftRight == LeftRight.Left)
                         leftIsGripped = true;
                     else
                         rightIsGripped = true;
                 }
                 else
                 {
-                    if (controller.controllerNode == XRNode.LeftHand)
+                    if (controller.GetComponent<HandReference>().LeftRight == LeftRight.Left)
                         leftIsGripped = false;
                     else
                         rightIsGripped = false;
@@ -50,7 +50,7 @@ namespace MyNamespace
 
         private void OnTriggerExit(Collider other)
         {
-            var controller = other.GetComponent<XRController>();
+            var controller = other.GetComponent<ActionBasedController>();
             if (controller)
                 controllers.Remove(controller);
         }
@@ -77,23 +77,22 @@ namespace MyNamespace
             }
         }
 
-        private void CheckController(XRController controller)
+        private void CheckController(ActionBasedController controller)
         {
             if (interactButton == InteractButton.trigger)
                 CheckControllerTrigger(controller);
             else
             {
-                if (controller.controllerNode == XRNode.LeftHand)
+                if (controller.GetComponent<HandReference>().LeftRight == LeftRight.Left)
                     CheckControllerGrip(controller, ref leftIsGripped);
                 else
                     CheckControllerGrip(controller, ref rightIsGripped);
             }
         }
 
-        private void CheckControllerGrip(XRController controller, ref bool isGripped)
+        private void CheckControllerGrip(ActionBasedController controller, ref bool isGripped)
         {
-            inputDevice = controller.inputDevice;
-            if (!inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out bool gripValue)) return;
+            bool gripValue = controller.selectAction.action.triggered;
 
             if (!isGripped && gripValue) 
             {
@@ -109,15 +108,14 @@ namespace MyNamespace
             }
         }
 
-        private bool IsControllerHoldingObject(XRController controller)
+        private bool IsControllerHoldingObject(ActionBasedController controller)
         {
             return controller.GetComponent<XRDirectInteractor>().selectTarget;
         }
 
-        private void CheckControllerTrigger(XRController controller)
+        private void CheckControllerTrigger(ActionBasedController controller)
         {
-            inputDevice = controller.inputDevice;
-            if (!inputDevice.TryGetFeatureValue(CommonUsages.triggerButton, out bool gripValue)) return;
+            bool gripValue = controller.activateAction.action.triggered;
 
             if (gripValue)
             {

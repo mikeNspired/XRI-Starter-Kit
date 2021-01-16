@@ -33,8 +33,8 @@ namespace MikeNspired.UnityXRHandPoser
             OnValidate();
 
             //Invoked after a frame to check if the user switched hands
-            xrGrabInteractable.onSelectEnter.AddListener(x => SetMagazineGrabbableState());
-            xrGrabInteractable.onSelectExit.AddListener(x => SetMagazineGrabbableState());
+            xrGrabInteractable.onSelectEntered.AddListener(x => SetMagazineGrabbableState());
+            xrGrabInteractable.onSelectExited.AddListener(x => SetMagazineGrabbableState());
 
             collider.gameObject.SetActive(true);
             if (startingMagazine) CreateStartingMagazine();
@@ -108,7 +108,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void SetupNewMagazine(Magazine mag)
         {
             magazine = mag;
-            magazine.GetComponent<XRGrabInteractable>().onSelectEnter.AddListener(AmmoRemoved);
+            magazine.GetComponent<XRGrabInteractable>().onSelectEntered.AddListener(AmmoRemoved);
             magazine.SetupForGunAttachment();
             magazine.transform.parent = transform;
         }
@@ -123,13 +123,13 @@ namespace MikeNspired.UnityXRHandPoser
         {
             XRBaseInteractor interactor = magazine.GetComponent<XRGrabInteractable>().selectingInteractor;
             XRBaseInteractable interactable = magazine.GetComponent<XRBaseInteractable>();
-            interactionManager.SelectExit_public(interactor, interactable);
+            interactionManager.SelectExit(interactor, interactable);
         }
 
         private void AmmoRemoved(XRBaseInteractor arg0)
         {
             StopAllCoroutines();
-            magazine.GetComponent<XRGrabInteractable>().onSelectEnter.RemoveListener(AmmoRemoved);
+            magazine.GetComponent<XRGrabInteractable>().onSelectEntered.RemoveListener(AmmoRemoved);
             magazine.transform.parent = null;
             magazine = null;
             unloadAudio.Play();
@@ -203,7 +203,7 @@ namespace MikeNspired.UnityXRHandPoser
                 timer += Time.deltaTime;
             }
 
-            magazine.GetComponent<XRGrabInteractable>().onSelectEnter.RemoveListener(AmmoRemoved);
+            magazine.GetComponent<XRGrabInteractable>().onSelectEntered.RemoveListener(AmmoRemoved);
             magazine.ResetToGrabbableObject();
             magazine = null;
             ammoIsAttached = false;
