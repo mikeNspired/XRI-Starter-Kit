@@ -1,7 +1,4 @@
-﻿using MikeNspired.UnityXRHandPoser;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.XR;
+﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser

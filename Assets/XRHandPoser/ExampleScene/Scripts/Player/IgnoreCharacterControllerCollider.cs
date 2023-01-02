@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -8,7 +6,7 @@ namespace MikeNspired.UnityXRHandPoser
     {
         private Collider[] mainColliders;
 
-        void Start()
+        private void Start()
         {
             mainColliders = GetComponentsInChildren<Collider>(true);
             var playerCollider = FindObjectOfType<CharacterController>();

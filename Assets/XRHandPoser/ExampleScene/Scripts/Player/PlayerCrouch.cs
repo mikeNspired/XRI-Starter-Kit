@@ -1,14 +1,12 @@
 ﻿using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class PlayerCrouch : MonoBehaviour
     {
-        [SerializeField]
-        private InputActionReference crouchLeftHand, crouchRightHand;
+        [SerializeField] private InputActionReference crouchLeftHand, crouchRightHand;
         [SerializeField] private float crouchOffSetReduction = .65f;
         public XROrigin xrOrigin;
         private bool leftIsGripped, rightIsGripped, isCrouched;
@@ -26,17 +24,18 @@ namespace MikeNspired.UnityXRHandPoser
             if (!gameObject.activeInHierarchy) return;
 
             if (!xrOrigin) xrOrigin = GetComponent<XROrigin>();
-            if (!xrOrigin) xrOrigin = GetComponentInParent<XROrigin>();   
+            if (!xrOrigin) xrOrigin = GetComponentInParent<XROrigin>();
             crouchOffset = xrOrigin.CameraYOffset;
         }
+
         private void OnEnable()
         {
             crouchLeftHand.EnableAction();
             crouchRightHand.EnableAction();
-        } 
+        }
 
         private void OnDisable()
-        { 
+        {
             crouchLeftHand.DisableAction();
             crouchRightHand.DisableAction();
         }
@@ -55,6 +54,5 @@ namespace MikeNspired.UnityXRHandPoser
                     break;
             }
         }
-        
     }
 }

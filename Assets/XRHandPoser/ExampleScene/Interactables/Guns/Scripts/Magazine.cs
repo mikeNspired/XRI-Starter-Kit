@@ -72,6 +72,9 @@ namespace MikeNspired.UnityXRHandPoser
             
             EnableDistanceGrabbing(false);
         }
+        
+        
+        //TODO remove this method
         private void EnableDistanceGrabbing(bool state)
         {
             if (state)

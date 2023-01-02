@@ -12,7 +12,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// This class moves objects based on localPosition so make sure they have the same Parent.
     /// This class will be updated when the new input system is released.
     /// </summary>
-    public class AnimationTransformMove : MonoBehaviour
+    public class AnimationTransformOnTriggerValue : MonoBehaviour
     {
         [Tooltip("The Transform that you want to be animated based on trigger value")] [SerializeField]
         private Transform MovingObject = null;
@@ -41,14 +41,10 @@ namespace MikeNspired.UnityXRHandPoser
             if (!interactable) interactable = GetComponent<XRGrabInteractable>();
         }
 
-        private void RemoveController(XRBaseInteractor controller)
-        {
-            buttons = null;
-        }
+        private void RemoveController(XRBaseInteractor controller) => buttons = null;
 
         private void SetController(XRBaseInteractor controller)
         {
-            //Get the trigger from the hand
             buttons = controller.GetComponent<HandReference>().Hand.GetComponent<XRControllerButtons>();
         }
 

@@ -8,14 +8,14 @@ namespace MikeNspired.UnityXRHandPoser
     {
         public float timeTillDestroy = 1f;
         [SerializeField] private bool destroyAfterFrame = false;
+        [SerializeField] private bool startTimerOnAwake = true;
 
         private void Start()
         {
-            if (!destroyAfterFrame)
-                Invoke(nameof(DestroyThis), timeTillDestroy);
-            else
-                Invoke(nameof(DestroyThis), Time.deltaTime);
+            if(startTimerOnAwake) StartTimerToDestroy();
         }
+
+        public void StartTimerToDestroy() => Invoke(nameof(DestroyThis), !destroyAfterFrame ? timeTillDestroy : Time.deltaTime);
 
         private void DestroyThis() => DestroyImmediate(gameObject);
     }

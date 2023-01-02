@@ -1,29 +1,27 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class StopParticlesystemAfterTime : MonoBehaviour
+namespace MikeNspired.UnityXRHandPoser
 {
-    [SerializeField] private new ParticleSystem particleSystem = null;
-
-    [SerializeField] private float timeTillStop = 5;
-
-    // Start is called before the first frame update
-    void Start()
+    public class StopParticlesystemAfterTime : MonoBehaviour
     {
-        OnValidate();
-        Invoke(nameof(StopParticles), timeTillStop);
-    }
+        [SerializeField] private new ParticleSystem particleSystem = null;
 
-    // Update is called once per frame
-    void StopParticles()
-    {
-        particleSystem.Stop();
-    }
+        [SerializeField] private float timeTillStop = 5;
 
-    private void OnValidate()
-    {
-        if (!particleSystem) particleSystem = GetComponent<ParticleSystem>();
+        private void Start()
+        {
+            OnValidate();
+            Invoke(nameof(StopParticles), timeTillStop);
+        }
+
+        private void StopParticles()
+        {
+            particleSystem.Stop();
+        }
+
+        private void OnValidate()
+        {
+            if (!particleSystem) particleSystem = GetComponent<ParticleSystem>();
+        }
     }
 }

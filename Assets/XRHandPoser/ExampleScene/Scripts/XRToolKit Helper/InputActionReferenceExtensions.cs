@@ -1,27 +1,28 @@
 ﻿using UnityEngine.InputSystem;
 
-public static class InputActionReferenceExtensions
+namespace MikeNspired.UnityXRHandPoser
 {
-    //public static void EnableDirectAction(this InputActionProperty property)
-
-    public static void EnableAction(this InputActionReference actionReference)
+    public static class InputActionReferenceExtensions
     {
-        var action = GetInputAction(actionReference);
-        if (action != null && !action.enabled)
-            action.Enable();
-    }
+        public static void EnableAction(this InputActionReference actionReference)
+        {
+            var action = GetInputAction(actionReference);
+            if (action != null && !action.enabled)
+                action.Enable();
+        }
 
-    public static void DisableAction(this InputActionReference actionReference)
-    {
-        var action = GetInputAction(actionReference);
-        if (action != null && action.enabled)
-            action.Disable();
-    }
+        public static void DisableAction(this InputActionReference actionReference)
+        {
+            var action = GetInputAction(actionReference);
+            if (action != null && action.enabled)
+                action.Disable();
+        }
 
-    public static InputAction GetInputAction(this InputActionReference actionReference)
-    {
+        public static InputAction GetInputAction(this InputActionReference actionReference)
+        {
 #pragma warning disable IDE0031 // Use null propagation -- Do not use for UnityEngine.Object types
-        return actionReference != null ? actionReference.action : null;
+            return actionReference != null ? actionReference.action : null;
 #pragma warning restore IDE0031
+        }
     }
 }

@@ -1,4 +1,3 @@
-using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
