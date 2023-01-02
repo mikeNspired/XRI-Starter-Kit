@@ -1,5 +1,4 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
-using System;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -50,7 +49,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void SetController(XRBaseInteractor controller)
         {
             //Get the trigger from the hand
-            buttons = controller.GetComponent<HandReference>().hand.GetComponent<XRControllerButtons>();
+            buttons = controller.GetComponent<HandReference>().Hand.GetComponent<XRControllerButtons>();
         }
 
 

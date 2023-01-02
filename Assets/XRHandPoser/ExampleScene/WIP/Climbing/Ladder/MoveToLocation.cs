@@ -1,3 +1,4 @@
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -7,8 +8,8 @@ public class MoveToLocation : MonoBehaviour
 
     public void Activate()
     {
-        XRRig rig = Camera.main.GetComponentInParent<XRRig>();
-        Vector3 heightAdjustment = rig.transform.up * rig.cameraInRigSpaceHeight;
+        XROrigin rig = Camera.main.GetComponentInParent<XROrigin>();
+        Vector3 heightAdjustment = rig.transform.up * rig.CameraInOriginSpaceHeight;
 
         Vector3 cameraDestination = location.position + heightAdjustment;
         rig.MoveCameraToWorldLocation(cameraDestination);

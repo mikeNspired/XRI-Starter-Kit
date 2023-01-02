@@ -1,9 +1,4 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -42,7 +37,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (!hand) return;
             if (hand.GetComponent<XRDirectInteractor>().selectTarget) return;
 
-            currentHand = hand.hand;
+            currentHand = hand.Hand;
 
             SetAttachForInstantaneous(currentHand);
             BeginNewHandPoses(currentHand);

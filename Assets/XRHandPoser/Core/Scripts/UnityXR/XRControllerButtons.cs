@@ -1,6 +1,5 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
 
-using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR;
@@ -14,52 +13,46 @@ namespace MikeNspired.UnityXRHandPoser
     /// </summary>
     public class XRControllerButtons : MonoBehaviour
     {
-        [SerializeField] private XRController xrController;
+        [SerializeField] private ActionBasedController actionBasedController;
 
         public UnityEventFloat OnTriggerValue;
         public UnityEvent OnGripPressed;
         public UnityEvent OnGripRelease;
 
-        public bool gripValue;
+        public float gripValue;
         public float triggerValue;
 
         private InputDevice inputDevice;
-        private bool IsGripped;
-  
+        public bool IsGripped;
+
         private void Start()
         {
             OnValidate();
-            if (xrController) 
-                inputDevice = xrController.inputDevice;
-            else
+            if (!actionBasedController)
                 enabled = false;
+
+            actionBasedController.selectActionValue.reference.GetInputAction().performed += x => Gripped(true);
+            actionBasedController.selectActionValue.reference.GetInputAction().canceled += x => Gripped(false);
         }
 
         private void OnValidate()
         {
-            if (!xrController) xrController = GetComponentInParent<XRController>();
+            if (!actionBasedController) actionBasedController = GetComponentInParent<ActionBasedController>();
+        }
+
+        private void Gripped(bool state)
+        {
+            IsGripped = state;
+            if (state) OnGripPressed.Invoke();
+            else OnGripRelease.Invoke();
         }
 
         private void Update()
         {
-            inputDevice = xrController.inputDevice;
-            inputDevice.TryGetFeatureValue(CommonUsages.trigger, out triggerValue);
+            triggerValue = actionBasedController.activateAction.action.ReadValue<float>();
+            gripValue = actionBasedController.selectActionValue.action.ReadValue<float>();
 
             OnTriggerValue.Invoke(triggerValue);
-
-            if (inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out gripValue))
-            {
-                if (!IsGripped && gripValue)
-                {
-                    IsGripped = true;
-                    OnGripPressed.Invoke();
-                }
-                else if (IsGripped && !gripValue)
-                {
-                    IsGripped = false;
-                    OnGripRelease.Invoke();
-                }
-            }
         }
     }
 

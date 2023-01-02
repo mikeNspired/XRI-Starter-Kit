@@ -14,7 +14,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void Start()
         {
 
-            interactable.onSelectEntered.AddListener(x => SetPosition(x.GetComponent<HandReference>()?.hand));
+            interactable.onSelectEntered.AddListener(x => SetPosition(x.GetComponent<HandReference>()?.Hand));
         }
 
         private void SetPosition(HandAnimator handAnimator)

@@ -94,7 +94,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void ReleaseHand(HandReference hand)
         {
-            if (hand.hand.handType == LeftRight.Left)
+            if (hand.Hand.handType == LeftRight.Left)
             {
                 LeftHand = null;
                 leftFollow = true;
@@ -112,7 +112,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             if (!hand) return;
 
-            if (hand.hand.handType == LeftRight.Left)
+            if (hand.Hand.handType == LeftRight.Left)
                 LeftHand = other.transform;
             else
                 RightHand = other.transform;

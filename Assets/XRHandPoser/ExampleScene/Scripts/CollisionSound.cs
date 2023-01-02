@@ -23,9 +23,11 @@ public class CollisionSound : MonoBehaviour
     private void Awake()
     {
         OnValidate();
+        CheckValid();
+        
         originalPitch = audioSource.pitch;
     }
-
+    
     private void OnValidate()
     {
         if (!audioSource)
@@ -64,4 +66,12 @@ public class CollisionSound : MonoBehaviour
     {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
+    
+    private void CheckValid()
+    {
+        if (audioSource != null) return;
+        Debug.Log("Collision sound does not have audio source on : " + gameObject);
+        enabled = false;
+    }
+
 }

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using MikeNspired.UnityXRHandPoser;
+using Unity.XR.CoreUtils;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -13,7 +11,7 @@ public class PlayerClimbingXR : LocomotionProvider
 
     [SerializeField] private ContinuousMoveProviderBase playerMovement = null;
     [SerializeField] private CharacterController characterController = null;
-    [SerializeField] private XRRig xrRig = null;
+    [SerializeField] private XROrigin xrOrigin = null;
     [SerializeField] private LayerMask checkGroundLayerMask = 1;
 
     [Header("Climb Speed")] [SerializeField]
@@ -49,8 +47,8 @@ public class PlayerClimbingXR : LocomotionProvider
             system = GetComponent<LocomotionSystem>();
         if (!playerMovement)
             playerMovement = GetComponent<ContinuousMoveProviderBase>();
-        if (!xrRig)
-            xrRig = GetComponentInParent<XRRig>();
+        if (!xrOrigin)
+            xrOrigin = GetComponentInParent<XROrigin>();
         if (!xrInteractionManager)
             xrInteractionManager = FindObjectOfType<XRInteractionManager>();
     }
@@ -76,11 +74,11 @@ public class PlayerClimbingXR : LocomotionProvider
     {
         ClimbingStarted();
 
-        var stamina = controller.GetComponent<HandReference>().hand.GetComponent<ClimbingHealthHandStamina>();
+        var stamina = controller.GetComponent<HandReference>().Hand.GetComponent<ClimbingHealthHandStamina>();
         stamina.Activate();
         stamina.OutOfStamina.AddListener(CancelClimbing);
 
-        prevLocation = xrRig.transform.position;
+        prevLocation = xrOrigin.transform.position;
 
         if (climbingHand)
             prevHand = climbingHand;
@@ -188,7 +186,7 @@ public class PlayerClimbingXR : LocomotionProvider
 
     private void CheckIfReturnToHand()
     {
-        if (Vector3.Distance(xrRig.transform.position, prevLocation) >= returnDistance)
+        if (Vector3.Distance(xrOrigin.transform.position, prevLocation) >= returnDistance)
             StartCoroutine(ReturnToPrevHandPosition());
     }
 
@@ -197,13 +195,13 @@ public class PlayerClimbingXR : LocomotionProvider
     private IEnumerator ReturnToPrevHandPosition()
     {
         float currentTimer = 0;
-        Vector3 startPosition = xrRig.transform.position;
+        Vector3 startPosition = xrOrigin.transform.position;
         Vector3 goalPosition = prevLocation;
 
         isReturningPlayer = true;
         while (currentTimer <= returnAnimationLength + Time.deltaTime)
         {
-            xrRig.transform.position = Vector3.Lerp(startPosition, goalPosition, returnToPlayerCurve.Evaluate(currentTimer / returnAnimationLength));
+            xrOrigin.transform.position = Vector3.Lerp(startPosition, goalPosition, returnToPlayerCurve.Evaluate(currentTimer / returnAnimationLength));
             yield return null;
             currentTimer += Time.deltaTime;
         }
@@ -233,17 +231,16 @@ public class PlayerClimbingXR : LocomotionProvider
     private void OnDrawGizmos()
     {
         Gizmos.DrawWireSphere(overPosition, .1f);
-        Vector3 heightAdjustment = xrRig.rig.transform.up * xrRig.cameraInRigSpaceHeight;
+        Vector3 heightAdjustment = xrOrigin.transform.up * xrOrigin.CameraInOriginSpaceHeight;
         Vector3 cameraDestination = overPosition + heightAdjustment;
         Gizmos.DrawWireSphere(cameraDestination, .1f);
     }
 
     private void MoveToPositionWhenReleased()
     {
-        Debug.Log("Moved");
-        Vector3 heightAdjustment = xrRig.rig.transform.up * xrRig.cameraInRigSpaceHeight;
+        Vector3 heightAdjustment = xrOrigin.transform.up * xrOrigin.CameraInOriginSpaceHeight;
         Vector3 cameraDestination = overPosition + heightAdjustment;
-        xrRig.MoveCameraToWorldLocation(cameraDestination);
+        xrOrigin.MoveCameraToWorldLocation(cameraDestination);
         overPosition = Vector3.zero;
     }
 

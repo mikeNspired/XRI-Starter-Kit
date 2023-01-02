@@ -72,7 +72,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             if (!playerHandModel)
             {
-                playerHandModel = interactor.GetComponent<HandReference>().hand.GetComponentInChildren<SkinnedMeshRenderer>();
+                playerHandModel = interactor.GetComponent<HandReference>().Hand.GetComponentInChildren<SkinnedMeshRenderer>();
                 originalMaterial = playerHandModel.material;
             }
             

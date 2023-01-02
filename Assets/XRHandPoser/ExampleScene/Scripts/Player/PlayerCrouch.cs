@@ -1,17 +1,16 @@
-﻿using System;
+﻿using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
-    //Thanks to David Goodman 
     public class PlayerCrouch : MonoBehaviour
     {
         [SerializeField]
         private InputActionReference crouchLeftHand, crouchRightHand;
         [SerializeField] private float crouchOffSetReduction = .65f;
-        public XRRig xrRig;
+        public XROrigin xrOrigin;
         private bool leftIsGripped, rightIsGripped, isCrouched;
         private float crouchOffset;
 
@@ -26,9 +25,9 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (!gameObject.activeInHierarchy) return;
 
-            if (!xrRig) xrRig = GetComponent<XRRig>();
-            if (!xrRig) xrRig = GetComponentInParent<XRRig>();   
-            crouchOffset = xrRig.cameraYOffset;
+            if (!xrOrigin) xrOrigin = GetComponent<XROrigin>();
+            if (!xrOrigin) xrOrigin = GetComponentInParent<XROrigin>();   
+            crouchOffset = xrOrigin.CameraYOffset;
         }
         private void OnEnable()
         {
@@ -44,15 +43,16 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void CrouchToggle()
         {
-            if (isCrouched)
+            switch (isCrouched)
             {
-                xrRig.cameraYOffset = crouchOffset;
-                isCrouched = !isCrouched;
-            }
-            else if (!isCrouched)
-            {
-                xrRig.cameraYOffset = crouchOffset * crouchOffSetReduction;
-                isCrouched = !isCrouched;
+                case true:
+                    xrOrigin.CameraYOffset = crouchOffset;
+                    isCrouched = !isCrouched;
+                    break;
+                case false:
+                    xrOrigin.CameraYOffset = crouchOffset * crouchOffSetReduction;
+                    isCrouched = !isCrouched;
+                    break;
             }
         }
         

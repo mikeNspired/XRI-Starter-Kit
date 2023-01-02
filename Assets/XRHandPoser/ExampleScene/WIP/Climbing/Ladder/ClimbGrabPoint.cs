@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -43,7 +44,7 @@ public class ClimbGrabPoint : MonoBehaviour
         if (velocityTracker)
         {
             //controllerVelocity.SetController(interactor.transform);
-            velocityTracker.SetTrackedObject(interactor.GetComponentInParent<XRRig>().transform);
+            velocityTracker.SetTrackedObject(interactor.GetComponentInParent<XROrigin>().transform);
             velocityTracker.StartTracking();
         }
         

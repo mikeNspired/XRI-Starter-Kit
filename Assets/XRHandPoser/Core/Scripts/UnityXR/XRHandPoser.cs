@@ -1,6 +1,5 @@
 // Copyright (c) MikeNspired. All Rights Reserved.
 
-using System;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -31,18 +30,12 @@ namespace MikeNspired.UnityXRHandPoser
         private void SubscribeToSelection()
         {
             //Set hand animation on grab
-            interactable.onSelectEntered.AddListener(x => SetAttachForInstantaneous(x.GetComponent<HandReference>()?.hand));
-            interactable.onSelectEntered.AddListener(x => BeginNewHandPoses(x.GetComponent<HandReference>()?.hand));
+            interactable.onSelectEntered.AddListener(x => SetAttachForInstantaneous(x.GetComponent<HandReference>()?.Hand));
+            interactable.onSelectEntered.AddListener(x => BeginNewHandPoses(x.GetComponent<HandReference>()?.Hand));
 
             //Set to default animations when item is released
             interactable.onSelectExited.AddListener(x => Release());
             interactable.onSelectExited.AddListener(x => rb.ResetCenterOfMass());
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            // interactable = GetComponent<XRGrabInteractable>();
-            /// rb = interactable.GetComponent<Rigidbody>();
         }
 
         private void OnValidate()
@@ -80,14 +73,10 @@ namespace MikeNspired.UnityXRHandPoser
         protected override void BeginNewHandPoses(HandAnimator hand)
         {
             if (!hand || !CheckIfPoseExistForHand(hand)) return;
-
-            //Check if left or right hand to set attachment point
-            // if (!DisableHandAttachTransforms)
-            //     interactable.attachTransform = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
-
+            
             base.BeginNewHandPoses(hand);
 
-             MoveHandToPoseTransforms(hand);
+            MoveHandToPoseTransforms(hand);
         }
 
         private bool CheckIfPoseExistForHand(HandAnimator hand)

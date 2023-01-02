@@ -145,7 +145,7 @@ namespace MikeNspired.UnityXRHandPoser
             recoilTracker = new GameObject().transform;
             recoilTracker.parent = controller.attachTransform;
             recoilTracker.name = gameObject.name + " Recoil Tracker";
-            if (controller.GetComponent<HandReference>().hand.handType == LeftRight.Right)
+            if (controller.GetComponent<HandReference>().Hand.handType == LeftRight.Right)
                 recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().rightHandAttach.localRotation);
             else
                 recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().leftHandAttach.localRotation);
