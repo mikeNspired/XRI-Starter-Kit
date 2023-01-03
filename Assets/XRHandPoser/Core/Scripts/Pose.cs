@@ -1,12 +1,13 @@
 ﻿// Copyright (c) MikeNspired. All Rights Reserved.
 using UnityEngine;
 using System;
+using System.Linq;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// Script located on the rootBone.
-    /// Has the ability to draw spheres and lines to show the relationship between joints and join location
+    /// Draw spheres and lines to show the relationship between joints and join location
     /// </summary>
     [Serializable]
     public class Pose : MonoBehaviour, IComparable<Pose>
@@ -30,15 +31,25 @@ namespace MikeNspired.UnityXRHandPoser
             for (int i = 0; i < joint.childCount; ++i)
             {
                 Transform child = joint.GetChild(i);
-                // if (child.name.EndsWith("aux"))
-                // {
-                //     DrawJoints(child);
-                //     continue;
-                // }
-
                 Gizmos.DrawLine(joint.position, child.position);
                 DrawJoints(child);
             }
+        }
+
+        public void AddAux()
+        {       
+            for (int i = 0; i < transform.childCount; ++i)
+            {
+                if (transform.GetChild(i).name.Contains("1_"))
+                {
+                    if (transform.GetChild(i).name.Contains("aux"))
+                        continue;
+                    if (transform.GetChild(i).name.Contains("Thumb"))
+                        continue;
+                    transform.GetChild(i).name += "_aux";
+                }
+            }
+
         }
 
         public int CompareTo(Pose other)

@@ -426,13 +426,10 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void SetNewJoints(Pose pose, List<Transform> jointList)
         {
-            if (pose == null)
+            if (pose == null || jointList == null)
             {
-                if (pose == null || jointList == null)
-                {
-                    Debug.LogError("Error: Please set a pose for hand to animate to :: Pose is Null");
-                    return;
-                }
+                Debug.LogError("Error: Please set a pose for hand to animate to :: Pose is Null");
+                return;
             }
 
             jointList.Clear();
@@ -457,6 +454,40 @@ namespace MikeNspired.UnityXRHandPoser
                 RootBone.DrawJoints(RootBone.transform);
             else
                 RootBone.debugSpheresEnabled = false;
+        }
+
+        public Pose defaultPose, goalPose;
+        public Transform thumbTopTransform, indexTopTransform, middleTopTransform, ringTopTransform, pinkyTopTransform;
+        public void SetPoseByValue(Transform currentJoint, Pose defaultPose, Pose goalPose, float value)
+        {
+            SetNewJoints(defaultPose, goalPoseJoints);
+            SetNewJoints(goalPose, goalPoseJoints);
+
+            var jointInOriginal = defaultPose.transform.Find(currentJoint.name);
+            var jointInGoalPose = goalPose.transform.Find(currentJoint.name);
+
+            if (!jointInGoalPose)
+            {
+                Debug.Log(currentJoint + " Not found in goal pose");
+                return;
+            }
+            if (!jointInOriginal)
+            {
+                Debug.Log(currentJoint + " Not found in original pose");
+                return;
+            }
+
+            var jointsInGoalPose = jointInGoalPose.GetComponentsInChildren<Transform>();
+            var jointsInOriginalPose = jointInOriginal.GetComponentsInChildren<Transform>();
+            var jointsInHand = currentJoint.GetComponentsInChildren<Transform>();
+
+            for (int i = 0; i < jointsInOriginalPose.Length; ++i)
+            {
+                Transform joint = jointsInHand[i];
+                var newPosition = Vector3.Lerp(jointsInOriginalPose[i].localPosition, jointsInGoalPose[i].localPosition, value);
+                var newRotation = Quaternion.Lerp(jointsInOriginalPose[i].localRotation, jointsInGoalPose[i].localRotation, value);
+                SetNewJoint(ref joint, newPosition, newRotation);
+            }
         }
     }
 }
