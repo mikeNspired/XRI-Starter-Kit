@@ -177,6 +177,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
                 if (GUILayout.Button(labelToolTip, GUILayout.MinWidth(buttonWidth)))
                 {
                     handPoseScript.CreateLeftHand();
+                    handPoseScript.SetLeftHandToPose();
                 }
             }
 
@@ -258,6 +259,8 @@ namespace MikeNspired.UnityXRHandPoser.Editor
                 if (GUILayout.Button(labelToolTip, GUILayout.MinWidth(buttonWidth)))
                 {
                     handPoseScript.CreateRightHand();
+                    handPoseScript.SetRightHandToPose();
+
                 }
             }
 
