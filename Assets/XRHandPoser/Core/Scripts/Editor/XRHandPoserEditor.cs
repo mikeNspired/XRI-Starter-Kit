@@ -58,14 +58,13 @@ namespace MikeNspired.UnityXRHandPoser.Editor
                 "XRGrabInteractable script, Can be located anywhere. If null, will grab if one is on the object");
             interactable.objectReferenceValue = EditorGUILayout.ObjectField(labelToolTip, interactable.objectReferenceValue, typeof(XRGrabInteractable), true) as XRGrabInteractable;
 
-            labelToolTip = new GUIContent("Animation Poses", "Does this object have a pose it will animate to when the trigger is pulled?");
+            labelToolTip = new GUIContent("Animation Poses", "Adds second pose that animates to when trigger is pulled");
             hasAnimationPose.boolValue = EditorGUILayout.Toggle(labelToolTip, hasAnimationPose.boolValue);
 
 
-            labelToolTip = new GUIContent("Wait For Hand To Animate To Position",
-                "Typically used when grabbing an object that does not move to your hand. " +
-                "Immediately animates the hand instead of waiting for XRGrabInteractables AttachEaseInTime");
-            handPoseScript.WaitForHandToAnimateToPosition = EditorGUILayout.Toggle(labelToolTip, handPoseScript.WaitForHandToAnimateToPosition);
+            labelToolTip = new GUIContent("Move Hand to Object",
+                "Typically used when grabbing an object that does not move to your hand.");
+            handPoseScript.MoveHandToObject = EditorGUILayout.Toggle(labelToolTip, handPoseScript.MoveHandToObject);
 
 
             labelToolTip = new GUIContent("Disable Hand Attach Transforms",

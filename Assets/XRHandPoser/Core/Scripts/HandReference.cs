@@ -20,6 +20,8 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (!Hand)
                 Hand = GetComponentInChildren<HandAnimator>();
+            if (!xrDirectInteractor)
+                xrDirectInteractor = GetComponent<XRDirectInteractor>();
         }
 
         private void Start() => OnValidate();
@@ -52,7 +54,7 @@ namespace MikeNspired.UnityXRHandPoser
             attachTransform.localRotation = finalRotation;
 
             attachTransform.parent = transform;
-             Debug.Log(x.GetComponent<XRHandPoser>().leftHandAttach.name + " " + x.GetComponent<XRHandPoser>().leftHandAttach.localPosition.ToString("f3") + " " + finalPosition.ToString("f3"));
+//            Debug.Log(x.GetComponent<XRHandPoser>().leftHandAttach.name + " " + x.GetComponent<XRHandPoser>().leftHandAttach.localPosition.ToString("f3") + " " + finalPosition.ToString("f3"));
         }
 
         private void Reset(XRBaseInteractable x)

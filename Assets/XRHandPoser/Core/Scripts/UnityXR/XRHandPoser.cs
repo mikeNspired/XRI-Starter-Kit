@@ -13,7 +13,7 @@ namespace MikeNspired.UnityXRHandPoser
     public class XRHandPoser : HandPoser
     {
         public XRGrabInteractable interactable;
-        public bool WaitForHandToAnimateToPosition = true;
+        public bool MoveHandToObject = false;
         public bool DisableHandAttachTransforms = false;
 
         private Rigidbody rb;
@@ -60,23 +60,24 @@ namespace MikeNspired.UnityXRHandPoser
             var position = hand.handType == LeftRight.Left ? leftHandAttach.position : rightHandAttach.position;
             position = rb.transform.InverseTransformPoint(position);
             interactable.GetComponent<Rigidbody>().centerOfMass = position;
-            WaitForHandToAnimateToPosition = false;
+            MoveHandToObject = false;
         }
 
         private void MoveHandToPoseTransforms(HandAnimator hand)
         {
             //Determines if the left or right hand is grabbed, and then sends over the proper attachment point to be assigned to the XRGrabInteractable.
             var attachPoint = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
-            hand.MoveHandToTarget(attachPoint, interactable.attachEaseInTime, WaitForHandToAnimateToPosition);
+            hand.MoveHandToTarget(attachPoint, interactable.attachEaseInTime, MoveHandToObject);
         }
 
         protected override void BeginNewHandPoses(HandAnimator hand)
         {
             if (!hand || !CheckIfPoseExistForHand(hand)) return;
-            
+
             base.BeginNewHandPoses(hand);
 
-            MoveHandToPoseTransforms(hand);
+            if (MoveHandToObject)
+                MoveHandToPoseTransforms(hand);
         }
 
         private bool CheckIfPoseExistForHand(HandAnimator hand)
