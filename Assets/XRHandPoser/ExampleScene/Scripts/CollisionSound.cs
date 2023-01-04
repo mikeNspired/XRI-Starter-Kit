@@ -10,7 +10,8 @@ namespace MikeNspired.UnityXRHandPoser
     {
         [SerializeField] private AudioClip[] Clips = null;
         [SerializeField] private AudioSource audioSource = null;
-        [SerializeField] private bool randomizePitch = false;
+        [SerializeField] private AnimationCurve volumeCurve = null;
+        [SerializeField] private bool randomizePitch = false, useVolumeCurve;
         [SerializeField] private float minPitchChange = -.1f, maxPitchChange = .1f;
         [SerializeField] private float maxVolume = 1;
         [SerializeField] private float timeTillCanPlayAgain = .1f;
@@ -42,8 +43,7 @@ namespace MikeNspired.UnityXRHandPoser
             //Check if time has elapsed to play sound again
             if (Time.time - timer < timeTillCanPlayAgain) return;
             timer = Time.time;
-
-
+            
             if (randomizePitch)
             {
                 audioSource.pitch = originalPitch;
@@ -51,13 +51,16 @@ namespace MikeNspired.UnityXRHandPoser
             }
 
             //Remap velocity to 0 to 1 for volume
-            float velocity = Mathf.Clamp(other.relativeVelocity.magnitude, 0, maxVelocity);
-            velocity = Remap(velocity, 0, maxVelocity, 0, maxVolume);
-
+            var volume = Remap(Mathf.Clamp(other.relativeVelocity.magnitude, 0, maxVelocity), 0, maxVelocity, 0, 1);
+            
+            volume = useVolumeCurve ? 
+                Remap(volumeCurve.Evaluate(volume), 0, 1, 0, maxVolume) :
+                Remap(volume, 0, 1, 0, maxVolume);
 
             AudioClip randomClip = Clips[Random.Range(0, Clips.Length)];
             audioSource.clip = randomClip;
-            audioSource.volume = velocity;
+            audioSource.volume = volume;
+            
             audioSource.Play();
         }
 
