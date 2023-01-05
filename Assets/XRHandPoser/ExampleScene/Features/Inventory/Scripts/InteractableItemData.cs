@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.XR.CoreUtils;
+using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
 public class InteractableItemData : MonoBehaviour
@@ -25,7 +26,7 @@ public class InteractableItemData : MonoBehaviour
     private void SetParentToPlayerForSmoothMovement()
     {
         if (interactable.selectingInteractor)
-            transform.parent = interactable.selectingInteractor.GetComponentInParent<XRRig>().cameraFloorOffsetObject.transform;
+            transform.parent = interactable.selectingInteractor.GetComponentInParent<XROrigin>().CameraFloorOffsetObject.transform;
     }
 
     #endregion

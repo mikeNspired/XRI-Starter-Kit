@@ -33,11 +33,10 @@ public class ClimbGrabPoint : MonoBehaviour
     
     private void OnSelect(XRBaseInteractor interactor)
     {
-        xRController = interactor.GetComponent<XRBaseController>();
+        xRController = interactor.GetComponentInParent<ActionBasedController>();
         xRDirectInteractor = interactor.GetComponent<XRDirectInteractor>();
-
-        Debug.Log(xRController);
-        Debug.Log(xRDirectInteractor);
+        if (!xRDirectInteractor) return;
+        
         if (xRDirectInteractor)
             SetClimberHand(xRController);
 
@@ -48,7 +47,7 @@ public class ClimbGrabPoint : MonoBehaviour
             velocityTracker.StartTracking();
         }
         
-        interactor.GetComponent<XRBaseController>().SendHapticImpulse(hapticStrength, hapticDuration);
+        interactor.GetComponentInParent<XRBaseController>().SendHapticImpulse(hapticStrength, hapticDuration);
     }
 
     private void SetClimberHand(XRBaseController controller)
@@ -58,7 +57,7 @@ public class ClimbGrabPoint : MonoBehaviour
 
     private void OnSelectExit(XRBaseInteractor interactor)
     {
-        xRController = interactor.GetComponent<XRBaseController>();
+        xRController = interactor.GetComponentInParent<XRBaseController>();
         xRDirectInteractor = interactor.GetComponent<XRDirectInteractor>();
         
         if (xRDirectInteractor)

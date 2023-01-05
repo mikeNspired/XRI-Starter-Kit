@@ -13,7 +13,8 @@ namespace MikeNspired.UnityXRHandPoser
     public class XRHandPoser : HandPoser
     {
         public XRGrabInteractable interactable;
-        public bool MoveHandToObject = false;
+        public bool MaintainHandOnObject = true;
+        public bool WaitTillEaseInTimeToMaintainPosition = true;
         public bool DisableHandAttachTransforms = false;
 
         private Rigidbody rb;
@@ -30,8 +31,8 @@ namespace MikeNspired.UnityXRHandPoser
         private void SubscribeToSelection()
         {
             //Set hand animation on grab
-            interactable.onSelectEntered.AddListener(x => SetAttachForInstantaneous(x.GetComponent<HandReference>()?.Hand));
-            interactable.onSelectEntered.AddListener(x => BeginNewHandPoses(x.GetComponent<HandReference>()?.Hand));
+            interactable.onSelectEntered.AddListener(x => SetAttachForInstantaneous(x.GetComponentInParent<HandReference>()?.Hand));
+            interactable.onSelectEntered.AddListener(x => BeginNewHandPoses(x.GetComponentInParent<HandReference>()?.Hand));
 
             //Set to default animations when item is released
             interactable.onSelectExited.AddListener(x => Release());
@@ -60,14 +61,14 @@ namespace MikeNspired.UnityXRHandPoser
             var position = hand.handType == LeftRight.Left ? leftHandAttach.position : rightHandAttach.position;
             position = rb.transform.InverseTransformPoint(position);
             interactable.GetComponent<Rigidbody>().centerOfMass = position;
-            MoveHandToObject = false;
+            MaintainHandOnObject = false;
         }
 
         private void MoveHandToPoseTransforms(HandAnimator hand)
         {
             //Determines if the left or right hand is grabbed, and then sends over the proper attachment point to be assigned to the XRGrabInteractable.
             var attachPoint = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
-            hand.MoveHandToTarget(attachPoint, interactable.attachEaseInTime, MoveHandToObject);
+            hand.MoveHandToTarget(attachPoint, interactable.attachEaseInTime, WaitTillEaseInTimeToMaintainPosition);
         }
 
         protected override void BeginNewHandPoses(HandAnimator hand)
@@ -76,7 +77,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             base.BeginNewHandPoses(hand);
 
-            if (MoveHandToObject)
+            if (MaintainHandOnObject)
                 MoveHandToPoseTransforms(hand);
         }
 

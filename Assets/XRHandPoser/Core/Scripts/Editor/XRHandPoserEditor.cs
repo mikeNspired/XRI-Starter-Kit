@@ -9,7 +9,7 @@ using Pose = UnityEngine.Pose;
 namespace MikeNspired.UnityXRHandPoser.Editor
 {
     [CustomEditor(typeof(XRHandPoser))]
-   // [CanEditMultipleObjects]
+    [CanEditMultipleObjects]
     public class XRHandPoserEditor : UnityEditor.Editor
     {
         private int buttonWidth = 175;
@@ -61,11 +61,16 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             labelToolTip = new GUIContent("Animation Poses", "Adds second pose that animates to when trigger is pulled");
             hasAnimationPose.boolValue = EditorGUILayout.Toggle(labelToolTip, hasAnimationPose.boolValue);
 
-
-            labelToolTip = new GUIContent("Move Hand to Object",
-                "Typically used when grabbing an object that does not move to your hand.");
-            handPoseScript.MoveHandToObject = EditorGUILayout.Toggle(labelToolTip, handPoseScript.MoveHandToObject);
-
+            labelToolTip = new GUIContent("Maintain Hand On Object",
+                "After the object is grabbed, the hand poser maintains the objects position every frame to lock the object in hand.");
+            handPoseScript.MaintainHandOnObject = EditorGUILayout.Toggle(labelToolTip, handPoseScript.MaintainHandOnObject);
+            
+            if (handPoseScript.MaintainHandOnObject)
+            {
+                labelToolTip = new GUIContent("Wait Till Ease In Time To Maintain Position",
+                    "Interactable's have an 'EaseIn' time, this waits till that time has elapsed before maintaining the hand position");
+                handPoseScript.WaitTillEaseInTimeToMaintainPosition = EditorGUILayout.Toggle(labelToolTip, handPoseScript.WaitTillEaseInTimeToMaintainPosition);
+            }
 
             labelToolTip = new GUIContent("Disable Hand Attach Transforms",
                 "Special uses: Stops attach transforms from being set. Can be used to rotate the hand position. Check Firehand in example scene");

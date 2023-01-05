@@ -71,7 +71,7 @@ public class ClimbingHealthHandStamina : MonoBehaviour
         stamina -= drainRate * Time.deltaTime;
         stamina = Mathf.Clamp(stamina, 0, Mathf.Infinity);
         if (stamina <= 0)
-            OutOfStamina.Invoke();
+            OutOfStamina?.Invoke();
     }
 
     private void RegainStamina()

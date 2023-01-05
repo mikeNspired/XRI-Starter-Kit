@@ -26,6 +26,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 3.0289266, y: 3.028926, z: 3.0289264}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4689253165202382110}
   - {fileID: 4463669516478472715}
@@ -58,6 +59,7 @@ Transform:
   m_LocalRotation: {x: 0.5501584, y: 0.41524822, z: 0.42089432, w: -0.58969706}
   m_LocalPosition: {x: 0.0029744883, y: -0.06338878, z: -0.009902384}
   m_LocalScale: {x: 1.0000001, y: 0.99999964, z: 1.0000001}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8860387950488161127}
   m_RootOrder: 0
@@ -89,6 +91,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
   m_LocalPosition: {x: -0, y: 0, z: 0.196}
   m_LocalScale: {x: 1, y: 0.42712, z: 3.4895}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7200736839611136640}
   m_RootOrder: 1
@@ -138,6 +141,7 @@ Transform:
   m_LocalRotation: {x: 0, y: -0.7238286, z: 0, w: 0.6899798}
   m_LocalPosition: {x: -3.074, y: 4.232, z: -0.465}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 85157962784650677}
   - {fileID: 4731092258182697523}
@@ -164,16 +168,61 @@ MonoBehaviour:
   m_InteractionLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  m_InteractionLayers:
+    m_Bits: 1
+  m_DistanceCalculationMode: 1
+  m_SelectMode: 0
+  m_CustomReticle: {fileID: 0}
+  m_AllowGazeInteraction: 0
+  m_AllowGazeSelect: 0
+  m_OverrideGazeTimeToSelect: 0
+  m_GazeTimeToSelect: 0.5
+  m_OverrideTimeToAutoDeselectGaze: 0
+  m_TimeToAutoDeselectGaze: 3
+  m_AllowGazeAssistance: 0
+  m_FirstHoverEntered:
+    m_PersistentCalls:
+      m_Calls: []
+  m_LastHoverExited:
+    m_PersistentCalls:
+      m_Calls: []
+  m_HoverEntered:
+    m_PersistentCalls:
+      m_Calls: []
+  m_HoverExited:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FirstSelectEntered:
+    m_PersistentCalls:
+      m_Calls: []
+  m_LastSelectExited:
+    m_PersistentCalls:
+      m_Calls: []
+  m_SelectEntered:
+    m_PersistentCalls:
+      m_Calls: []
+  m_SelectExited:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Activated:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Deactivated:
+    m_PersistentCalls:
+      m_Calls: []
+  m_StartingHoverFilters: []
+  m_StartingSelectFilters: []
+  m_StartingInteractionStrengthFilters: []
   m_OnFirstHoverEntered:
+    m_PersistentCalls:
+      m_Calls: []
+  m_OnLastHoverExited:
     m_PersistentCalls:
       m_Calls: []
   m_OnHoverEntered:
     m_PersistentCalls:
       m_Calls: []
   m_OnHoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnLastHoverExited:
     m_PersistentCalls:
       m_Calls: []
   m_OnSelectEntered:
@@ -191,10 +240,19 @@ MonoBehaviour:
   m_OnDeactivate:
     m_PersistentCalls:
       m_Calls: []
-  m_CustomReticle: {fileID: 0}
   m_AttachTransform: {fileID: 4731092258182697523}
+  m_SecondaryAttachTransform: {fileID: 0}
+  m_UseDynamicAttach: 0
+  m_MatchAttachPosition: 1
+  m_MatchAttachRotation: 1
+  m_SnapToColliderVolume: 1
+  m_ReinitializeDynamicAttachEverySingleGrab: 1
   m_AttachEaseInTime: 0.15
   m_MovementType: 1
+  m_VelocityDamping: 1
+  m_VelocityScale: 1
+  m_AngularVelocityDamping: 1
+  m_AngularVelocityScale: 1
   m_TrackPosition: 0
   m_SmoothPosition: 0
   m_SmoothPositionAmount: 5
@@ -222,8 +280,12 @@ MonoBehaviour:
     m_RotationOrder: 4
   m_ThrowVelocityScale: 1.5
   m_ThrowAngularVelocityScale: 0.25
-  m_GravityOnDetach: 0
+  m_ForceGravityOnDetach: 0
   m_RetainTransformParent: 1
+  m_AttachPointCompatibilityMode: 0
+  m_StartingSingleGrabTransformers: []
+  m_StartingMultipleGrabTransformers: []
+  m_AddDefaultGrabTransformers: 1
 --- !u!114 &8342543908489288889
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -324,7 +386,7 @@ MonoBehaviour:
   currentRightHand: {fileID: 0}
   grabAttachPoints: {fileID: 8860387950488161127}
   interactable: {fileID: 4512551135419705717}
-  WaitForHandToAnimateToPosition: 0
+  MoveHandToObject: 1
   DisableHandAttachTransforms: 0
 --- !u!1 &7776563565837098962
 GameObject:
@@ -355,6 +417,7 @@ Transform:
   m_LocalRotation: {x: -0.5653518, y: -0.79543865, z: -0.115975924, w: -0.18494427}
   m_LocalPosition: {x: 2.6239593, y: 0.85412127, z: -2.6803207}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7200736839611136640}
   m_RootOrder: 3
@@ -520,6 +583,7 @@ Transform:
   m_LocalRotation: {x: 0.55015814, y: -0.41524804, z: -0.4208942, w: -0.5896976}
   m_LocalPosition: {x: -0.0029706142, y: -0.06338878, z: -0.009902384}
   m_LocalScale: {x: 1.0000001, y: 0.99999964, z: 1.0000001}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8860387950488161127}
   m_RootOrder: 1

@@ -33,7 +33,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnTriggerEnter(Collider other)
         {
             if (currentHand) return;
-            var hand = other.GetComponent<HandReference>();
+            var hand = other.GetComponentInParent<HandReference>();
             if (!hand) return;
             if (hand.GetComponent<XRDirectInteractor>().selectTarget) return;
 

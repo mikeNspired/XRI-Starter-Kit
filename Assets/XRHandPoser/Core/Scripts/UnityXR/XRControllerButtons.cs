@@ -31,8 +31,8 @@ namespace MikeNspired.UnityXRHandPoser
             if (!actionBasedController)
                 enabled = false;
 
-            actionBasedController.selectActionValue.reference.GetInputAction().performed += x => Gripped(true);
-            actionBasedController.selectActionValue.reference.GetInputAction().canceled += x => Gripped(false);
+            actionBasedController.selectAction.reference.GetInputAction().performed += x => Gripped(true);
+            actionBasedController.selectAction.reference.GetInputAction().canceled += x => Gripped(false);
         }
 
         private void OnValidate()
@@ -49,7 +49,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void Update()
         {
-            triggerValue = actionBasedController.activateAction.action.ReadValue<float>();
+            triggerValue = actionBasedController.activateActionValue.action.ReadValue<float>();
             gripValue = actionBasedController.selectActionValue.action.ReadValue<float>();
 
             OnTriggerValue.Invoke(triggerValue);

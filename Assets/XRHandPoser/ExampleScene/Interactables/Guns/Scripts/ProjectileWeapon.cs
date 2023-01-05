@@ -94,7 +94,7 @@ namespace MikeNspired.UnityXRHandPoser
                 bullet.transform.SetPositionAndRotation(firePoint.position, Quaternion.LookRotation(shotDirection));
                 bullet.AddForce((bullet.transform.forward * bulletSpeed), ForceMode.VelocityChange);
                 
-                controller.GetComponent<ActionBasedController>().SendHapticImpulse(hapticStrength, hapticDuration);
+                controller.GetComponentInParent<ActionBasedController>().SendHapticImpulse(hapticStrength, hapticDuration);
 
                 BulletFiredEvent.Invoke();
                 StopAllCoroutines();
@@ -145,7 +145,7 @@ namespace MikeNspired.UnityXRHandPoser
             recoilTracker = new GameObject().transform;
             recoilTracker.parent = controller.attachTransform;
             recoilTracker.name = gameObject.name + " Recoil Tracker";
-            if (controller.GetComponent<HandReference>().Hand.handType == LeftRight.Right)
+            if (controller.GetComponentInParent<HandReference>().Hand.handType == LeftRight.Right)
                 recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().rightHandAttach.localRotation);
             else
                 recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().leftHandAttach.localRotation);

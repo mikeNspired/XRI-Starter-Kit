@@ -20,12 +20,14 @@ namespace MikeNspired.UnityXRHandPoser
         private void Start()
         {
             flashLight.enabled = isEnabled;
+            rend.enabled = isEnabled;
         }
 
         public void SwitchState()
         {
             isEnabled = !isEnabled;
             flashLight.enabled = isEnabled;
+            rend.enabled = isEnabled;
         }
 
         public void SetBrightness(float dialPercentage)

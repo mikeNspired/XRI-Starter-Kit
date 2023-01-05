@@ -45,7 +45,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void SetController(XRBaseInteractor controller)
         {
-            buttons = controller.GetComponent<HandReference>().Hand.GetComponent<XRControllerButtons>();
+            buttons = controller.GetComponentInParent<HandReference>().Hand.GetComponent<XRControllerButtons>();
         }
 
 

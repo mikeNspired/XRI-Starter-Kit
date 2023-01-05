@@ -50,7 +50,9 @@ public class PlayerClimbingXR : LocomotionProvider
         if (!xrOrigin)
             xrOrigin = GetComponentInParent<XROrigin>();
         if (!xrInteractionManager)
-            xrInteractionManager = FindObjectOfType<XRInteractionManager>();
+            xrInteractionManager = FindObjectOfType<XRInteractionManager>(); 
+        if (!characterController)
+            characterController = FindObjectOfType<CharacterController>();
     }
 
     public void Update()
@@ -95,6 +97,7 @@ public class PlayerClimbingXR : LocomotionProvider
 
     public void RemoveClimbHand(XRBaseController controller)
     {
+        Debug.Log(controller);
         var stamina = controller.GetComponentInChildren<ClimbingHealthHandStamina>();
         stamina.Deactivate();
         stamina.OutOfStamina.RemoveListener(CancelClimbing);
@@ -230,10 +233,10 @@ public class PlayerClimbingXR : LocomotionProvider
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(overPosition, .1f);
-        Vector3 heightAdjustment = xrOrigin.transform.up * xrOrigin.CameraInOriginSpaceHeight;
-        Vector3 cameraDestination = overPosition + heightAdjustment;
-        Gizmos.DrawWireSphere(cameraDestination, .1f);
+        // Gizmos.DrawWireSphere(overPosition, .1f);
+        // Vector3 heightAdjustment = xrOrigin.transform.up * xrOrigin.CameraInOriginSpaceHeight;
+        // Vector3 cameraDestination = overPosition + heightAdjustment;
+        // Gizmos.DrawWireSphere(cameraDestination, .1f);
     }
 
     private void MoveToPositionWhenReleased()
