@@ -35,7 +35,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (currentHand) return;
             var hand = other.GetComponentInParent<HandReference>();
             if (!hand) return;
-            if (hand.GetComponent<XRDirectInteractor>().selectTarget) return;
+            if (hand.GetComponentInChildren<XRDirectInteractor>().selectTarget) return;
 
             currentHand = hand.Hand;
 
@@ -66,9 +66,9 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnTriggerExit(Collider other)
         {
-            var hand = other.GetComponent<HandReference>();
+            var hand = other.GetComponentInParent<HandReference>();
             if (!hand) return;
-            if (hand.GetComponent<XRDirectInteractor>().selectTarget) return;
+            if (hand.GetComponentInChildren<XRDirectInteractor>().selectTarget) return;
             ReleaseHand();
         }
 

@@ -76,7 +76,7 @@ public class PlayerClimbingXR : LocomotionProvider
     {
         ClimbingStarted();
 
-        var stamina = controller.GetComponent<HandReference>().Hand.GetComponent<ClimbingHealthHandStamina>();
+        var stamina = controller.GetComponentInParent<HandReference>().Hand.GetComponent<ClimbingHealthHandStamina>();
         stamina.Activate();
         stamina.OutOfStamina.AddListener(CancelClimbing);
 
@@ -175,7 +175,7 @@ public class PlayerClimbingXR : LocomotionProvider
 
     private XRNode GetClimbingHandNode()
     {
-        return climbingHand.GetComponent<HandReference>().LeftRight == LeftRight.Left ? XRNode.LeftHand : XRNode.RightHand;
+        return climbingHand.GetComponentInParent<HandReference>().LeftRight == LeftRight.Left ? XRNode.LeftHand : XRNode.RightHand;
     }
 
     private void Climb()

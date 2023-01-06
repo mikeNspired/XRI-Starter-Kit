@@ -69,7 +69,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void EnableFollowOnHand(XRBaseInteractor hand, bool state)
         {
             currentGrabber = hand.transform;
-            if (hand.GetComponent<HandReference>().LeftRight == LeftRight.Left)
+            if (hand.GetComponentInParent<HandReference>().LeftRight == LeftRight.Left)
                 leftFollow = state;
             else
                 rightFollow = state;
@@ -85,7 +85,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (currentGrabber == controller.transform)
             {
                 currentGrabber = null;
-                ReleaseHand(controller.GetComponent<HandReference>());
+                ReleaseHand(controller.GetComponentInParent<HandReference>());
             }
         }
 
@@ -105,7 +105,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnTriggerEnter(Collider other)
         {
-            HandReference hand = other.GetComponent<HandReference>();
+            HandReference hand = other.GetComponentInParent<HandReference>();
 
             if (!hand) return;
 
@@ -118,7 +118,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnTriggerExit(Collider other)
         {
-            HandReference hand = other.GetComponent<HandReference>();
+            HandReference hand = other.GetComponentInParent<HandReference>();
             if (!hand) return;
             if (hand.transform == currentGrabber) return;
             ReleaseHand(hand);

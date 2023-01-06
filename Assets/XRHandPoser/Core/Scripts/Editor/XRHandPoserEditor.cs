@@ -9,7 +9,6 @@ using Pose = UnityEngine.Pose;
 namespace MikeNspired.UnityXRHandPoser.Editor
 {
     [CustomEditor(typeof(XRHandPoser))]
-    [CanEditMultipleObjects]
     public class XRHandPoserEditor : UnityEditor.Editor
     {
         private int buttonWidth = 175;

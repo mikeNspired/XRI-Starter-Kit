@@ -35,6 +35,7 @@ public class Joystick : MonoBehaviour
         xrGrabInteractable.onSelectEntered.AddListener(OnGrab);
         xrGrabInteractable.onSelectExited.AddListener((x) => hand = null);
         xrGrabInteractable.onSelectExited.AddListener((x) => StartCoroutine(ReturnToZero()));
+        SetStartPosition();
     }
 
     private void OnValidate()
@@ -42,7 +43,6 @@ public class Joystick : MonoBehaviour
         if (!xrGrabInteractable)
             xrGrabInteractable = GetComponent<XRGrabInteractable>();
 
-        SetStartPosition();
     }
 
     private void SetStartPosition()

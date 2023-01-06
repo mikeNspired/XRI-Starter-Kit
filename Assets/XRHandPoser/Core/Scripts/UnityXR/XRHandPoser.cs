@@ -1,8 +1,8 @@
 // Copyright (c) MikeNspired. All Rights Reserved.
 
+using System;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
-
 namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
@@ -10,6 +10,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// Its main purpose is to quickly setup hand poses for each item, and then assign those poses to the hand when the item is grabbed.
     /// This script is driven by the XRGrabInteractable to be used with UnityXR. It uses the onSelectEnter and onSelectExit to work.
     /// </summary>
+
     public class XRHandPoser : HandPoser
     {
         public XRGrabInteractable interactable;
@@ -28,21 +29,46 @@ namespace MikeNspired.UnityXRHandPoser
             SubscribeToSelection();
         }
 
+        // private void Update()
+        // {
+        //  
+        //         interactable = GetComponent<XRGrabInteractable>();    
+        //     if (!interactable)
+        //         interactable = GetComponentInParent<XRGrabInteractable>();
+        // }
+
         private void SubscribeToSelection()
         {
             //Set hand animation on grab
-            interactable.onSelectEntered.AddListener(x => SetAttachForInstantaneous(x.GetComponentInParent<HandReference>()?.Hand));
-            interactable.onSelectEntered.AddListener(x => BeginNewHandPoses(x.GetComponentInParent<HandReference>()?.Hand));
+            interactable.onSelectEntered.AddListener(TryStartPosing);
 
             //Set to default animations when item is released
-            interactable.onSelectExited.AddListener(x => Release());
-            interactable.onSelectExited.AddListener(x => rb.ResetCenterOfMass());
+            interactable.onSelectExited.AddListener(TryReleaseHand);
+        }
+
+        private void TryStartPosing(XRBaseInteractor x)
+        {
+            var hand = x.GetComponentInParent<HandReference>();
+            if (!hand) return;
+            SetAttachForInstantaneous(hand.Hand);
+            BeginNewHandPoses(hand.Hand);
+        }
+
+        private void TryReleaseHand(XRBaseInteractor x)
+        {
+            //Simple fix to get sockets to work
+            //TODO add hand tracking, to possibly have one handposer instead of two, and to check if the hand released for two handed grabbing
+            if (!x.GetComponentInParent<HandReference>()) return;
+            Release();
+            rb.ResetCenterOfMass();
         }
 
         private void OnValidate()
         {
             if (!interactable)
-                interactable = GetComponent<XRGrabInteractable>();
+                interactable = GetComponent<XRGrabInteractable>();    
+            if (!interactable)
+                interactable = GetComponentInParent<XRGrabInteractable>();
 
             if (!interactable)
                 Debug.LogWarning(gameObject + " XRGrabPoser does not have an XRGrabInteractable assigned." + "  (Parent name) " + transform.parent);
