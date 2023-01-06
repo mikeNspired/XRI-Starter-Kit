@@ -26,21 +26,21 @@ namespace MyNamespace
 
         private void OnTriggerEnter(Collider other)
         {
-            var controller = other.GetComponent<ActionBasedController>();
+            var controller = other.GetComponentInParent<ActionBasedController>();
             if (controller && !controllers.Contains(controller))
             {
                 controllers.Add(controller);
 
                 if (!autoGrabIfGripping)
                 {
-                    if (controller.GetComponent<HandReference>().LeftRight == LeftRight.Left)
+                    if (controller.GetComponentInParent<HandReference>().LeftRight == LeftRight.Left)
                         leftIsGripped = true;
                     else
                         rightIsGripped = true;
                 }
                 else
                 {
-                    if (controller.GetComponent<HandReference>().LeftRight == LeftRight.Left)
+                    if (controller.GetComponentInParent<HandReference>().LeftRight == LeftRight.Left)
                         leftIsGripped = false;
                     else
                         rightIsGripped = false;
@@ -50,7 +50,7 @@ namespace MyNamespace
 
         private void OnTriggerExit(Collider other)
         {
-            var controller = other.GetComponent<ActionBasedController>();
+            var controller = other.GetComponentInParent<ActionBasedController>();
             if (controller)
                 controllers.Remove(controller);
         }
@@ -83,7 +83,7 @@ namespace MyNamespace
                 CheckControllerTrigger(controller);
             else
             {
-                if (controller.GetComponent<HandReference>().LeftRight == LeftRight.Left)
+                if (controller.GetComponentInParent<HandReference>().LeftRight == LeftRight.Left)
                     CheckControllerGrip(controller, ref leftIsGripped);
                 else
                     CheckControllerGrip(controller, ref rightIsGripped);
@@ -110,7 +110,7 @@ namespace MyNamespace
 
         private bool IsControllerHoldingObject(ActionBasedController controller)
         {
-            return controller.GetComponent<XRDirectInteractor>().selectTarget;
+            return controller.GetComponentInChildren<XRDirectInteractor>().selectTarget;
         }
 
         private void CheckControllerTrigger(ActionBasedController controller)
@@ -119,8 +119,8 @@ namespace MyNamespace
 
             if (gripValue)
             {
-                if (!controller.GetComponent<XRDirectInteractor>().selectTarget)
-                    inventorySlot.TryInteractWithSlot(controller.GetComponent<XRBaseInteractor>());
+                if (!controller.GetComponentInChildren<XRDirectInteractor>().selectTarget)
+                    inventorySlot.TryInteractWithSlot(controller.GetComponentInChildren<XRDirectInteractor>());
             }
         }
     }

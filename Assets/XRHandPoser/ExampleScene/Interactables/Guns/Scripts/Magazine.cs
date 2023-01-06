@@ -67,8 +67,8 @@ namespace MikeNspired.UnityXRHandPoser
         {
             collider.isTrigger = true;
             rigidBody.isKinematic = true;
-            rigidBody.velocity = Vector3.zero;
-            rigidBody.angularVelocity = Vector3.zero;
+            // rigidBody.velocity = Vector3.zero;
+            // rigidBody.angularVelocity = Vector3.zero;
             
             EnableDistanceGrabbing(false);
         }
