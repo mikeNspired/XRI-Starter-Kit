@@ -53,9 +53,9 @@ namespace MikeNspired.UnityXRHandPoser.Editor
         {
             serializedObject.Update();
 
-            var labelToolTip = new GUIContent("XRGrabInteractable",
-                "XRGrabInteractable script, Can be located anywhere. If null, will grab if one is on the object");
-            interactable.objectReferenceValue = EditorGUILayout.ObjectField(labelToolTip, interactable.objectReferenceValue, typeof(XRGrabInteractable), true) as XRGrabInteractable;
+            var labelToolTip = new GUIContent("XRBaseInteractable",
+                "XRBaseInteractable script, Can be located anywhere. If null, will grab if one is on the object");
+            interactable.objectReferenceValue = EditorGUILayout.ObjectField(labelToolTip, interactable.objectReferenceValue, typeof(XRBaseInteractable), true) as XRBaseInteractable;
 
             labelToolTip = new GUIContent("Animation Poses", "Adds second pose that animates to when trigger is pulled");
             hasAnimationPose.boolValue = EditorGUILayout.Toggle(labelToolTip, hasAnimationPose.boolValue);

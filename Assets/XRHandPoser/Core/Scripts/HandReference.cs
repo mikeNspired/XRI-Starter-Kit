@@ -42,7 +42,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnGrab(XRBaseInteractable x)
         {
-            var handPoser = x.GetComponent<XRHandPoser>();
+            if (!x.TryGetComponent(out XRHandPoser handPoser)) return;
             var interactableAttach = LeftRight == LeftRight.Left ? handPoser.leftHandAttach : handPoser.rightHandAttach;
 
             Vector3 finalPosition = interactableAttach.localPosition * -1;

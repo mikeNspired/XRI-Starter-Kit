@@ -68,7 +68,6 @@ namespace MikeNspired.UnityXRHandPoser
             if (!currentHandGrabbing) return;
 
             currentHandGrabbing.ReturnHandToPlayer();
-            currentHandGrabbing.ReleaseItemPoses();
             currentHandGrabbing.ReturnAnimationsToOriginal();
             currentHandGrabbing.ReturnToDefaultPosing();
             currentHandGrabbing = null;
@@ -78,7 +77,7 @@ namespace MikeNspired.UnityXRHandPoser
         //Tells the hand to begin the new poses
         private void SetToPose(HandAnimator hand, Pose primaryPose, Pose animPose)
         {
-            hand.BeginNewPoses(primaryPose, animPose);
+            hand.BeginNewPoses(primaryPose, animPose, true);
         }
 
 
