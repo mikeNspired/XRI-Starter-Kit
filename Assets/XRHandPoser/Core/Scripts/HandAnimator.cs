@@ -234,7 +234,8 @@ namespace MikeNspired.UnityXRHandPoser
         private IEnumerator AnimateHandToPosition;
         private IEnumerator WaitForObjectToBeClose;
 
-        public void MoveHandToTarget(Transform attachPoint, float interactableAttachEaseInTime, bool waitForHandToAnimateToPosition) => StartCoroutine(MoveHandToTargetIE(attachPoint, interactableAttachEaseInTime, waitForHandToAnimateToPosition));
+        public void MoveHandToTarget(Transform attachPoint, float interactableAttachEaseInTime, bool waitForHandToAnimateToPosition) =>
+            StartCoroutine(MoveHandToTargetIE(attachPoint, interactableAttachEaseInTime, waitForHandToAnimateToPosition));
 
         private IEnumerator MoveHandToTargetIE(Transform attachPoint, float interactableAttachEaseInTime, bool waitForHandToAnimateToPosition)
         {
