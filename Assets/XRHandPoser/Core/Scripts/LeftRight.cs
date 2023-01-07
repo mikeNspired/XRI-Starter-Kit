@@ -5,4 +5,11 @@ namespace MikeNspired.UnityXRHandPoser
         Left,
         Right
     }
+    public enum ControllerButtons
+    {
+        Primary,
+        Secondary,
+        Trigger,
+        Grip
+    }
 }
