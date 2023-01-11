@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
+using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 using static Unity.Mathematics.math;
 
@@ -22,13 +21,12 @@ public class Joystick : MonoBehaviour
     private Vector2 currentVector;
     private Transform originalPositionTracker;
     public Vector2 CurrentVector => currentVector;
-    public ValueChangeEventV2 ValueChange;
-    public ValueChangeEvent2 TestEvent2;
-    public ValueChangeEvent2 TestEvent;
+    public UnityEventVector2 ValueChanged;
+    public UnityEventFloat SingleValueChanged;
 
     private void Start()
     {
-         OnValidate();
+        OnValidate();
 
         originalPositionTracker = new GameObject("originalPositionTracker").transform;
         originalPositionTracker.parent = transform.parent;
@@ -62,11 +60,6 @@ public class Joystick : MonoBehaviour
 
     private void Update()
     {
-        ValueChange.Invoke(Vector2.up);
-        TestEvent.Invoke(1);
-            TestEvent2.Invoke(1);
-            TestEvent2.Invoke(1);
-        return;
         transform.position = originalPositionTracker.position;
         transform.rotation = originalPositionTracker.rotation;
 
@@ -109,11 +102,11 @@ public class Joystick : MonoBehaviour
     private void InvokeEvents(Vector2 vector2)
     {
         vector2 = remap(-1, 1, remapValueMin, remapValueMax, vector2);
-        ValueChange.Invoke(vector2);
+        ValueChanged.Invoke(vector2);
         if (!xAxis)
-            TestEvent2.Invoke(vector2.y);
+            SingleValueChanged.Invoke(vector2.y);
         if (!yAxis)
-            TestEvent2.Invoke(vector2.x);
+            SingleValueChanged.Invoke(vector2.x);
     }
 
     private IEnumerator ReturnToZero()
@@ -150,12 +143,4 @@ public class Joystick : MonoBehaviour
     {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
-
-    [Serializable]
-    public class ValueChangeEventV2 : UnityEvent<Vector2>
-    {
-    }
-    [Serializable]
-    public class ValueChangeEvent2 : UnityEvent<float> { }
- 
 }

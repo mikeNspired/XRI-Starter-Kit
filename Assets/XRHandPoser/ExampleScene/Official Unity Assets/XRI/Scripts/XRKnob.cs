@@ -83,12 +83,6 @@ namespace Unity.XRContent.Interaction
             }
         }
 
-        [Serializable]
-        public class ValueChangeEvent : UnityEvent<float> { }
-        
-        [Serializable]
-        public class IncrementValueEvent : UnityEvent<int> { }
-
         [SerializeField]
         [Tooltip("The object that is visually grabbed and manipulated")]
         Transform m_Handle = null;
@@ -128,11 +122,11 @@ namespace Unity.XRContent.Interaction
 
         [SerializeField]
         [Tooltip("Events to trigger when the knob is rotated")]
-        ValueChangeEvent m_OnValueChange = new ValueChangeEvent();
+        UnityEventFloat m_OnValueChange = new UnityEventFloat();
         
         [SerializeField]
         [Tooltip("Events to trigger when the knob is incremented")]
-        IncrementValueEvent m_OnIncremenValueChange = new IncrementValueEvent();
+        UnityEventInt m_OnIncremenValueChange = new UnityEventInt();
 
         [SerializeField]
         [Tooltip("Remap sliders min value of 0 to a new value")]
@@ -194,8 +188,8 @@ namespace Unity.XRContent.Interaction
         /// <summary>
         /// Events to trigger when the knob is rotated
         /// </summary>
-        public ValueChangeEvent OnValueChange => m_OnValueChange;
-        public IncrementValueEvent OnIncrementValueChange => m_OnIncremenValueChange;
+        public UnityEventFloat OnValueChange => m_OnValueChange;
+        public UnityEventInt OnIncrementValueChange => m_OnIncremenValueChange;
 
         private void Start()
         {

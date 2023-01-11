@@ -68,10 +68,4 @@ namespace MikeNspired.UnityXRHandPoser
             OnGripValue.Invoke(gripValue);
         }
     }
-
-
-    [System.Serializable]
-    public class UnityEventFloat : UnityEvent<float>
-    {
-    }
 }

@@ -12,9 +12,6 @@ namespace Unity.XRContent.Interaction
     {
         const float k_LeverDeadZone = 0.1f; // Prevents rapid switching between on and off states when right in the middle
         
-        [Serializable]
-        public class ValueChangeEvent : UnityEvent<float> { }
-        
         [SerializeField]
         [Tooltip("The object that is visually grabbed and manipulated")]
         Transform m_Handle = null;
@@ -51,7 +48,7 @@ namespace Unity.XRContent.Interaction
 
         [SerializeField]
         [Tooltip("Events to trigger when the joystick's value changes")]
-        ValueChangeEvent m_OnValueChange = new ValueChangeEvent();
+        UnityEventFloat m_OnValueChange = new UnityEventFloat();
         
         IXRSelectInteractor m_Interactor;
         ActionBasedController m_Controller;
@@ -98,7 +95,7 @@ namespace Unity.XRContent.Interaction
         /// <summary>
         /// Events to trigger when the slider is moved
         /// </summary>
-        public ValueChangeEvent OnValueChange => m_OnValueChange;
+        public UnityEventFloat OnValueChange => m_OnValueChange;
 
         void Start()
         {

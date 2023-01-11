@@ -11,9 +11,6 @@ namespace Unity.XRContent.Interaction
     /// </summary>
     public class XRSlider : XRBaseInteractable
     {
-        [Serializable]
-        public class ValueChangeEvent : UnityEvent<float> { }
-
         [SerializeField]
         [Tooltip("The object that is visually grabbed and manipulated")]
         Transform m_Handle = null;
@@ -37,7 +34,7 @@ namespace Unity.XRContent.Interaction
 
         [SerializeField]
         [Tooltip("Events to trigger when the slider is moved")]
-        ValueChangeEvent m_OnValueChange = new ValueChangeEvent();
+        UnityEventFloat m_OnValueChange = new UnityEventFloat();
 
         [SerializeField]
         [Tooltip("Remap sliders min value of 0 to a new value")]
@@ -65,7 +62,7 @@ namespace Unity.XRContent.Interaction
         /// <summary>
         /// Events to trigger when the slider is moved
         /// </summary>
-        public ValueChangeEvent OnValueChange => m_OnValueChange;
+        public UnityEventFloat OnValueChange => m_OnValueChange;
 
         
         void Start()

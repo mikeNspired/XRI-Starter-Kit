@@ -9,16 +9,6 @@ using Random = UnityEngine.Random;
 /// </summary>
 public class AxisDragInteractable : XRGrabInteractable
 {
-    [Serializable]
-    public class DragDistanceEvent : UnityEvent<float>
-    {
-    }
-
-    [Serializable]
-    public class DragStepEvent : UnityEvent<int>
-    {
-    }
-
     [Tooltip("The Rigidbody that will be moved. If null will try to grab one on that object or its children")]
     public Rigidbody MovingRigidbody;
 
@@ -35,8 +25,8 @@ public class AxisDragInteractable : XRGrabInteractable
 
     public AudioClip SnapAudioClip;
     public AudioSource AudioSource;
-    public DragDistanceEvent OnDragDistance;
-    public DragStepEvent OnDragStep;
+    public UnityEventFloat OnDragDistance;
+    public UnityEventInt OnDragStep;
 
     Vector3 m_EndPoint;
     Vector3 m_StartPoint;

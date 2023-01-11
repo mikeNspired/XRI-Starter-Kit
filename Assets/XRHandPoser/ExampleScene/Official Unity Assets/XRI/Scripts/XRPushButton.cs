@@ -18,9 +18,6 @@ namespace Unity.XRContent.Interaction
             internal bool m_WrongSide = false;
         }
 
-        [Serializable]
-        public class ValueChangeEvent : UnityEvent<float> { }
-
         [SerializeField]
         [Tooltip("The object that is visually pressed down")]
         Transform m_Button = null;
@@ -55,7 +52,7 @@ namespace Unity.XRContent.Interaction
 
         [SerializeField]
         [Tooltip("Events to trigger when the button pressed value is updated. Only called when the button is pressed")]
-        ValueChangeEvent m_OnValueChange;
+        UnityEventFloat m_OnValueChange;
 
         bool m_Pressed = false;
         bool m_Toggled = false;
@@ -92,7 +89,7 @@ namespace Unity.XRContent.Interaction
         /// <summary>
         /// Events to trigger when the button distance value is changed. Only called when the button is pressed
         /// </summary>
-        public ValueChangeEvent OnValueChange => m_OnValueChange;
+        public UnityEventFloat OnValueChange => m_OnValueChange;
 
         /// <summary>
         /// Whether or not a toggle button is in the locked down position

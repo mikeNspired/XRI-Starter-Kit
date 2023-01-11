@@ -65,7 +65,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void Reset(XRBaseInteractable x)
         {
-            attachTransform.parent = Hand.transform;
+            if(Hand)
+                attachTransform.parent = Hand.transform;
             xrDirectInteractor.attachTransform.localPosition = startPosition;
             xrDirectInteractor.attachTransform.localRotation = startRotation;
         }
