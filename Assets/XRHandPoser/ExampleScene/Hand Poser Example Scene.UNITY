@@ -312,12 +312,17 @@ PrefabInstance:
     - target: {fileID: 673023798096520476, guid: 4641e2989f7b3f348a969faf9a956c56,
         type: 3}
       propertyPath: m_Speed
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 673023798096520476, guid: 4641e2989f7b3f348a969faf9a956c56,
         type: 3}
       propertyPath: m_TurnSpeed
       value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 673023798096520476, guid: 4641e2989f7b3f348a969faf9a956c56,
+        type: 3}
+      propertyPath: m_idlePitch
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 673023798104919098, guid: 4641e2989f7b3f348a969faf9a956c56,
         type: 3}
@@ -17317,37 +17322,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 716612234}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &717303314
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 717303315}
-  m_Layer: 0
-  m_Name: GrabAttachPoints
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &717303315
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 717303314}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.99999976, y: 1, z: 0.99999976}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 948567563582796792}
-  m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &718342065
 GameObject:
   m_ObjectHideFlags: 0
@@ -32604,17 +32578,17 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1221895278}
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.4560004, y: -0.44840002, z: -0.17099994}
+  m_LocalPosition: {x: -0.32799983, y: -0.010399997, z: -0.014000058}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1706053085}
-  - {fileID: 753046376}
   - {fileID: 1648377272}
-  - {fileID: 1543454679}
+  - {fileID: 753046376}
   - {fileID: 1131811290}
+  - {fileID: 1543454679}
   - {fileID: 1627880147}
-  m_Father: {fileID: 1953516275}
+  m_Father: {fileID: 948567563693747035}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &1221895280
@@ -32841,7 +32815,7 @@ MonoBehaviour:
   rotationPoint: {fileID: 1648377272}
   maxAngle: 60
   shaftLength: 0.25
-  returnToStartOnRelease: 1
+  returnToStartOnRelease: 0
   returnSpeed: 5
   startingPosition: {x: 0, y: 0}
   returnToPosition: {x: 0, y: 0}
@@ -32849,15 +32823,25 @@ MonoBehaviour:
   yAxis: 1
   remapValueMin: -1
   remapValueMax: 1
-  ValueChange:
+  InvokeEventsAtStart: 1
+  ValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  TestEvent2:
+  SingleValueChanged:
     m_PersistentCalls:
-      m_Calls: []
-  TestEvent:
-    m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1221895283}
+        m_TargetAssemblyTypeName: LeverExample, MikeNspiredXRHandPoser.Runtime
+        m_MethodName: SetSpeedNegativeOneToOne
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1001 &1230828527
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -43361,7 +43345,7 @@ GameObject:
   - component: {fileID: 1627880149}
   - component: {fileID: 1627880148}
   m_Layer: 0
-  m_Name: Canvas (1)
+  m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -51236,7 +51220,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1953516275}
   m_Layer: 0
-  m_Name: Joysticks
+  m_Name: Table
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -51256,7 +51240,6 @@ Transform:
   m_Children:
   - {fileID: 948567563693747035}
   - {fileID: 948567563803906588}
-  - {fileID: 1221895279}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
@@ -56906,18 +56889,18 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 948567562174072607}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.0009999999, y: 0.0010000002, z: 0.001}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 948567562892812156}
-  m_Father: {fileID: 948567563693747035}
-  m_RootOrder: 2
+  m_Father: {fileID: 948567563582796792}
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: -0.03}
+  m_AnchoredPosition: {x: 0, y: 0.032000035}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &948567562174072607
@@ -57671,7 +57654,7 @@ MonoBehaviour:
   hasAnimationPose: 0
   currentLeftHand: {fileID: 0}
   currentRightHand: {fileID: 0}
-  grabAttachPoints: {fileID: 717303315}
+  grabAttachPoints: {fileID: 0}
   interactable: {fileID: 948567563582796789}
   MaintainHandOnObject: 1
   WaitTillEaseInTimeToMaintainPosition: 0
@@ -57836,13 +57819,23 @@ MonoBehaviour:
   yAxis: 1
   remapValueMin: -1
   remapValueMax: 1
-  ValueChange:
+  InvokeEventsAtStart: 1
+  ValueChanged:
     m_PersistentCalls:
-      m_Calls: []
-  TestEvent2:
-    m_PersistentCalls:
-      m_Calls: []
-  TestEvent:
+      m_Calls:
+      - m_Target: {fileID: 948567563582796791}
+        m_TargetAssemblyTypeName: LeverExample, MikeNspiredXRHandPoser.Runtime
+        m_MethodName: SetVector
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  SingleValueChanged:
     m_PersistentCalls:
       m_Calls: []
 --- !u!114 &948567563582796791
@@ -57874,10 +57867,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1719073071}
   - {fileID: 948567562009159081}
   - {fileID: 396239848}
-  - {fileID: 1719073071}
-  - {fileID: 717303315}
+  - {fileID: 948567562174072606}
   m_Father: {fileID: 948567563693747035}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -57946,7 +57939,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 948567563582796792}
-  - {fileID: 948567562174072606}
+  - {fileID: 1221895279}
   m_Father: {fileID: 1953516275}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -57960,7 +57953,7 @@ GameObject:
   m_Component:
   - component: {fileID: 948567563693747035}
   m_Layer: 0
-  m_Name: 'Multi Directional Joystick '
+  m_Name: Joysticks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -58013,7 +58006,7 @@ MonoBehaviour:
   rotationPoint: {fileID: 948567562119191790}
   maxAngle: 30
   shaftLength: 0.25
-  returnToStartOnRelease: 0
+  returnToStartOnRelease: 1
   returnSpeed: 5
   startingPosition: {x: 0, y: -0.6}
   returnToPosition: {x: 0, y: 0}
@@ -58021,18 +58014,28 @@ MonoBehaviour:
   yAxis: 1
   remapValueMin: -0.25
   remapValueMax: 1
-  ValueChange:
+  InvokeEventsAtStart: 0
+  ValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  TestEvent2:
-    m_PersistentCalls:
-      m_Calls: []
-  TestEvent:
+  SingleValueChanged:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1544215042}
-        m_TargetAssemblyTypeName: Complete.TankMovement, Assembly-CSharp
+        m_TargetAssemblyTypeName: Complete.TankMovement, MikeNspiredXRHandPoser.Runtime
         m_MethodName: SetSpeed
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1544215042}
+        m_TargetAssemblyTypeName: Complete.TankMovement, MikeNspiredXRHandPoser.Runtime
+        m_MethodName: Print
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -58309,7 +58312,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 948567563803906587}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.177, y: -0.4484, z: -0.171}
+  m_LocalPosition: {x: -0.133, y: -0.4484, z: -0.171}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

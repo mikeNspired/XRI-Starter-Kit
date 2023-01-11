@@ -1,10 +1,10 @@
 ﻿using System.Collections;
-using MikeNspired.UnityXRHandPoser;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using static Unity.Mathematics.math;
 
-public class Joystick : MonoBehaviour
+public class XRJoystick : MonoBehaviour
 {
     [SerializeField] private XRGrabInteractable xrGrabInteractable = null;
     [SerializeField] private Transform rotationPoint = null;
@@ -16,11 +16,12 @@ public class Joystick : MonoBehaviour
     [SerializeField] private Vector2 returnToPosition = Vector2.zero;
     [SerializeField] private bool xAxis = true, yAxis = true;
     [SerializeField] private float remapValueMin = -1, remapValueMax = 1;
+    [SerializeField] private bool InvokeEventsAtStart;
 
-    private Transform hand;
-    private Vector2 currentVector;
-    private Transform originalPositionTracker;
-    public Vector2 CurrentVector => currentVector;
+    private Transform hand,originalPositionTracker;
+    public Vector2 CurrentValue { get; private set; }
+    public Vector2 RemapValue { get; private set; }
+
     public UnityEventVector2 ValueChanged;
     public UnityEventFloat SingleValueChanged;
 
@@ -33,29 +34,32 @@ public class Joystick : MonoBehaviour
         originalPositionTracker.localPosition = transform.localPosition;
         originalPositionTracker.localRotation = transform.localRotation;
 
-        xrGrabInteractable.onSelectEntered.AddListener(OnGrab);
-        xrGrabInteractable.onSelectExited.AddListener((x) => hand = null);
-        xrGrabInteractable.onSelectExited.AddListener((x) => StartCoroutine(ReturnToZero()));
+        xrGrabInteractable.selectEntered.AddListener(OnGrab);
+        xrGrabInteractable.selectExited.AddListener((x) => hand = null);
+        xrGrabInteractable.selectExited.AddListener((x) => StartCoroutine(ReturnToZero()));
+        if(InvokeEventsAtStart)
+            InvokeUnityEvents();
     }
 
     private void OnValidate()
     {
         if (!xrGrabInteractable)
             xrGrabInteractable = GetComponent<XRGrabInteractable>();
+
         SetStartPosition();
     }
 
     private void SetStartPosition()
     {
-        float x = Remap(startingPosition.x, -1, 1, -shaftLength, shaftLength);
-        float z = Remap(startingPosition.y, -1, 1, -shaftLength, shaftLength);
-        SetPosition(new Vector3(x, 0, z));
+        float x = remap(-1, 1, -shaftLength, shaftLength,startingPosition.x);
+        float z = remap(-1, 1, -shaftLength, shaftLength,startingPosition.y);
+        SetHandleRotation(new Vector3(x, 0, z));
     }
 
-    private void OnGrab(XRBaseInteractor hand)
+    private void OnGrab(SelectEnterEventArgs x)
     {
         StopAllCoroutines();
-        this.hand = hand.transform;
+        hand = x.interactorObject.transform;
     }
 
     private void Update()
@@ -65,6 +69,13 @@ public class Joystick : MonoBehaviour
 
         if (!hand) return;
 
+        GetVectorProjectionFromHand(out var locRot);
+        SetHandleRotation(locRot);
+        InvokeUnityEvents();
+    }
+
+    private void GetVectorProjectionFromHand(out Vector3 locRot)
+    {
         //Projection
         Vector3 positionToProject = hand.position;
         Vector3 v = positionToProject - transform.position;
@@ -76,54 +87,53 @@ public class Joystick : MonoBehaviour
         else
             projectedPoint = transform.position + new Vector3(Mathf.Clamp(projection.x, -1, 1), 0, Mathf.Clamp(projection.z, -1, 1));
 
-        var locRot = transform.InverseTransformPoint(projectedPoint);
-
-        SetPosition(locRot);
+        locRot = transform.InverseTransformPoint(projectedPoint);
     }
 
-    private void SetPosition(Vector3 locRot)
+    private void SetHandleRotation(Vector3 locRot)
     {
-        float x = Remap(locRot.x, -shaftLength, shaftLength, -1, 1);
-        float z = Remap(locRot.z, -shaftLength, shaftLength, -1, 1);
+        float x = remap(-shaftLength, shaftLength, -1, 1,locRot.x);
+        float z = remap(-shaftLength, shaftLength, -1, 1,locRot.z);
 
+        Vector3 newValue = Vector3.zero;
         if (xAxis & yAxis)
-            currentVector = Vector2.ClampMagnitude(new Vector2(x, z), 1);
+            newValue = Vector2.ClampMagnitude(new Vector2(x, z), 1);
 
         if (!xAxis)
-            currentVector = new Vector2(0, Mathf.Clamp(z, -1, 1));
+            newValue = new Vector2(0, Mathf.Clamp(z, -1, 1));
         if (!yAxis)
-            currentVector = new Vector2(Mathf.Clamp(x, -1, 1), 0);
+            newValue = new Vector2(Mathf.Clamp(x, -1, 1), 0);
 
-        rotationPoint.localEulerAngles = new Vector3(currentVector.y * maxAngle, 0, -currentVector.x * maxAngle);
+        rotationPoint.localEulerAngles = new Vector3(newValue.y * maxAngle, 0, -newValue.x * maxAngle);
 
-        InvokeEvents(currentVector);
+        CurrentValue = newValue;
     }
 
-    private void InvokeEvents(Vector2 vector2)
+    private void InvokeUnityEvents()
     {
-        vector2 = remap(-1, 1, remapValueMin, remapValueMax, vector2);
-        ValueChanged.Invoke(vector2);
+        RemapValue = remap(-1, 1, remapValueMin, remapValueMax, CurrentValue);
+        ValueChanged.Invoke(RemapValue);
         if (!xAxis)
-            SingleValueChanged.Invoke(vector2.y);
+            SingleValueChanged.Invoke(RemapValue.y);
         if (!yAxis)
-            SingleValueChanged.Invoke(vector2.x);
+            SingleValueChanged.Invoke(RemapValue.x);
     }
 
     private IEnumerator ReturnToZero()
     {
         if (!returnToStartOnRelease) yield break;
 
-        while (currentVector.magnitude >= .01f)
+        while (CurrentValue.magnitude >= .01f)
         {
-            currentVector = Vector2.Lerp(currentVector, returnToPosition, Time.deltaTime * returnSpeed);
-            rotationPoint.localEulerAngles = new Vector3(currentVector.y * maxAngle, 0, -currentVector.x * maxAngle);
-            InvokeEvents(currentVector);
+            CurrentValue = Vector2.Lerp(CurrentValue, returnToPosition, Time.deltaTime * returnSpeed);
+            rotationPoint.localEulerAngles = new Vector3(CurrentValue.y * maxAngle, 0, -CurrentValue.x * maxAngle);
+            InvokeUnityEvents();
             yield return null;
         }
 
-        currentVector = Vector2.zero;
+        CurrentValue = Vector2.zero;
         rotationPoint.localEulerAngles = Vector3.zero;
-        InvokeEvents(currentVector);
+        InvokeUnityEvents();
     }
 
     private void OnDrawGizmos()
@@ -137,10 +147,5 @@ public class Joystick : MonoBehaviour
             Gizmos.DrawLine(transform.position - transform.right * shaftLength, transform.position + transform.right * shaftLength);
 
         Gizmos.DrawLine(transform.position, transform.position + transform.up * shaftLength);
-    }
-
-    private float Remap(float value, float from1, float to1, float from2, float to2)
-    {
-        return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
 }
