@@ -9608,7 +9608,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1140159318213083406}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 1.07}
+  m_LocalPosition: {x: -0, y: 1.01, z: 0.64}
   m_LocalScale: {x: 0.21814, y: 0.21814, z: 0.21814}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -29156,7 +29156,8 @@ MonoBehaviour:
   interactable: {fileID: 3626242251110275236}
   MaintainHandOnObject: 1
   WaitTillEaseInTimeToMaintainPosition: 1
-  DisableHandAttachTransforms: 1
+  overrideEaseTime: 0
+  easeInTimeOverride: 0
 --- !u!82 &3626242251110275238
 AudioSource:
   m_ObjectHideFlags: 0

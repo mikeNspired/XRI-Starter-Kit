@@ -11,8 +11,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
     [CustomEditor(typeof(XRHandPoser))]
     public class XRHandPoserEditor : UnityEditor.Editor
     {
-        private int buttonWidth = 175;
-
+        private XRHandPoser handPoseScript;
         private SerializedProperty leftHandPose;
         private SerializedProperty rightHandPose;
         private SerializedProperty hasAnimationPose;
@@ -23,8 +22,6 @@ namespace MikeNspired.UnityXRHandPoser.Editor
         private SerializedProperty currentLeftHand;
         private SerializedProperty currentRightHand;
         private SerializedProperty interactable;
-        private XRHandPoser handPoseScript;
-
 
         private bool hasLeftHand;
         private bool hasRightHand;
@@ -32,7 +29,8 @@ namespace MikeNspired.UnityXRHandPoser.Editor
         private GUIStyle centerStyle;
         private GUIStyle poseTitleStyle;
         private float contextWidth;
-    
+        private int buttonWidth = 175;
+
 
         protected void OnEnable()
         {
@@ -49,38 +47,10 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             interactable = serializedObject.FindProperty("interactable");
         }
 
-        private void DrawFields()
+        public override void OnInspectorGUI()
         {
             serializedObject.Update();
 
-            var labelToolTip = new GUIContent("XRBaseInteractable",
-                "XRBaseInteractable script, Can be located anywhere. If null, will grab if one is on the object");
-            interactable.objectReferenceValue = EditorGUILayout.ObjectField(labelToolTip, interactable.objectReferenceValue, typeof(XRBaseInteractable), true) as XRBaseInteractable;
-
-            labelToolTip = new GUIContent("Animation Poses", "Adds second pose that animates to when trigger is pulled");
-            hasAnimationPose.boolValue = EditorGUILayout.Toggle(labelToolTip, hasAnimationPose.boolValue);
-
-            labelToolTip = new GUIContent("Maintain Hand On Object",
-                "After the object is grabbed, the hand poser maintains the objects position every frame to lock the object in hand.");
-            handPoseScript.MaintainHandOnObject = EditorGUILayout.Toggle(labelToolTip, handPoseScript.MaintainHandOnObject);
-            
-            if (handPoseScript.MaintainHandOnObject)
-            {
-                labelToolTip = new GUIContent("Wait Till Ease In Time To Maintain Position",
-                    "Interactable's have an 'EaseIn' time, this waits till that time has elapsed before maintaining the hand position");
-                handPoseScript.WaitTillEaseInTimeToMaintainPosition = EditorGUILayout.Toggle(labelToolTip, handPoseScript.WaitTillEaseInTimeToMaintainPosition);
-            }
-
-            labelToolTip = new GUIContent("Disable Hand Attach Transforms",
-                "Special uses: Stops attach transforms from being set. Can be used to rotate the hand position. Check Firehand in example scene");
-            handPoseScript.DisableHandAttachTransforms = EditorGUILayout.Toggle(labelToolTip, handPoseScript.DisableHandAttachTransforms);
-
-            serializedObject.ApplyModifiedProperties();
-        }
-
-
-        public override void OnInspectorGUI()
-        {
             hasLeftHand = currentLeftHand.objectReferenceValue != null;
             hasRightHand = currentRightHand.objectReferenceValue != null;
             customizeValues = new AnimBool(true);
@@ -115,6 +85,50 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             GUILayout.Space(10);
 
             GUILayout.BeginHorizontal();
+            DrawPoseSection();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(5);
+
+            DrawBottomButtons();
+            DrawMessages();
+            
+            serializedObject.ApplyModifiedProperties();
+        }
+        
+        private void DrawFields()
+        {
+            var labelToolTip = new GUIContent("XRBaseInteractable",
+                "XRBaseInteractable script, Can be located anywhere. If null, will grab if one is on the object");
+            interactable.objectReferenceValue = EditorGUILayout.ObjectField(labelToolTip, interactable.objectReferenceValue, typeof(XRBaseInteractable), true) as XRBaseInteractable;
+
+            labelToolTip = new GUIContent("Animation Poses", "Adds second pose that animates to when trigger is pulled");
+            hasAnimationPose.boolValue = EditorGUILayout.Toggle(labelToolTip, hasAnimationPose.boolValue);
+
+            labelToolTip = new GUIContent("Maintain Hand On Object",
+                "After the object is grabbed, the hand poser maintains the objects position every frame to lock the object in hand.");
+            handPoseScript.MaintainHandOnObject = EditorGUILayout.Toggle(labelToolTip, handPoseScript.MaintainHandOnObject);
+            
+            if (handPoseScript.MaintainHandOnObject)
+            {
+                labelToolTip = new GUIContent("Wait Till Ease In Time To Maintain Position",
+                    "Interactable's have an 'EaseIn' time, this waits till that time has elapsed before maintaining the hand position");
+                handPoseScript.WaitTillEaseInTimeToMaintainPosition = EditorGUILayout.Toggle(labelToolTip, handPoseScript.WaitTillEaseInTimeToMaintainPosition);
+            }
+            
+            labelToolTip = new GUIContent("Override Ease In Time",
+                "Maintain Animation pose waits for XRGrabInteractables EaseInTime to start. Non XRGrabInteractables do not have this variable and can be added here");
+            handPoseScript.overrideEaseTime = EditorGUILayout.Toggle(labelToolTip, handPoseScript.overrideEaseTime);
+            
+            if (handPoseScript.overrideEaseTime)
+            {
+                labelToolTip = new GUIContent("Ease In Time Override",
+                    "Time till maintain pose starts");
+                handPoseScript.easeInTimeOverride = EditorGUILayout.FloatField(labelToolTip, handPoseScript.easeInTimeOverride);
+            }
+        }
+        private void DrawPoseSection()
+        {
 
             DrawLeftPoseSection();
 
@@ -126,12 +140,6 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             GUILayout.Label("   ", centerStyle);
             GUILayout.EndVertical();
 
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(5);
-
-            DrawBottomButtons();
-            DrawMessages();
         }
 
         private void DrawCenterLine()
@@ -156,7 +164,6 @@ namespace MikeNspired.UnityXRHandPoser.Editor
 
             GUILayout.Label("Left Hand", poseTitleStyle);
 
-            serializedObject.Update();
             var labelToolTip = new GUIContent("Default Pose", "Hand will be animated to this pose when item is grabbed");
             GUILayout.Label(labelToolTip);
             leftHandPose.objectReferenceValue = EditorGUILayout.ObjectField(leftHandPose.objectReferenceValue, typeof(Pose), false);
@@ -169,9 +176,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
                 LeftHandAnimationPose.objectReferenceValue = EditorGUILayout.ObjectField(LeftHandAnimationPose.objectReferenceValue, typeof(Pose), false);
                 GUILayout.Space(2);
             }
-
-            serializedObject.ApplyModifiedProperties();
-
+            
             customizeValues.value = !hasLeftHand;
             GUI.enabled = !hasLeftHand;
             if (EditorGUILayout.BeginFadeGroup(customizeValues.faded))
@@ -239,7 +244,6 @@ namespace MikeNspired.UnityXRHandPoser.Editor
 
             GUI.enabled = true;
 
-            serializedObject.Update();
             var labelToolTip = new GUIContent("Default Pose", "Hand will be animated to this pose when item is grabbed");
             GUILayout.Label(labelToolTip);
             rightHandPose.objectReferenceValue = EditorGUILayout.ObjectField(rightHandPose.objectReferenceValue, typeof(Pose), false);
@@ -251,9 +255,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
                 RightHandAnimationPose.objectReferenceValue = EditorGUILayout.ObjectField(RightHandAnimationPose.objectReferenceValue, typeof(Pose), false);
                 GUILayout.Space(2);
             }
-
-            serializedObject.ApplyModifiedProperties();
-
+            
             customizeValues.value = !hasRightHand;
             GUI.enabled = !hasRightHand;
             if (EditorGUILayout.BeginFadeGroup(customizeValues.faded))
@@ -327,11 +329,6 @@ namespace MikeNspired.UnityXRHandPoser.Editor
                 GUILayout.EndVertical();
 
                 GUILayout.BeginVertical();
-                // GUI.enabled = CheckIfPosesMatch();
-                // if (GUILayout.Button("MatchPoses", GUILayout.Width(contextWidth / 3)))
-                // {
-                //     handPoseScript.MatchPoses();
-                // }
 
                 GUI.enabled = rightHandMoved || leftHandMoved;
                 if (GUILayout.Button("SaveAttachPoints"))

@@ -15,7 +15,8 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private float maxHeight = 0;
         [SerializeField] private float minHeight = 0;
 
-        private Transform LeftHand, RightHand, currentGrabber;
+        private Transform LeftHand, RightHand;
+        private HandReference currentHandGrabbing;
         private bool leftFollow = true;
         private bool rightFollow = true;
 
@@ -24,11 +25,12 @@ namespace MikeNspired.UnityXRHandPoser
         {
             OnValidate();
             Interactable.onSelectEntered.AddListener(controller => EnableFollowOnHand(controller, false));
-            Interactable.onSelectEntered.AddListener(SetHand);
             Interactable.onSelectExited.AddListener(controller => EnableFollowOnHand(controller, true));
             Interactable.onSelectExited.AddListener(ReleaseHand);
+            Interactable.attachTransform = GrabbableHolder;
+            LeftHandGrip.SetParent(transform);
+            RightHandGrip.SetParent(transform);
         }
-
 
         private void OnValidate()
         {
@@ -48,16 +50,13 @@ namespace MikeNspired.UnityXRHandPoser
 
             newPosition += GrabbableHolder.position;
 
-
             grip.position = newPosition;
             grip.localPosition = new Vector3(grip.localPosition.x,
                 Mathf.Clamp(grip.localPosition.y, -minHeight, maxHeight), grip.localPosition.z);
 
+            if (rotateToFollowHand) grip.rotation = Quaternion.LookRotation(-((hand.position) - grip.transform.position), transform.up);
 
-            if (rotateToFollowHand)
-            {
-                grip.rotation = Quaternion.LookRotation(-((hand.position) - grip.transform.position), transform.up);
-            }
+            GrabbableHolder.transform.position = newPosition;
         }
 
         private bool CheckIfPositionInHeightConstraints(Vector3 newPosition)
@@ -68,24 +67,20 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void EnableFollowOnHand(XRBaseInteractor hand, bool state)
         {
-            currentGrabber = hand.transform;
+            currentHandGrabbing = hand.GetComponentInParent<HandReference>();
             if (hand.GetComponentInParent<HandReference>().LeftRight == LeftRight.Left)
                 leftFollow = state;
             else
                 rightFollow = state;
         }
 
-        private void SetHand(XRBaseInteractor controller)
-        {
-            currentGrabber = controller.transform;
-        }
-
         private void ReleaseHand(XRBaseInteractor controller)
         {
-            if (currentGrabber == controller.transform)
+            var controllerHand = controller.GetComponentInParent<HandReference>();
+            if (currentHandGrabbing == controllerHand)
             {
-                currentGrabber = null;
-                ReleaseHand(controller.GetComponentInParent<HandReference>());
+                currentHandGrabbing = null;
+                ReleaseHand(controllerHand);
             }
         }
 
@@ -95,6 +90,7 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 LeftHand = null;
                 leftFollow = true;
+                Debug.Log(leftFollow);
             }
             else
             {
@@ -115,12 +111,11 @@ namespace MikeNspired.UnityXRHandPoser
                 RightHand = other.transform;
         }
 
-
         private void OnTriggerExit(Collider other)
         {
             HandReference hand = other.GetComponentInParent<HandReference>();
             if (!hand) return;
-            if (hand.transform == currentGrabber) return;
+            if (hand == currentHandGrabbing) return;
             ReleaseHand(hand);
         }
 

@@ -19,7 +19,7 @@ public class PlayerClimbingXR : LocomotionProvider
 
     [SerializeField] private float twoHandClimbSpeed = 1;
 
-    private XRBaseController climbingHand, prevHand;
+    private XRBaseController climbingHand, previousHand;
     private Vector3 overPosition = Vector3.zero;
     private float climbSpeed;
 
@@ -50,7 +50,7 @@ public class PlayerClimbingXR : LocomotionProvider
         if (!xrOrigin)
             xrOrigin = GetComponentInParent<XROrigin>();
         if (!xrInteractionManager)
-            xrInteractionManager = FindObjectOfType<XRInteractionManager>(); 
+            xrInteractionManager = FindObjectOfType<XRInteractionManager>();
         if (!characterController)
             characterController = FindObjectOfType<CharacterController>();
     }
@@ -83,7 +83,7 @@ public class PlayerClimbingXR : LocomotionProvider
         prevLocation = xrOrigin.transform.position;
 
         if (climbingHand)
-            prevHand = climbingHand;
+            previousHand = climbingHand;
 
         climbingHand = controller;
 
@@ -92,7 +92,7 @@ public class PlayerClimbingXR : LocomotionProvider
 
     private void AdjustMoveSpeed()
     {
-        climbSpeed = prevHand ? twoHandClimbSpeed : oneHandClimbSpeed;
+        climbSpeed = previousHand ? twoHandClimbSpeed : oneHandClimbSpeed;
     }
 
     public void RemoveClimbHand(XRBaseController controller)
@@ -105,20 +105,20 @@ public class PlayerClimbingXR : LocomotionProvider
         if (climbingHand == controller)
         {
             climbingHand = null;
-            if (prevHand)
+            if (previousHand)
             {
-                climbingHand = prevHand;
-                prevHand = null;
+                climbingHand = previousHand;
+                previousHand = null;
                 CheckIfReturnToHand();
             }
         }
 
-        if (prevHand == controller)
-            prevHand = null;
+        if (previousHand == controller)
+            previousHand = null;
 
         AdjustMoveSpeed();
 
-        if (prevHand == null && climbingHand == null)
+        if (previousHand == null && climbingHand == null)
             ClimbingEnded();
     }
 
@@ -126,20 +126,22 @@ public class PlayerClimbingXR : LocomotionProvider
     {
         ClimbingEnded();
 
-        if (prevHand)
+        if (previousHand)
         {
-            var prevInteractor = prevHand.GetComponent<XRBaseInteractor>();
-            xrInteractionManager.SelectExit(prevInteractor, prevInteractor.selectTarget);
+            previousHand.TryGetComponent(out XRBaseInteractor prevInteractor);
+            if (prevInteractor.hasSelection)
+                xrInteractionManager.SelectExit(prevInteractor, prevInteractor.selectTarget);
         }
 
         if (climbingHand)
         {
-            var climbInteractor = climbingHand.GetComponent<XRBaseInteractor>();
-            xrInteractionManager.SelectExit(climbInteractor, climbInteractor.selectTarget);
+            climbingHand.TryGetComponent(out XRBaseInteractor climbInteractor);
+            if (climbInteractor.hasSelection) 
+                xrInteractionManager.SelectExit(climbInteractor, climbInteractor.selectTarget);
         }
 
         climbingHand = null;
-        prevHand = null;
+        previousHand = null;
     }
 
     private bool isClimbing = false;
@@ -162,7 +164,7 @@ public class PlayerClimbingXR : LocomotionProvider
             MoveToPositionWhenReleased();
         EndLocomotion();
 
-       // playerMovement.ResumeColliderAdjustment();
+        // playerMovement.ResumeColliderAdjustment();
     }
 
     private void FixedUpdate()

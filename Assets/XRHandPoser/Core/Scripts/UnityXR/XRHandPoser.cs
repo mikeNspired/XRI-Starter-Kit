@@ -2,7 +2,6 @@
 
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
-
 namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
@@ -10,13 +9,15 @@ namespace MikeNspired.UnityXRHandPoser
     /// Its main purpose is to quickly setup hand poses for each item, and then assign those poses to the hand when the item is grabbed.
     /// This script is driven by the XRGrabInteractable to be used with UnityXR. It uses the onSelectEnter and onSelectExit to work.
     /// </summary>
+    //[ExecuteInEditMode]
+
     public class XRHandPoser : HandPoser
     {
         public XRBaseInteractable interactable;
         public bool MaintainHandOnObject = true;
         public bool WaitTillEaseInTimeToMaintainPosition = true;
-        public bool DisableHandAttachTransforms = false;
-
+        public bool overrideEaseTime = false;
+        public float easeInTimeOverride = 0;
         protected override void Awake()
         {
             base.Awake();
@@ -24,12 +25,13 @@ namespace MikeNspired.UnityXRHandPoser
             SubscribeToSelection();
         }
 
-        // private void Update()
-        // {
-        //         interactable = GetComponent<XRBaseInteractable>();    
-        //     if (!interactable)
-        //         interactable = GetComponentInParent<XRBaseInteractable>();
-        // }
+        private void Update()
+        {
+            //     interactable = GetComponent<XRBaseInteractable>();    
+            // if (!interactable)
+            //     interactable = GetComponentInParent<XRBaseInteractable>();
+            // overrideEaseTime = false;
+        }
 
         private void SubscribeToSelection()
         {
@@ -42,6 +44,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void TryStartPosing(SelectEnterEventArgs x)
         {
+           // if (!x.interactorObject.transform.GetComponent<XRGrabInteractable>()) return;
+            
             var hand = x.interactorObject.transform.GetComponentInParent<HandReference>();
             if (!hand) return;
             BeginNewHandPoses(hand.Hand);
@@ -50,6 +54,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void TryReleaseHand(SelectExitEventArgs x)
         {
+          //  if (!x.interactorObject.transform.GetComponent<XRGrabInteractable>()) return;
+
             //Simple fix to get sockets to work
             //TODO add hand tracking, to possibly have one handposer instead of two, and to check if the hand released for two handed grabbing
             if (!x.interactorObject.transform.GetComponentInParent<HandReference>()) return;
@@ -58,14 +64,9 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void MoveHandToPoseTransforms(HandAnimator hand)
         {
-            CheckIfGrabInteractable(interactable, out var xrGrabInteractable);
-            float attachEaseInTime = 0;
-            if (xrGrabInteractable)
-                attachEaseInTime = xrGrabInteractable.attachEaseInTime;
-
             //Determines if the left or right hand is grabbed, and then sends over the proper attachment point to be assigned to the XRGrabInteractable.
             var attachPoint = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
-            hand.MoveHandToTarget(attachPoint, attachEaseInTime, WaitTillEaseInTimeToMaintainPosition);
+            hand.MoveHandToTarget(attachPoint, GetEaseInTime(), WaitTillEaseInTimeToMaintainPosition);
         }
 
         protected override void BeginNewHandPoses(HandAnimator hand)
@@ -86,18 +87,25 @@ namespace MikeNspired.UnityXRHandPoser
             return false;
         }
 
-        private static void CheckIfGrabInteractable(XRBaseInteractable xrBaseInteractable, out XRGrabInteractable xrGrabInteractable) =>
-            xrBaseInteractable.TryGetComponent(out xrGrabInteractable);
+        private float GetEaseInTime()
+        {
+            float time = 0;
+            interactable.TryGetComponent(out XRGrabInteractable xrGrabInteractable);
+            if (xrGrabInteractable)
+                time = xrGrabInteractable.attachEaseInTime;
+            if (overrideEaseTime)
+                time = easeInTimeOverride;
 
+            return time;
+        }
         private void OnValidate()
         {
             if (!interactable)
-                interactable = GetComponent<XRGrabInteractable>();
+                interactable = GetComponent<XRBaseInteractable>();
             if (!interactable)
-                interactable = GetComponentInParent<XRGrabInteractable>();
+                interactable = GetComponentInParent<XRBaseInteractable>();
             if (!interactable)
                 Debug.LogWarning(gameObject + " XRGrabPoser does not have an XRGrabInteractable assigned." + "  (Parent name) " + transform.parent);
         }
-
     }
 }

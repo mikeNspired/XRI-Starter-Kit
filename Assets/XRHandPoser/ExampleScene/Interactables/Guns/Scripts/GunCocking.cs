@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections;
-using MikeNspired.UnityXRHandPoser;
+﻿using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
-using Random = UnityEngine.Random;
 
 /// <summary>
 /// Custom interactable that can be dragged along an axis. Can either be continuous or snap to integer steps.
 /// </summary>
 public class GunCocking : MonoBehaviour
 {
-    [SerializeField] private XRGrabInteractable xrGrabInteractable = null;
+    [SerializeField] private XRBaseInteractable xrGrabInteractable = null;
     [SerializeField] private XRGrabInteractable mainGrabInteractable = null;
     [SerializeField] private ProjectileWeapon projectileWeapon = null;
     [SerializeField] private Vector3 LocalAxis = -Vector3.forward;
@@ -20,9 +17,8 @@ public class GunCocking : MonoBehaviour
     [SerializeField] private AudioRandomize pullBackAudio = null;
     [SerializeField] private AudioRandomize releaseAudio = null;
 
-    private XRBaseInteractor currentHand;
+    private IXRSelectInteractor currentHand,grabbingInteractor;
     private XRInteractionManager interactionManager;
-    private XRBaseInteractor grabbingInteractor;
     private Transform originalParent;
     private Vector3 grabbedOffset, endPoint, startPoint;
     private float currentDistance;
@@ -34,14 +30,14 @@ public class GunCocking : MonoBehaviour
     {
         OnValidate();
 
-        xrGrabInteractable.onSelectEntered.AddListener(OnGrabbed);
-        xrGrabInteractable.onSelectExited.AddListener(OnRelease);
-        mainGrabInteractable.onSelectExited.AddListener(ReleaseIfMainHandReleased);
+        xrGrabInteractable.selectEntered.AddListener(OnGrabbed);
+        xrGrabInteractable.selectExited.AddListener(OnRelease);
+        mainGrabInteractable.selectExited.AddListener(ReleaseIfMainHandReleased);
 
         originalParent = transform.parent;
         LocalAxis.Normalize();
 
-        //Length can't be negative, a negative length just mean an inverted axis, so fix that
+        //Length can't be negative, a negative length means an inverted axis, so fix that
         if (AxisLength < 0)
         {
             LocalAxis *= -1;
@@ -57,7 +53,7 @@ public class GunCocking : MonoBehaviour
         if (!interactionManager)
             interactionManager = FindObjectOfType<XRInteractionManager>();
         if (!xrGrabInteractable)
-            xrGrabInteractable = GetComponent<XRGrabInteractable>();
+            xrGrabInteractable = GetComponent<XRBaseInteractable>();
         if (!mainGrabInteractable)
             mainGrabInteractable = transform.parent.GetComponentInParent<XRGrabInteractable>();
         if (!projectileWeapon)
@@ -66,7 +62,6 @@ public class GunCocking : MonoBehaviour
 
     public Vector3 GetEndPoint() => endPoint;
     public Vector3 GetStartPoint() => startPoint;
-
 
     public void FixedUpdate()
     {
@@ -78,10 +73,11 @@ public class GunCocking : MonoBehaviour
             ReturnToOriginalPosition();
     }
 
-    private void ReleaseIfMainHandReleased(XRBaseInteractor hand)
+    private void ReleaseIfMainHandReleased(SelectExitEventArgs arg0)
     {
-        if (currentHand && xrGrabInteractable)
-            interactionManager.SelectExit(currentHand, xrGrabInteractable);
+        if (currentHand?.transform && xrGrabInteractable)
+            interactionManager.SelectExit(currentHand,
+                xrGrabInteractable.GetComponent<IXRSelectInteractable>());
     }
 
     private void SlideFromHandPosition()
@@ -102,7 +98,7 @@ public class GunCocking : MonoBehaviour
         
         Vector3 move = targetPoint - transform.localPosition;
 
-        transform.localPosition = transform.localPosition + move;
+        transform.localPosition += move;
 
         if (hasReachedEnd == false && (transform.localPosition - endPoint).magnitude <= .001f)
         {
@@ -133,8 +129,9 @@ public class GunCocking : MonoBehaviour
         stopAnimation = false;
     }
 
-    private void OnGrabbed(XRBaseInteractor interactor)
+    private void OnGrabbed(SelectEnterEventArgs arg0)
     {
+        var interactor = arg0.interactorObject;
         stopAnimation = false;
         currentHand = interactor;
         isSelected = true;
@@ -143,7 +140,7 @@ public class GunCocking : MonoBehaviour
         transform.localPosition = startPoint;
     }
 
-    private void OnRelease(XRBaseInteractor interactor)
+    private void OnRelease(SelectExitEventArgs arg0)
     {
         currentHand = null;
         isSelected = false;

@@ -150,8 +150,9 @@ namespace MikeNspired.UnityXRHandPoser
         private void InteractWithSlot(XRBaseInteractor controller)
         {
             if (animateItemToSlotCoroutine != null) StopCoroutine(animateItemToSlotCoroutine);
-
-            var itemHandIsHolding = controller.selectTarget;
+            
+            XRBaseInteractable itemHandIsHolding = null;
+            if(controller.hasSelection) itemHandIsHolding = controller.selectTarget;
 
             //Check if item is allowed to be added to inventory
             if (itemHandIsHolding)

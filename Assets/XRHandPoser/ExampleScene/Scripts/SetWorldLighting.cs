@@ -20,8 +20,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void SetToColor1()
         {
-            //RenderSettings.ambientLight = color1;
-            BlackenWorld();
+            RenderSettings.ambientLight = color1;
         }
 
         public void SetToColor2()

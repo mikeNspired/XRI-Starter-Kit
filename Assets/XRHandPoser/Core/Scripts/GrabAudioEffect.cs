@@ -9,15 +9,14 @@ namespace MikeNspired.UnityXRHandPoser
     public class GrabAudioEffect : MonoBehaviour
     {
         private AudioRandomize audioRandomizer;
-        public XRGrabInteractable interactable;
+        public XRBaseInteractable interactable;
 
         private void Start()
         {
             GetVariables();
 
             if (interactable)
-                interactable.onSelectEntered.AddListener(x => PlaySound());
-
+                interactable.selectEntered.AddListener(x => PlaySound());
             else
                 Debug.Log("XRGrabInteractable not found on : " + gameObject.name + " to play hand grabbing sound effect");
         }
@@ -27,14 +26,11 @@ namespace MikeNspired.UnityXRHandPoser
         private void GetVariables()
         {
             if (!interactable)
-                interactable = GetComponentInParent<XRGrabInteractable>();
+                interactable = GetComponentInParent<XRBaseInteractable>();
             if (!audioRandomizer)
                 audioRandomizer = GetComponent<AudioRandomize>();
         }
 
-        private void PlaySound()
-        {
-            audioRandomizer.PlaySound();
-        }
+        private void PlaySound() => audioRandomizer.PlaySound();
     }
 }

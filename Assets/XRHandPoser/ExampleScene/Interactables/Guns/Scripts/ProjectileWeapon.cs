@@ -140,17 +140,19 @@ namespace MikeNspired.UnityXRHandPoser
 
         private IEnumerator SetupRecoil(float interactableAttachEaseInTime)
         {
+            var handReference = controller.GetComponentInParent<HandReference>();
+            if (!handReference) yield break;
             //yield return new WaitForSeconds(interactableAttachEaseInTime);
 
             recoilTracker = new GameObject().transform;
             recoilTracker.parent = controller.attachTransform;
             recoilTracker.name = gameObject.name + " Recoil Tracker";
-            if (controller.GetComponentInParent<HandReference>().Hand.handType == LeftRight.Right)
-                recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().rightHandAttach.localRotation);
-            else
-                recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().leftHandAttach.localRotation);
+            //recoilTracker.rotation = transform.rotation;
+            // if (handReference.Hand.handType == LeftRight.Right)
+            //     recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().rightHandAttach.localRotation);
+            // else
+            //     recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().leftHandAttach.localRotation);
 
-            startingRotation = recoilTracker.localRotation;
 
             yield return null;
         }
@@ -167,6 +169,8 @@ namespace MikeNspired.UnityXRHandPoser
             if (!recoilTracker) StartCoroutine(SetupRecoil(1));
             recoilTracker.localRotation = startingRotation;
             recoilTracker.localPosition = Vector3.zero;
+            startingRotation = transform.localRotation;
+
             timer = 0;
             controllerToAttachDelta = transform.position - recoilTracker.transform.position;
             isRecoiling = true;
@@ -181,31 +185,31 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 if (Math.Abs(recoilAmount) > .001f)
                 {
-                    recoilTracker.position += (transform.forward * recoilAmount * Time.deltaTime);
+                    recoilTracker.position += transform.forward * recoilAmount * Time.deltaTime;
                     transform.position = recoilTracker.position + controllerToAttachDelta;
                 }
 
                 if (Math.Abs(recoilRotation) > .001f)
                 {
-                    recoilTracker.Rotate(Vector3.right, -recoilRotation * Time.deltaTime, Space.Self);
-                    transform.rotation = recoilTracker.rotation;
+                    transform.Rotate(Vector3.right, -recoilRotation * Time.deltaTime, Space.Self);
+                   // transform.rotation = recoilTracker.rotation;
                 }
 
                 endOfRecoilPosition = recoilTracker.localPosition;
-                endOfRecoilRotation = recoilTracker.localRotation;
+                endOfRecoilRotation = transform.localRotation;
             }
             else
             {
                 float timerRemappedPercentage = Remap(timer, recoilTime / 2, recoilTime, 0, 1);
                 var newPosition = Vector3.Lerp(endOfRecoilPosition, Vector3.zero, timerRemappedPercentage);
                 var newRotation = Quaternion.Lerp(endOfRecoilRotation, startingRotation, timerRemappedPercentage);
-
                 recoilTracker.localPosition = newPosition;
-                recoilTracker.localRotation = newRotation;
-                transform.rotation = recoilTracker.rotation;
+                //recoilTracker.localRotation = newRotation;
 
                 transform.position = recoilTracker.position + controllerToAttachDelta;
-                transform.rotation = recoilTracker.rotation;
+                transform.localRotation = newRotation;
+                //Debug.Break();
+
             }
 
             timer += Time.deltaTime;

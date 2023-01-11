@@ -291,7 +291,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             DrawLine();
             GUILayout.Space(5f);
 
-            var labelToolTip = new GUIContent("Show Reference Poses", "Use these as starting points for poses, you can add your own through Resourses/HandPoserSettings");
+            var labelToolTip = new GUIContent("Show Joint Sliders", "Use these sliders to help start a new pose");
             showFingerSliders = EditorGUILayout.Toggle(labelToolTip, showFingerSliders);
             customizeValues.value = showFingerSliders;
             if (EditorGUILayout.BeginFadeGroup(customizeValues.faded))

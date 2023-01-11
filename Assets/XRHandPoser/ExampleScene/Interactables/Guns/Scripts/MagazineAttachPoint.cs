@@ -56,18 +56,12 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (!magazine) return;
 
-            if (xrGrabInteractable.isSelected && removeByGrabbing)
-            {
+            isBeingGrabbed = xrGrabInteractable.isSelected;
+
+            if (removeByGrabbing)
                 magazine.EnableCollider();
-                isBeingGrabbed = true;
-            }
-            else if(xrGrabInteractable.isSelected)
-                isBeingGrabbed = true;
             else
-            {
                 magazine.DisableCollider();
-                isBeingGrabbed = false;
-            }
         }
 
         private void OnValidate()
@@ -81,9 +75,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void CreateStartingMagazine()
         {
             if (magazine) return;
-            magazine = Instantiate(startingMagazine, transform.position, end.rotation, transform);
-            SetupNewMagazine(magazine);
-            ammoIsAttached = true;
+            SetupNewMagazine(Instantiate(startingMagazine, transform.position, end.rotation, transform));
             MakeMagazineGrabbable();
         }
 
@@ -97,9 +89,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (collidedMagazine && collidedMagazine.GunType == gunType && CheckIfBothGrabbed(collidedMagazine))
             {
                 if (collidedMagazine.CurrentAmmo <= 0) return;
-                ammoIsAttached = true;
-                magazine = collidedMagazine;
-                ReleaseItemFromHand();
+                ReleaseItemFromHand(collidedMagazine);
                 SetupNewMagazine(collidedMagazine);
                 StartCoroutine(StartAnimation(other.attachedRigidbody.transform));
             }
@@ -108,32 +98,31 @@ namespace MikeNspired.UnityXRHandPoser
         private void SetupNewMagazine(Magazine mag)
         {
             magazine = mag;
-            magazine.GetComponent<XRGrabInteractable>().onSelectEntered.AddListener(AmmoRemoved);
+            magazine.GetComponent<XRGrabInteractable>().selectEntered.AddListener(AmmoRemoved);
             magazine.SetupForGunAttachment();
             magazine.transform.parent = transform;
+            ammoIsAttached = true;
         }
 
 
-        private bool CheckIfBothGrabbed(Magazine magazine)
-        {
-            return isBeingGrabbed && magazine.IsBeingGrabbed();
-        }
+        private bool CheckIfBothGrabbed(Magazine magazine) => isBeingGrabbed && magazine.IsBeingGrabbed();
 
-        private void ReleaseItemFromHand()
+        private void ReleaseItemFromHand(Magazine collidedMagazine)
         {
-            XRBaseInteractor interactor = magazine.GetComponent<XRGrabInteractable>().selectingInteractor;
-            XRBaseInteractable interactable = magazine.GetComponent<XRBaseInteractable>();
+            XRBaseInteractor interactor = collidedMagazine.GetComponent<XRGrabInteractable>().selectingInteractor;
+            XRBaseInteractable interactable = collidedMagazine.GetComponent<XRBaseInteractable>();
             interactionManager.SelectExit(interactor, interactable);
         }
 
-        private void AmmoRemoved(XRBaseInteractor arg0)
+        private void AmmoRemoved(SelectEnterEventArgs selectEnterEventArgs)
         {
             StopAllCoroutines();
-            magazine.GetComponent<XRGrabInteractable>().onSelectEntered.RemoveListener(AmmoRemoved);
-            magazine.transform.parent = null;
+           
+            magazine.GetComponent<XRGrabInteractable>().selectEntered.RemoveListener(AmmoRemoved);
+        
             magazine = null;
+            
             unloadAudio.Play();
-
             Invoke(nameof(PreventAutoAttach), .15f);
         }
 
@@ -203,7 +192,7 @@ namespace MikeNspired.UnityXRHandPoser
                 timer += Time.deltaTime;
             }
 
-            magazine.GetComponent<XRGrabInteractable>().onSelectEntered.RemoveListener(AmmoRemoved);
+            magazine.GetComponent<XRGrabInteractable>().selectEntered.RemoveListener(AmmoRemoved);
             magazine.ResetToGrabbableObject();
             magazine = null;
             ammoIsAttached = false;

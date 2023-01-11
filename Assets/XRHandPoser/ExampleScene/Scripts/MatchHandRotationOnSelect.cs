@@ -7,11 +7,17 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class MatchHandRotationOnSelect : MonoBehaviour
     {
-        public XRGrabInteractable interactable;
+        public XRBaseInteractable interactable;
         public Transform HandAttachTransformParent;
+
+        private void OnValidate()
+        {
+            if (!interactable) interactable = GetComponent<XRBaseInteractable>();
+        }
 
         private void Start()
         {
+            OnValidate();
             interactable.onSelectEntered.AddListener(x => SetPosition(x.GetComponentInParent<HandReference>()?.Hand));
         }
 

@@ -42,16 +42,22 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnGrab(XRBaseInteractable x)
         {
-            if (!x.TryGetComponent(out XRHandPoser handPoser)) return;
-            var interactableAttach = LeftRight == LeftRight.Left ? handPoser.leftHandAttach : handPoser.rightHandAttach;
+            var handPoser = x.GetComponent<XRHandPoser>();
+            if (!handPoser)
+                handPoser = x.GetComponentInChildren<XRHandPoser>();
 
-            Vector3 finalPosition = interactableAttach.localPosition * -1;
-            Quaternion finalRotation = Quaternion.Inverse(interactableAttach.localRotation);
+            if (handPoser)
+            {
+                var interactableAttach = LeftRight == LeftRight.Left ? handPoser.leftHandAttach : handPoser.rightHandAttach;
 
-            finalPosition = RotatePointAroundPivot(finalPosition, Vector3.zero, finalRotation.eulerAngles);
+                Vector3 finalPosition = interactableAttach.localPosition * -1;
+                Quaternion finalRotation = Quaternion.Inverse(interactableAttach.localRotation);
 
-            attachTransform.localPosition = finalPosition;
-            attachTransform.localRotation = finalRotation;
+                finalPosition = RotatePointAroundPivot(finalPosition, Vector3.zero, finalRotation.eulerAngles);
+
+                attachTransform.localPosition = finalPosition;
+                attachTransform.localRotation = finalRotation;
+            }
 
             attachTransform.parent = transform;
 //            Debug.Log(x.GetComponent<XRHandPoser>().leftHandAttach.name + " " + x.GetComponent<XRHandPoser>().leftHandAttach.localPosition.ToString("f3") + " " + finalPosition.ToString("f3"));

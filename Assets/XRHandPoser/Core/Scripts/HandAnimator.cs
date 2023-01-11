@@ -240,7 +240,7 @@ namespace MikeNspired.UnityXRHandPoser
         private IEnumerator MoveHandToTargetIE(Transform attachPoint, float interactableAttachEaseInTime, bool waitForHandToAnimateToPosition)
         {
             if (waitForHandToAnimateToPosition)
-                yield return new WaitForSeconds(interactableAttachEaseInTime * .75f);
+                yield return new WaitForSeconds(interactableAttachEaseInTime);
 
             //Set hand parent to null to stop player movement from moving hand
             transform.parent = null;

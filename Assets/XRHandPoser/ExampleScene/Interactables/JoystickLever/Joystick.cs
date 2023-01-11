@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
-using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
+using static Unity.Mathematics.math;
 
 public class Joystick : MonoBehaviour
 {
@@ -16,38 +16,42 @@ public class Joystick : MonoBehaviour
     [SerializeField] private Vector2 startingPosition = Vector2.zero;
     [SerializeField] private Vector2 returnToPosition = Vector2.zero;
     [SerializeField] private bool xAxis = true, yAxis = true;
+    [SerializeField] private float remapValueMin = -1, remapValueMax = 1;
 
     private Transform hand;
     private Vector2 currentVector;
     private Transform originalPositionTracker;
     public Vector2 CurrentVector => currentVector;
-    public UnityEventVector2 OnValueChanged;
-    public UnityEventFloat OnSingleValuesChanged;
+    public ValueChangeEventV2 ValueChange;
+    public ValueChangeEvent2 TestEvent2;
+    public ValueChangeEvent2 TestEvent;
 
     private void Start()
     {
+         OnValidate();
+
         originalPositionTracker = new GameObject("originalPositionTracker").transform;
         originalPositionTracker.parent = transform.parent;
         originalPositionTracker.localPosition = transform.localPosition;
         originalPositionTracker.localRotation = transform.localRotation;
 
-        OnValidate();
         xrGrabInteractable.onSelectEntered.AddListener(OnGrab);
         xrGrabInteractable.onSelectExited.AddListener((x) => hand = null);
         xrGrabInteractable.onSelectExited.AddListener((x) => StartCoroutine(ReturnToZero()));
-        SetStartPosition();
     }
 
     private void OnValidate()
     {
         if (!xrGrabInteractable)
             xrGrabInteractable = GetComponent<XRGrabInteractable>();
-
+        SetStartPosition();
     }
 
     private void SetStartPosition()
     {
-        SetPosition(new Vector3(startingPosition.x, 0, startingPosition.y));
+        float x = Remap(startingPosition.x, -1, 1, -shaftLength, shaftLength);
+        float z = Remap(startingPosition.y, -1, 1, -shaftLength, shaftLength);
+        SetPosition(new Vector3(x, 0, z));
     }
 
     private void OnGrab(XRBaseInteractor hand)
@@ -58,6 +62,11 @@ public class Joystick : MonoBehaviour
 
     private void Update()
     {
+        ValueChange.Invoke(Vector2.up);
+        TestEvent.Invoke(1);
+            TestEvent2.Invoke(1);
+            TestEvent2.Invoke(1);
+        return;
         transform.position = originalPositionTracker.position;
         transform.rotation = originalPositionTracker.rotation;
 
@@ -99,28 +108,29 @@ public class Joystick : MonoBehaviour
 
     private void InvokeEvents(Vector2 vector2)
     {
-        OnValueChanged.Invoke(vector2);
+        vector2 = remap(-1, 1, remapValueMin, remapValueMax, vector2);
+        ValueChange.Invoke(vector2);
         if (!xAxis)
-            OnSingleValuesChanged.Invoke(vector2.y);
+            TestEvent2.Invoke(vector2.y);
         if (!yAxis)
-            OnSingleValuesChanged.Invoke(vector2.x);
+            TestEvent2.Invoke(vector2.x);
     }
 
     private IEnumerator ReturnToZero()
     {
         if (!returnToStartOnRelease) yield break;
-        
+
         while (currentVector.magnitude >= .01f)
         {
             currentVector = Vector2.Lerp(currentVector, returnToPosition, Time.deltaTime * returnSpeed);
             rotationPoint.localEulerAngles = new Vector3(currentVector.y * maxAngle, 0, -currentVector.x * maxAngle);
-            OnValueChanged.Invoke(currentVector);
+            InvokeEvents(currentVector);
             yield return null;
         }
-        
+
         currentVector = Vector2.zero;
         rotationPoint.localEulerAngles = Vector3.zero;
-        OnValueChanged.Invoke(currentVector);
+        InvokeEvents(currentVector);
     }
 
     private void OnDrawGizmos()
@@ -140,9 +150,12 @@ public class Joystick : MonoBehaviour
     {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
-}
 
-[Serializable]
-public class UnityEventVector2 : UnityEvent<Vector2>
-{
+    [Serializable]
+    public class ValueChangeEventV2 : UnityEvent<Vector2>
+    {
+    }
+    [Serializable]
+    public class ValueChangeEvent2 : UnityEvent<float> { }
+ 
 }
