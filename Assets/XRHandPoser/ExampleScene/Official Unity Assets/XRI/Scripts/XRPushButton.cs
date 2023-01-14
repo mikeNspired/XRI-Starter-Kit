@@ -185,7 +185,6 @@ namespace Unity.XRContent.Interaction
             // Go through each interactor
             foreach (var pressInfo in m_HoveringInteractors.Values)
             {
-                Debug.Log(pressInfo.m_Interactor);
                 var interactorTransform = pressInfo.m_Interactor.GetAttachTransform(this);
                 var localOffset = transform.InverseTransformVector(interactorTransform.position - m_BaseButtonPosition);
 

@@ -64,8 +64,8 @@ public class XRJoystick : MonoBehaviour
 
     private void Update()
     {
-        transform.position = originalPositionTracker.position;
-        transform.rotation = originalPositionTracker.rotation;
+        // transform.position = originalPositionTracker.position;
+        // transform.rotation = originalPositionTracker.rotation;
 
         if (!hand) return;
 

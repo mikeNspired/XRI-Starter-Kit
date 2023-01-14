@@ -16,6 +16,10 @@ namespace MikeNspired.UnityXRHandPoser
         public LeftRight LeftRight;
         [SerializeField] private XRDirectInteractor xrDirectInteractor;
 
+        private Vector3 startPosition;
+        private Quaternion startRotation;
+        private Transform attachTransform;
+
         private void OnValidate()
         {
             if (!Hand)
@@ -29,16 +33,13 @@ namespace MikeNspired.UnityXRHandPoser
         private void Awake()
         {
             xrDirectInteractor.onSelectEntered.AddListener(OnGrab);
-            xrDirectInteractor.onSelectExited.AddListener(Reset);
+            xrDirectInteractor.onSelectExited.AddListener(x => ResetAttachTransform());
 
             startPosition = xrDirectInteractor.attachTransform.localPosition;
             startRotation = xrDirectInteractor.attachTransform.localRotation;
             attachTransform = xrDirectInteractor.attachTransform;
         }
 
-        private Vector3 startPosition;
-        private Quaternion startRotation;
-        private Transform attachTransform;
 
         private void OnGrab(XRBaseInteractable x)
         {
@@ -63,12 +64,11 @@ namespace MikeNspired.UnityXRHandPoser
 //            Debug.Log(x.GetComponent<XRHandPoser>().leftHandAttach.name + " " + x.GetComponent<XRHandPoser>().leftHandAttach.localPosition.ToString("f3") + " " + finalPosition.ToString("f3"));
         }
 
-        private void Reset(XRBaseInteractable x)
+        public void ResetAttachTransform()
         {
-            if(Hand)
-                attachTransform.parent = Hand.transform;
-            xrDirectInteractor.attachTransform.localPosition = startPosition;
-            xrDirectInteractor.attachTransform.localRotation = startRotation;
+            attachTransform.parent = Hand.transform;
+            attachTransform.localPosition = startPosition;
+            attachTransform.localRotation = startRotation;
         }
 
         private void Update()

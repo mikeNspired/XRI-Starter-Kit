@@ -98,13 +98,13 @@ namespace MyNamespace
             {
                 isGripped = true;
                 if (autoGrabIfGripping || !IsControllerHoldingObject(controller))
-                    inventorySlot.TryInteractWithSlot(controller.GetComponent<XRBaseInteractor>());
+                    inventorySlot.TryInteractWithSlot(controller.GetComponentInChildren<XRDirectInteractor>());
             }
             else if (isGripped && !gripValue)
             {
                 isGripped = false;
                 if (IsControllerHoldingObject(controller))
-                    inventorySlot.TryInteractWithSlot(controller.GetComponent<XRBaseInteractor>());
+                    inventorySlot.TryInteractWithSlot(controller.GetComponentInChildren<XRDirectInteractor>());
             }
         }
 

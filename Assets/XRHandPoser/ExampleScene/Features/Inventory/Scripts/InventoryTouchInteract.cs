@@ -24,18 +24,13 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (!enabled) return;
 
-            var controller = other.GetComponent<XRBaseControllerInteractor>();
+            var controller = other.GetComponent<XRDirectInteractor>();
 
             if (!controller) return;
 
-            if (!inventorySlot.CurrentSlotItem && controller?.GetComponent<XRDirectInteractor>()?.selectTarget)
-            {
-                inventorySlot.TryInteractWithSlot(controller);
-            }
-            else if (inventorySlot.CurrentSlotItem && controller)
-            {
-                inventorySlot.TryInteractWithSlot(controller);
-            }
+            if (!inventorySlot.CurrentSlotItem && !controller.hasSelection) return;
+            
+            inventorySlot.TryInteractWithSlot(controller);
         }
     }
 }

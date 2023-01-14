@@ -140,14 +140,14 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnDisable() => CancelInvoke(nameof(SetNewItemModel));
 
-        public void TryInteractWithSlot(XRBaseInteractor controller)
+        public void TryInteractWithSlot(XRDirectInteractor controller)
         {
             if (isBusy || isDisabling) return;
             InteractWithSlot(controller);
         }
 
 
-        private void InteractWithSlot(XRBaseInteractor controller)
+        private void InteractWithSlot(XRDirectInteractor controller)
         {
             if (animateItemToSlotCoroutine != null) StopCoroutine(animateItemToSlotCoroutine);
             
@@ -230,7 +230,7 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 if (boundCenterTransform)
                     boundCenterTransform.localScale = Vector3.Lerp(boundCenterTransform.localScale, Vector3.zero, timer / animationLength);
-                yield return new WaitForSeconds(Time.deltaTime);
+                yield return null;
                 timer += Time.deltaTime;
             }
             

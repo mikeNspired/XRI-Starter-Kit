@@ -5,21 +5,19 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
+using static Unity.Mathematics.math;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class ProjectileWeapon : MonoBehaviour
     {
-        private XRGrabInteractable interactable;
-
-        [SerializeField] private Transform firePoint = null;
-        [SerializeField] private Rigidbody projectilePrefab = null;
-        [SerializeField] private ParticleSystem cartridgeEjection = null;
-        [SerializeField] private AudioSource fireAudio = null;
-        [SerializeField] private AudioSource outOfAmmoAudio = null;
-        [SerializeField] private MatchTransform bulletFlash = null;
-        [SerializeField] private GunCocking gunCocking = null;
-        private bool gunCocked = false;
+        [SerializeField] private Transform firePoint;
+        [SerializeField] private Rigidbody projectilePrefab;
+        [SerializeField] private ParticleSystem cartridgeEjection;
+        [SerializeField] private AudioSource fireAudio;
+        [SerializeField] private AudioSource outOfAmmoAudio;
+        [SerializeField] private MatchTransform bulletFlash;
+        [SerializeField] private GunCocking gunCocking;
 
         //All public for in game changes
         public MagazineAttachPoint magazineAttach = null;
@@ -32,16 +30,19 @@ namespace MikeNspired.UnityXRHandPoser
         public bool infiniteAmmo = false;
         public float hapticDuration = .1f;
         public float hapticStrength = .5f;
-        private XRBaseInteractor controller;
 
-        public UnityEvent BulletFiredEvent;
-        public UnityEvent OutOfAmmoEvent;
-        public UnityEvent FiredLastBulletEvent;
+        private XRGrabInteractable interactable;
+        private XRBaseInteractor controller;
+        private Collider[] gunColliders;
+        private bool gunCocked;
+
+        public UnityEvent BulletFiredEvent, OutOfAmmoEvent, FiredLastBulletEvent;
 
         private void Awake()
         {
             OnValidate();
-            interactable.onActivate.AddListener(FireBullets);
+            interactable.activated.AddListener(x => isFiring = true);
+            interactable.deactivated.AddListener(x => isFiring = false);
             interactable.onSelectEntered.AddListener(SetupRecoilVariables);
             interactable.onSelectExited.AddListener(DestroyRecoilTracker);
 
@@ -61,12 +62,17 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnDisable() => Application.onBeforeRender -= RecoilUpdate;
 
-
-        private void LateUpdate()
+        public float fireSpeed = .25f, fireTimer;
+        public bool isFiring;
+        private void Update()
         {
-            //if (Input.GetKeyDown(KeyCode.Space)) FireBullets(null);
+            if (isFiring && fireTimer >= fireSpeed)
+            {
+                FireBullets(null);
+                fireTimer = 0;
+            }
+            fireTimer += Time.deltaTime;
         }
-
 
         public void FireBullets(XRBaseInteractor interactor)
         {
@@ -91,9 +97,11 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 Vector3 shotDirection = Vector3.Slerp(firePoint.forward, UnityEngine.Random.insideUnitSphere, bulletSpreadAngle / 180f);
                 var bullet = Instantiate(projectilePrefab);
+                IgnoreColliders(bullet);
+
                 bullet.transform.SetPositionAndRotation(firePoint.position, Quaternion.LookRotation(shotDirection));
                 bullet.AddForce((bullet.transform.forward * bulletSpeed), ForceMode.VelocityChange);
-                
+
                 controller.GetComponentInParent<ActionBasedController>().SendHapticImpulse(hapticStrength, hapticDuration);
 
                 BulletFiredEvent.Invoke();
@@ -104,9 +112,13 @@ namespace MikeNspired.UnityXRHandPoser
             if (magazineAttach && magazineAttach.Magazine && magazineAttach.Magazine.CurrentAmmo == 0)
                 FiredLastBulletEvent.Invoke();
 
-            var flash = Instantiate(bulletFlash);
-            flash.positionToMatch = firePoint; //Follow gun barrel on update
-
+            if (bulletFlash)
+            {
+                var flash = Instantiate(bulletFlash);
+                flash.transform.position = firePoint.position;
+                flash.positionToMatch = firePoint; //Follow gun barrel on update  
+            }
+      
             if (fireAudio)
                 fireAudio.PlayOneShot(fireAudio.clip);
 
@@ -114,11 +126,27 @@ namespace MikeNspired.UnityXRHandPoser
                 cartridgeEjection.Play();
         }
 
+        private void IgnoreColliders(Component bullet)
+        {
+            gunColliders = GetComponentsInChildren<Collider>(true);
+            var bulletCollider = bullet.GetComponentInChildren<Collider>();
+            foreach (var c in gunColliders) Physics.IgnoreCollision(c, bulletCollider);
+        }
+
         private bool CheckIfGunCocked()
         {
             return gunCocking && !gunCocked;
         }
 
+        #region Recoil
+
+        private Transform recoilTracker;
+        private Quaternion startingRotation;
+        private Vector3 endOfRecoilPosition;
+        private Quaternion endOfRecoilRotation;
+        private float timer = 0;
+        private bool isRecoiling;
+        private Vector3 controllerToAttachDelta;
 
         private void SetupRecoilVariables(XRBaseInteractor interactor)
         {
@@ -134,35 +162,17 @@ namespace MikeNspired.UnityXRHandPoser
             isRecoiling = false;
         }
 
-
-        private Transform recoilTracker;
-        private Quaternion startingRotation;
-
         private IEnumerator SetupRecoil(float interactableAttachEaseInTime)
         {
             var handReference = controller.GetComponentInParent<HandReference>();
             if (!handReference) yield break;
-            //yield return new WaitForSeconds(interactableAttachEaseInTime);
 
             recoilTracker = new GameObject().transform;
             recoilTracker.parent = controller.attachTransform;
             recoilTracker.name = gameObject.name + " Recoil Tracker";
-            //recoilTracker.rotation = transform.rotation;
-            // if (handReference.Hand.handType == LeftRight.Right)
-            //     recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().rightHandAttach.localRotation);
-            // else
-            //     recoilTracker.localRotation = Quaternion.Inverse(GetComponent<HandPoser>().leftHandAttach.localRotation);
-
 
             yield return null;
         }
-
-        private Vector3 endOfRecoilPosition;
-        private Quaternion endOfRecoilRotation;
-
-        private float timer = 0;
-        private bool isRecoiling;
-        private Vector3 controllerToAttachDelta;
 
         private void StartRecoil()
         {
@@ -192,7 +202,7 @@ namespace MikeNspired.UnityXRHandPoser
                 if (Math.Abs(recoilRotation) > .001f)
                 {
                     transform.Rotate(Vector3.right, -recoilRotation * Time.deltaTime, Space.Self);
-                   // transform.rotation = recoilTracker.rotation;
+                    // transform.rotation = recoilTracker.rotation;
                 }
 
                 endOfRecoilPosition = recoilTracker.localPosition;
@@ -200,7 +210,7 @@ namespace MikeNspired.UnityXRHandPoser
             }
             else
             {
-                float timerRemappedPercentage = Remap(timer, recoilTime / 2, recoilTime, 0, 1);
+                var timerRemappedPercentage = remap(recoilTime / 2, recoilTime, 0, 1, timer);
                 var newPosition = Vector3.Lerp(endOfRecoilPosition, Vector3.zero, timerRemappedPercentage);
                 var newRotation = Quaternion.Lerp(endOfRecoilRotation, startingRotation, timerRemappedPercentage);
                 recoilTracker.localPosition = newPosition;
@@ -209,7 +219,6 @@ namespace MikeNspired.UnityXRHandPoser
                 transform.position = recoilTracker.position + controllerToAttachDelta;
                 transform.localRotation = newRotation;
                 //Debug.Break();
-
             }
 
             timer += Time.deltaTime;
@@ -217,10 +226,6 @@ namespace MikeNspired.UnityXRHandPoser
                 isRecoiling = false;
         }
 
-
-        private float Remap(float value, float from1, float to1, float from2, float to2)
-        {
-            return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
-        }
+        #endregion
     }
 }

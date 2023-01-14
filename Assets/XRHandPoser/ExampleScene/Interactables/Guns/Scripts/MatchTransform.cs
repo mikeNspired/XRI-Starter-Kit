@@ -16,15 +16,13 @@ namespace MikeNspired.UnityXRHandPoser
             if (unParent) transform.parent = null;
         }
 
-        void LateUpdate()
+        private void FixedUpdate()
         {
-
             if (!positionToMatch) return;
             if (matchPosition)
                 transform.position = positionToMatch.position;
             if (matchRotation)
                 transform.rotation = positionToMatch.rotation;
-
         }
     }
 }

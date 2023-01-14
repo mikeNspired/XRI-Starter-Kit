@@ -395,13 +395,13 @@ namespace MikeNspired.UnityXRHandPoser
 
             if (!jointInGoalPose)
             {
-                Debug.Log(currentJoint + " Not found in goal pose");
+                Debug.LogWarning(currentJoint + " Not found in goal pose");
                 return;
             }
 
             if (!jointInOriginal)
             {
-                Debug.Log(currentJoint + " Not found in original pose");
+                Debug.LogWarning(currentJoint + " Not found in original pose");
                 return;
             }
 

@@ -97,7 +97,6 @@ public class PlayerClimbingXR : LocomotionProvider
 
     public void RemoveClimbHand(XRBaseController controller)
     {
-        Debug.Log(controller);
         var stamina = controller.GetComponentInChildren<ClimbingHealthHandStamina>();
         stamina.Deactivate();
         stamina.OutOfStamina.RemoveListener(CancelClimbing);
@@ -128,16 +127,22 @@ public class PlayerClimbingXR : LocomotionProvider
 
         if (previousHand)
         {
-            previousHand.TryGetComponent(out XRBaseInteractor prevInteractor);
+            var prevInteractor = previousHand.GetComponentInChildren<XRDirectInteractor>();
             if (prevInteractor.hasSelection)
+            {
                 xrInteractionManager.SelectExit(prevInteractor, prevInteractor.selectTarget);
+                Debug.Log(" prev Select Exit: " + prevInteractor.transform.parent);
+            }
         }
 
         if (climbingHand)
         {
-            climbingHand.TryGetComponent(out XRBaseInteractor climbInteractor);
-            if (climbInteractor.hasSelection) 
+            var climbInteractor = climbingHand.GetComponentInChildren<XRDirectInteractor>();
+            if (climbInteractor.hasSelection)
+            {
+                Debug.Log(" ch Select Exit: " + climbInteractor.transform.parent);
                 xrInteractionManager.SelectExit(climbInteractor, climbInteractor.selectTarget);
+            }
         }
 
         climbingHand = null;
@@ -156,7 +161,6 @@ public class PlayerClimbingXR : LocomotionProvider
 
     private void ClimbingEnded()
     {
-        Debug.Log("Climbing Ended");
         playerMovement.useGravity = true;
         isClimbing = false;
 

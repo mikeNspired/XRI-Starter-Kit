@@ -1,13 +1,10 @@
-﻿using System;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
-using Random = UnityEngine.Random;
 
 /// <summary>
 /// Custom interactable that can be dragged along an axis. Can either be continuous or snap to integer steps.
 /// </summary>
-public class AxisDragInteractable : XRGrabInteractable
+public class AxisDragInteractable : XRBaseInteractable
 {
     [Tooltip("The Rigidbody that will be moved. If null will try to grab one on that object or its children")]
     public Rigidbody MovingRigidbody;

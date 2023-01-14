@@ -6,24 +6,13 @@ using UnityEngine.Events;
 public class ClimbingHealthHandStamina : MonoBehaviour
 {
     public float stamina, maxStamina;
-
     public float drainRate = .9f, regainRate = 1;
-
     public List<MeshRenderer> staminaBlocks;
     public Material hasStaminaMat, noStaminaMat;
-    public bool isDraining, isActive, isDisplayed;
-
+    public bool isDraining, isActive;
     public UnityEvent OutOfStamina;
-
-
-    private void Start()
-    {
-        // foreach (var block in staminaBlocks)
-        // {
-        //     block.material = hasStaminaMat;
-        // }
-        Deactivate();
-    }
+    
+    private void Start() => Deactivate();
 
     private void Update()
     {
@@ -33,11 +22,6 @@ public class ClimbingHealthHandStamina : MonoBehaviour
             DrainStamina();
 
         SetStaminaColor();
-
-        if (Input.GetKeyDown(KeyCode.A))
-            Deactivate();
-        if (Input.GetKeyDown(KeyCode.D))
-            Activate();
     }
 
     public void Activate()
@@ -45,26 +29,19 @@ public class ClimbingHealthHandStamina : MonoBehaviour
         isActive = true;
         isDraining = true;
         StopAllCoroutines();
-        StartCoroutine(ShowHello());
+        StartCoroutine(ActivateDisplay());
     }
 
     public void Deactivate()
     {
         isActive = false;
         isDraining = false;
-        StartCoroutine(RegainThanDeactivate());
+        StartCoroutine(RegainAndDeactivateDisplay());
     }
 
+    public void StartDraining() => isDraining = true;
 
-    public void StartDraining()
-    {
-        isDraining = true;
-    }
-
-    public void StopDraining()
-    {
-        isDraining = false;
-    }
+    public void StopDraining() => isDraining = false;
 
     private void DrainStamina()
     {
@@ -85,22 +62,7 @@ public class ClimbingHealthHandStamina : MonoBehaviour
         for (int i = 0; i < staminaBlocks.Count; i++)
             staminaBlocks[i].material = stamina > i ? hasStaminaMat : noStaminaMat;
     }
-
-    private IEnumerator RegainThanDeactivate()
-    {
-        while (stamina < maxStamina)
-        {
-            yield return null;
-            RegainStamina();
-        }
-
-        foreach (var t in staminaBlocks)
-        {
-            t.gameObject.SetActive(false);
-            yield return null;
-        }
-    }
-
+  
     public void HideDisplay()
     {
         foreach (var t in staminaBlocks) t.gameObject.SetActive(false);
@@ -111,12 +73,26 @@ public class ClimbingHealthHandStamina : MonoBehaviour
         foreach (var t in staminaBlocks) t.gameObject.SetActive(true);
     }
 
-    private IEnumerator ShowHello()
+    private IEnumerator ActivateDisplay()
     {
         for (var index = staminaBlocks.Count - 1; index >= 0; index--)
         {
             var t = staminaBlocks[index];
             t.gameObject.SetActive(true);
+            yield return null;
+        }
+    }
+    private IEnumerator RegainAndDeactivateDisplay()
+    {
+        while (stamina < maxStamina)
+        {
+            yield return null;
+            RegainStamina();
+        }
+
+        foreach (var t in staminaBlocks)
+        {
+            t.gameObject.SetActive(false);
             yield return null;
         }
     }

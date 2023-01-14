@@ -1889,7 +1889,6 @@ GameObject:
   - component: {fileID: 2011518014110534334}
   - component: {fileID: 5838703705205395593}
   - component: {fileID: 2820405889466278043}
-  - component: {fileID: 5186098762444530727}
   - component: {fileID: 5838703705205395598}
   - component: {fileID: 5838703705205395585}
   - component: {fileID: 8252389914699286791}
@@ -2009,52 +2008,6 @@ MonoBehaviour:
   m_OnDeactivate:
     m_PersistentCalls:
       m_Calls: []
-  m_AttachTransform: {fileID: 0}
-  m_SecondaryAttachTransform: {fileID: 0}
-  m_UseDynamicAttach: 0
-  m_MatchAttachPosition: 1
-  m_MatchAttachRotation: 1
-  m_SnapToColliderVolume: 1
-  m_ReinitializeDynamicAttachEverySingleGrab: 1
-  m_AttachEaseInTime: 0.15
-  m_MovementType: 1
-  m_VelocityDamping: 1
-  m_VelocityScale: 1
-  m_AngularVelocityDamping: 1
-  m_AngularVelocityScale: 1
-  m_TrackPosition: 1
-  m_SmoothPosition: 0
-  m_SmoothPositionAmount: 5
-  m_TightenPosition: 0.5
-  m_TrackRotation: 1
-  m_SmoothRotation: 0
-  m_SmoothRotationAmount: 5
-  m_TightenRotation: 0.5
-  m_ThrowOnDetach: 1
-  m_ThrowSmoothingDuration: 0.25
-  m_ThrowSmoothingCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_ThrowVelocityScale: 1.5
-  m_ThrowAngularVelocityScale: 0.25
-  m_ForceGravityOnDetach: 0
-  m_RetainTransformParent: 1
-  m_AttachPointCompatibilityMode: 0
-  m_StartingSingleGrabTransformers: []
-  m_StartingMultipleGrabTransformers: []
-  m_AddDefaultGrabTransformers: 1
   MovingRigidbody: {fileID: 0}
   LocalAxis: {x: 1, y: 0, z: 0}
   AxisLength: 0.3
@@ -2109,22 +2062,8 @@ MonoBehaviour:
   interactable: {fileID: 5838703705205395593}
   MaintainHandOnObject: 1
   WaitTillEaseInTimeToMaintainPosition: 1
-  DisableHandAttachTransforms: 0
---- !u!114 &5186098762444530727
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8252389914699286790}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0e9e33e45d517e94b98a0ffc2f198427, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canInventory: 0
-  canDistanceGrab: 0
-  parentToPlayerOnGrabForSmoothMovement: 1
+  overrideEaseTime: 0
+  easeInTimeOverride: 0
 --- !u!65 &5838703705205395598
 BoxCollider:
   m_ObjectHideFlags: 0

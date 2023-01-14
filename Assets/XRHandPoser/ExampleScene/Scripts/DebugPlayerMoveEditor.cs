@@ -9,8 +9,6 @@ namespace MikeNspired.UnityXRHandPoser.Editor
     [CanEditMultipleObjects]
     public class DebugPlayerMoveEditor : UnityEditor.Editor
     {
-        private int buttonWidth = 999;
-
         private SerializedProperty origin;
         private SerializedProperty leftController;
         private SerializedProperty rightController;

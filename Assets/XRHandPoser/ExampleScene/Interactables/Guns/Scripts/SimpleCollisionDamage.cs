@@ -22,7 +22,7 @@ namespace MikeNspired.UnityXRHandPoser
             CheckForImpacteDecalType(collision);
 
             if (destroyOnCollision)
-                Destroy(this.gameObject);
+                Destroy(gameObject);
         }
 
         private void OnTriggerEnter(Collider other)
@@ -32,7 +32,7 @@ namespace MikeNspired.UnityXRHandPoser
             other.transform.GetComponentInParent<IDamageable>()?.TakeDamage(damage, gameObject);
             
             if (destroyOnCollision)
-                Destroy(this.gameObject);
+                Destroy(gameObject);
         }
 
         void CheckForImpacteDecalType(Collision collision)
@@ -66,12 +66,15 @@ namespace MikeNspired.UnityXRHandPoser
         }
 
 
-        void SpawnDecal(Collision hit, GameObject decalPrefab)
+        static void SpawnDecal(Collision hit, GameObject decalPrefab)
         {
             if (!decalPrefab) return;
-            ContactPoint contact = hit.contacts[0];
-            GameObject spawnedDecal = Instantiate(decalPrefab, contact.point, Quaternion.LookRotation(contact.normal));
-            spawnedDecal.transform.SetParent(hit.collider.transform);
+            
+            var spawnedDecal = Instantiate(decalPrefab, hit.collider.transform, true);
+            
+            var contact = hit.contacts[0];
+            spawnedDecal.transform.position = contact.point;
+            spawnedDecal.transform.forward = contact.normal;
         }
     }
 }

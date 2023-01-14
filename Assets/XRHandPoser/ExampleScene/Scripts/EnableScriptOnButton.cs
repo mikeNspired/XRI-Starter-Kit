@@ -34,6 +34,7 @@ public class EnableScriptOnButton : MonoBehaviour
 
     private void Activate(bool state)
     {
-        behaviour.enabled = state;
+        if (behaviour)
+            behaviour.enabled = state;
     }
 }
