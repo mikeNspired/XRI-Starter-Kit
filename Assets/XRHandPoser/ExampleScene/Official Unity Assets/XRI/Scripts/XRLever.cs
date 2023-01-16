@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
-namespace Unity.XRContent.Interaction
+namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// An interactable lever that snaps into an on or off position by a direct interactor

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.XRContent.Interaction
+namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// Joins a rigidbody and transform together in a way that optimizes for transform and rigidbody-based motion automatically when appropriate.

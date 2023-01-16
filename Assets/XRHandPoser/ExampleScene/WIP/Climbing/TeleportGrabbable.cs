@@ -1,16 +1,20 @@
 using Unity.XR.CoreUtils;
 using UnityEngine;
 
-public class TeleportGrabbable : MoveToLocation
+namespace MikeNspired.UnityXRHandPoser
 {
-    public void Activate()
+    public class TeleportGrabbable : MoveToLocation
     {
-        XROrigin rig = Camera.main.GetComponentInParent<XROrigin>();
-        var hands = rig.GetComponentsInChildren<PlayerClimbingXR>();
-        foreach (var h in hands)
+        public new void Activate()
         {
-            h.CancelClimbing();
+            XROrigin rig = Camera.main.GetComponentInParent<XROrigin>();
+            var hands = rig.GetComponentsInChildren<PlayerClimbingXR>();
+            foreach (var h in hands)
+            {
+                h.CancelClimbing();
+            }
+
+            base.Activate();
         }
-        base.Activate();
     }
 }

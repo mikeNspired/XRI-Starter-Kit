@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
-namespace Unity.XRContent.Interaction
+namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// An interactable that can be pressed by a direct interactor

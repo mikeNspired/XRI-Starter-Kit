@@ -4,7 +4,7 @@ using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 using static Unity.Mathematics.math;
 
-namespace Unity.XRContent.Interaction
+namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// An interactable that follows the position of the interactor on a single axis

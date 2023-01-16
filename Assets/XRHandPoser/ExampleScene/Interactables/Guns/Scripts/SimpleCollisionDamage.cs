@@ -1,4 +1,4 @@
-﻿// Copyright (c) MikeNspired. All Rights Reserved.
+﻿// Author MikeNspired. 
 
 using System;
 using UnityEngine;

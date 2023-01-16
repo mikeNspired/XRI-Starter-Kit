@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Unity.XRContent.Interaction
+namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// An asset that represents a key. Used to check if an object can perform some action

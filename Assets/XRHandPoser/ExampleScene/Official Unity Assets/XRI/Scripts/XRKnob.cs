@@ -1,10 +1,9 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.XR.Interaction.Toolkit;
 using static Unity.Mathematics.math;
 
-namespace Unity.XRContent.Interaction
+namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// An interactable knob that follows the rotation of the interactor

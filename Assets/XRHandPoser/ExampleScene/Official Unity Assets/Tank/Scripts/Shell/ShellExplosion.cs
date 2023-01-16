@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Complete
+namespace MikeNspired.UnityXRHandPoser
 {
     public class ShellExplosion : MonoBehaviour
     {

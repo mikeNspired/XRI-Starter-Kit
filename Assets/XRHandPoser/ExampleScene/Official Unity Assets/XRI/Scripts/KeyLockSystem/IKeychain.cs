@@ -1,4 +1,4 @@
-namespace Unity.XRContent.Interaction
+namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// Interface to implement for objects that hold a set of <c>Key</c>s

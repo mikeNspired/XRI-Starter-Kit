@@ -1,40 +1,42 @@
-using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
-public class EnableScriptOnButton : MonoBehaviour
+namespace MikeNspired.UnityXRHandPoser
 {
-    [SerializeField] private MonoBehaviour behaviour;
-    [SerializeField] private ActionBasedController actionBasedController;
-    [SerializeField] private bool useTrigger, useGrip, inverse;
-
-    private void Start()
+    public class EnableScriptOnButton : MonoBehaviour
     {
-        OnValidate();
-        if (!actionBasedController)
-            enabled = false;
+        [SerializeField] private MonoBehaviour behaviour;
+        [SerializeField] private ActionBasedController actionBasedController;
+        [SerializeField] private bool useTrigger, useGrip, inverse;
 
-        if (useGrip)
+        private void Start()
         {
-            actionBasedController.selectActionValue.reference.GetInputAction().performed += x => Activate(!inverse);
-            actionBasedController.selectActionValue.reference.GetInputAction().canceled += x => Activate(inverse);
+            OnValidate();
+            if (!actionBasedController)
+                enabled = false;
+
+            if (useGrip)
+            {
+                actionBasedController.selectActionValue.reference.GetInputAction().performed += x => Activate(!inverse);
+                actionBasedController.selectActionValue.reference.GetInputAction().canceled += x => Activate(inverse);
+            }
+
+            if (useTrigger)
+            {
+                actionBasedController.activateActionValue.reference.GetInputAction().performed += x => Activate(!inverse);
+                actionBasedController.activateActionValue.reference.GetInputAction().canceled += x => Activate(inverse);
+            }
         }
 
-        if (useTrigger)
+        private void OnValidate()
         {
-            actionBasedController.activateActionValue.reference.GetInputAction().performed += x => Activate(!inverse);
-            actionBasedController.activateActionValue.reference.GetInputAction().canceled += x => Activate(inverse);
+            if (!actionBasedController) actionBasedController = GetComponentInParent<ActionBasedController>();
         }
-    }
 
-    private void OnValidate()
-    {
-        if (!actionBasedController) actionBasedController = GetComponentInParent<ActionBasedController>();
-    }
-
-    private void Activate(bool state)
-    {
-        if (behaviour)
-            behaviour.enabled = state;
+        private void Activate(bool state)
+        {
+            if (behaviour)
+                behaviour.enabled = state;
+        }
     }
 }
