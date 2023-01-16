@@ -131,8 +131,8 @@ public class XRJoystick : MonoBehaviour
             yield return null;
         }
 
-        CurrentValue = Vector2.zero;
-        rotationPoint.localEulerAngles = Vector3.zero;
+        CurrentValue = returnToPosition;
+        rotationPoint.localEulerAngles = returnToPosition;
         InvokeUnityEvents();
     }
 

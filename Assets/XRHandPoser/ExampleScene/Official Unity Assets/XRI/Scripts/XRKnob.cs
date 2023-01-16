@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.XR.Interaction.Toolkit;
 using static Unity.Mathematics.math;
 
@@ -125,7 +126,7 @@ namespace Unity.XRContent.Interaction
         
         [SerializeField]
         [Tooltip("Events to trigger when the knob is incremented")]
-        UnityEventInt m_OnIncremenValueChange = new UnityEventInt();
+        UnityEventInt m_OnIncrementValueChange = new UnityEventInt();
 
         [SerializeField]
         [Tooltip("Remap sliders min value of 0 to a new value")]
@@ -188,7 +189,7 @@ namespace Unity.XRContent.Interaction
         /// Events to trigger when the knob is rotated
         /// </summary>
         public UnityEventFloat OnValueChange => m_OnValueChange;
-        public UnityEventInt OnIncrementValueChange => m_OnIncremenValueChange;
+        public UnityEventInt OnIncrementValueChange => m_OnIncrementValueChange;
 
         private void Start()
         {
@@ -215,7 +216,7 @@ namespace Unity.XRContent.Interaction
         {
             m_Interactor = args.interactorObject;
             m_Controller = m_Interactor.transform.GetComponentInParent<ActionBasedController>();
-
+            Debug.Log(m_Controller);
             m_PositionAngles.Reset();
             m_UpVectorAngles.Reset();
             m_ForwardVectorAngles.Reset();
@@ -359,7 +360,7 @@ namespace Unity.XRContent.Interaction
                 if (Math.Abs(m_previousValue - value) > .001f)
                 {
                     m_previousValue = value;
-                    m_OnIncremenValueChange.Invoke(Mathf.RoundToInt(angle/m_AngleIncrement));
+                    m_OnIncrementValueChange.Invoke(Mathf.RoundToInt(angle/m_AngleIncrement));
                 }
             }
 

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class TankMovement : MonoBehaviour
 {
@@ -8,8 +9,13 @@ public class TankMovement : MonoBehaviour
     private Rigidbody m_Rigidbody;
     private float m_MovementInputValue, m_TurnInputValue, m_StartingVolume;
     private ParticleSystem[] m_particleSystems;
-
+    private bool m_EngineOn;
     private void Awake() => m_Rigidbody = GetComponent<Rigidbody>();
+
+    private void Start()
+    {
+        StopEngine();
+    }
 
     private void OnEnable()
     {
@@ -18,26 +24,55 @@ public class TankMovement : MonoBehaviour
         m_TurnInputValue = 0f;
         m_StartingVolume = m_MovementAudio.volume;
         m_particleSystems = GetComponentsInChildren<ParticleSystem>();
-        foreach (var particle in m_particleSystems)
-            particle.Play();
+    }
+
+    public void EngineState(int state)
+    {
+        Debug.Log("Hello + " + state);
+        if (state == 0)
+            StopEngine();
+        else
+            StartEngine();
+    }
+
+    public void StartEngine()
+    {
+        if (m_EngineOn) return;
+        foreach (var particle in m_particleSystems) particle.Play();
+        m_EngineOn = true;
+        m_MovementAudio.Play();
+        Debug.Log("Start Engine + " );
+
+    }
+
+    public void StopEngine()
+    {
+        foreach (var particle in m_particleSystems) particle.Stop();
+        m_EngineOn = false;
+        m_MovementAudio.Stop();
+        Debug.Log("Stop Engine + " );
+
     }
 
     private void OnDisable()
     {
         m_Rigidbody.isKinematic = true;
-        foreach (var particle in m_particleSystems) particle.Stop();
+        StopEngine();
     }
 
     private void Update() => EngineAudio();
 
     private void FixedUpdate()
     {
+        if (!m_EngineOn) return;
         Move();
         Turn();
     }
 
     private void EngineAudio()
     {
+        if (!m_EngineOn) return;
+
         // If there is no input (the tank is stationary)...
         if (Mathf.Abs(m_MovementInputValue) < 0.1f && Mathf.Abs(m_TurnInputValue) < 0.1f)
         {

@@ -1640,15 +1640,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7325907191753210638}
-  - component: {fileID: 7325907191753210644}
-  - component: {fileID: 7325907191753210639}
   - component: {fileID: 7325907191753210635}
   - component: {fileID: 7325907191753210634}
+  - component: {fileID: 7325907191753210639}
   - component: {fileID: 7325907191753210633}
   - component: {fileID: 7325907191753210632}
   - component: {fileID: -8551003382360574577}
   - component: {fileID: 257953795825498150}
   - component: {fileID: 1291588549}
+  - component: {fileID: 7325907191753210644}
   m_Layer: 0
   m_Name: TerraFormer Gun
   m_TagString: Untagged
@@ -1676,35 +1676,82 @@ Transform:
   - {fileID: 7325907191710892995}
   - {fileID: 8883705226995917009}
   m_Father: {fileID: 0}
-  m_RootOrder: 23
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!54 &7325907191753210644
-Rigidbody:
+--- !u!114 &7325907191753210635
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7325907191753210637}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 3
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec5e89d4de362f54cbf5d405e9cbf4e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  firePoint: {fileID: 7325907192492089439}
+  projectilePrefab: {fileID: 1277569234665110449, guid: 93db01fe1af54a4439624cfdd716bc6c,
+    type: 3}
+  cartridgeEjection: {fileID: 0}
+  fireAudio: {fileID: 7325907192314540281}
+  outOfAmmoAudio: {fileID: 0}
+  bulletFlash: {fileID: 5327121413866229670, guid: 9cb2549f27ae27a4da148799fd95bb97,
+    type: 3}
+  gunCocking: {fileID: 0}
+  magazineAttach: {fileID: 0}
+  recoilAmount: -0.45
+  recoilRotation: 20
+  recoilTime: 0.1
+  bulletsPerShot: 5
+  bulletSpreadAngle: 3
+  bulletSpeed: 75
+  infiniteAmmo: 0
+  hapticDuration: 0.1
+  hapticStrength: 0.5
+  BulletFiredEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  OutOfAmmoEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  FiredLastBulletEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  fireSpeed: 0.25
+  fireTimer: 0
+  isFiring: 0
+--- !u!114 &7325907191753210634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7325907191753210637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18ad55086cb948e4da109d5c7dd7daca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
+    type: 3}
+  rightHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
+    type: 3}
+  LeftHandAnimationPose: {fileID: 1822801435157866393, guid: 0789c1c141b5fd1469f788b30d8d1c08,
+    type: 3}
+  RightHandAnimationPose: {fileID: 1822801435157866393, guid: 0789c1c141b5fd1469f788b30d8d1c08,
+    type: 3}
+  leftHandAttach: {fileID: 7325907192342027854}
+  rightHandAttach: {fileID: 7325907191146201695}
+  hasAnimationPose: 0
+  currentLeftHand: {fileID: 0}
+  currentRightHand: {fileID: 0}
+  grabAttachPoints: {fileID: 7325907190931382626}
+  interactable: {fileID: 7325907191753210639}
+  MaintainHandOnObject: 1
+  WaitTillEaseInTimeToMaintainPosition: 1
+  overrideEaseTime: 0
+  easeInTimeOverride: 0
 --- !u!114 &7325907191753210639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1840,80 +1887,6 @@ MonoBehaviour:
   m_StartingSingleGrabTransformers: []
   m_StartingMultipleGrabTransformers: []
   m_AddDefaultGrabTransformers: 1
---- !u!114 &7325907191753210635
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7325907191753210637}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec5e89d4de362f54cbf5d405e9cbf4e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  firePoint: {fileID: 7325907192492089439}
-  projectilePrefab: {fileID: 1277569234665110449, guid: 93db01fe1af54a4439624cfdd716bc6c,
-    type: 3}
-  cartridgeEjection: {fileID: 0}
-  fireAudio: {fileID: 7325907192314540281}
-  outOfAmmoAudio: {fileID: 0}
-  bulletFlash: {fileID: 5327121413866229670, guid: 9cb2549f27ae27a4da148799fd95bb97,
-    type: 3}
-  gunCocking: {fileID: 0}
-  magazineAttach: {fileID: 0}
-  recoilAmount: -0.45
-  recoilRotation: 20
-  recoilTime: 0.1
-  bulletsPerShot: 5
-  bulletSpreadAngle: 3
-  bulletSpeed: 75
-  infiniteAmmo: 0
-  hapticDuration: 0.1
-  hapticStrength: 0.5
-  BulletFiredEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  OutOfAmmoEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  FiredLastBulletEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  fireSpeed: 0.25
-  fireTimer: 0
-  isFiring: 0
---- !u!114 &7325907191753210634
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7325907191753210637}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18ad55086cb948e4da109d5c7dd7daca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  leftHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
-    type: 3}
-  rightHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
-    type: 3}
-  LeftHandAnimationPose: {fileID: 1822801435157866393, guid: 0789c1c141b5fd1469f788b30d8d1c08,
-    type: 3}
-  RightHandAnimationPose: {fileID: 1822801435157866393, guid: 0789c1c141b5fd1469f788b30d8d1c08,
-    type: 3}
-  leftHandAttach: {fileID: 7325907192342027854}
-  rightHandAttach: {fileID: 7325907191146201695}
-  hasAnimationPose: 0
-  currentLeftHand: {fileID: 0}
-  currentRightHand: {fileID: 0}
-  grabAttachPoints: {fileID: 7325907190931382626}
-  interactable: {fileID: 7325907191753210639}
-  MaintainHandOnObject: 1
-  WaitTillEaseInTimeToMaintainPosition: 1
-  overrideEaseTime: 0
-  easeInTimeOverride: 0
 --- !u!114 &7325907191753210633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2017,6 +1990,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1887aab64a7b4b8e9403afbd3ed8ad9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!54 &7325907191753210644
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7325907191753210637}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 3
 --- !u!1 &7325907191797837005
 GameObject:
   m_ObjectHideFlags: 0

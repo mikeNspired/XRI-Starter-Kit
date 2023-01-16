@@ -23,7 +23,7 @@ public class AudioRandomize : MonoBehaviour
             PlaySound();
     }
 
-    private void OnValidate()
+    protected void OnValidate()
     {
         if (!audioSource) audioSource = GetComponent<AudioSource>();
     }
