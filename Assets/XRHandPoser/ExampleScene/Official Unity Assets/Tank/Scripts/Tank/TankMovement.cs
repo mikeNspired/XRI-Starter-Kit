@@ -29,7 +29,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void EngineState(int state)
         {
-            Debug.Log("Hello + " + state);
             if (state == 0)
                 StopEngine();
             else
@@ -42,7 +41,6 @@ namespace MikeNspired.UnityXRHandPoser
             foreach (var particle in m_particleSystems) particle.Play();
             m_EngineOn = true;
             m_MovementAudio.Play();
-            Debug.Log("Start Engine + ");
         }
 
         public void StopEngine()
@@ -50,7 +48,6 @@ namespace MikeNspired.UnityXRHandPoser
             foreach (var particle in m_particleSystems) particle.Stop();
             m_EngineOn = false;
             m_MovementAudio.Stop();
-            Debug.Log("Stop Engine + ");
         }
 
         private void OnDisable()
