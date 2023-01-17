@@ -31,18 +31,23 @@ namespace MikeNspired.UnityXRHandPoser
         public float hapticDuration = .1f;
         public float hapticStrength = .5f;
 
+        //AutoFire
+        public float fireSpeed = .25f;
+        public bool automaticFiring = false;
+
         private XRGrabInteractable interactable;
         private XRBaseInteractor controller;
         private Collider[] gunColliders;
-        private bool gunCocked;
+        private bool gunCocked, isFiring;
+        private float fireTimer;
 
         public UnityEvent BulletFiredEvent, OutOfAmmoEvent, FiredLastBulletEvent;
 
         private void Awake()
         {
             OnValidate();
-            interactable.activated.AddListener(x => isFiring = true);
-            interactable.deactivated.AddListener(x => isFiring = false);
+            interactable.activated.AddListener(x => TryFire(true));
+            interactable.deactivated.AddListener(x => TryFire(false));
             interactable.onSelectEntered.AddListener(SetupRecoilVariables);
             interactable.onSelectExited.AddListener(DestroyRecoilTracker);
 
@@ -62,19 +67,27 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnDisable() => Application.onBeforeRender -= RecoilUpdate;
 
-        public float fireSpeed = .25f, fireTimer;
-        public bool isFiring;
+        private void TryFire(bool state)
+        {
+            isFiring = state;
+            if (state)
+                FireGun();
+        }
+
         private void Update()
         {
+            if (!automaticFiring) return;
+
             if (isFiring && fireTimer >= fireSpeed)
             {
-                FireBullets(null);
+                FireGun();
                 fireTimer = 0;
             }
+
             fireTimer += Time.deltaTime;
         }
 
-        public void FireBullets(XRBaseInteractor interactor)
+        public void FireGun()
         {
             if (bulletsPerShot < 1) return;
 
@@ -118,7 +131,7 @@ namespace MikeNspired.UnityXRHandPoser
                 flash.transform.position = firePoint.position;
                 flash.positionToMatch = firePoint; //Follow gun barrel on update  
             }
-      
+
             if (fireAudio)
                 fireAudio.PlayOneShot(fireAudio.clip);
 

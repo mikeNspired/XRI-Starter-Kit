@@ -1041,8 +1041,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7325907190931382626}
+  - component: {fileID: 3663417061563225799}
   m_Layer: 0
-  m_Name: GrabAttachPoints
+  m_Name: HandPoser
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1057,7 +1058,7 @@ Transform:
   m_GameObject: {fileID: 7325907190931382625}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 0.9999999, z: 0.9999999}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7325907192342027854}
@@ -1065,6 +1066,37 @@ Transform:
   m_Father: {fileID: 7325907191753210638}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3663417061563225799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7325907190931382625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18ad55086cb948e4da109d5c7dd7daca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftHandPose: {fileID: 5077858177517105583, guid: d011d949a2c38f441b456408f1eca70e,
+    type: 3}
+  rightHandPose: {fileID: 5077858177517105583, guid: d011d949a2c38f441b456408f1eca70e,
+    type: 3}
+  LeftHandAnimationPose: {fileID: 1283279199188414155, guid: 6a9a5e122f5024842aeeb3995cd3dfe5,
+    type: 3}
+  RightHandAnimationPose: {fileID: 1283279199188414155, guid: 6a9a5e122f5024842aeeb3995cd3dfe5,
+    type: 3}
+  leftHandAttach: {fileID: 7325907192342027854}
+  rightHandAttach: {fileID: 7325907191146201695}
+  hasAnimationPose: 1
+  currentLeftHand: {fileID: 0}
+  currentRightHand: {fileID: 0}
+  grabAttachPoints: {fileID: 7325907190931382626}
+  interactable: {fileID: 7325907191753210639}
+  MaintainHandOnObject: 1
+  WaitTillEaseInTimeToMaintainPosition: 1
+  overrideEaseTime: 0
+  easeInTimeOverride: 0
 --- !u!1 &7325907191018457815
 GameObject:
   m_ObjectHideFlags: 0
@@ -1641,7 +1673,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7325907191753210638}
   - component: {fileID: 7325907191753210635}
-  - component: {fileID: 7325907191753210634}
   - component: {fileID: 7325907191753210639}
   - component: {fileID: 7325907191753210633}
   - component: {fileID: 7325907191753210632}
@@ -1668,10 +1699,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7325907190931382626}
   - {fileID: 7325907191993959308}
   - {fileID: 7325907192492089439}
   - {fileID: 7325907192314540280}
-  - {fileID: 7325907190931382626}
   - {fileID: 738381290417995985}
   - {fileID: 7325907191710892995}
   - {fileID: 8883705226995917009}
@@ -1721,37 +1752,6 @@ MonoBehaviour:
   fireSpeed: 0.25
   fireTimer: 0
   isFiring: 0
---- !u!114 &7325907191753210634
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7325907191753210637}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18ad55086cb948e4da109d5c7dd7daca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  leftHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
-    type: 3}
-  rightHandPose: {fileID: 7416647114191895456, guid: fa8d1a78fa4e77a439b7aecc5ec50415,
-    type: 3}
-  LeftHandAnimationPose: {fileID: 1822801435157866393, guid: 0789c1c141b5fd1469f788b30d8d1c08,
-    type: 3}
-  RightHandAnimationPose: {fileID: 1822801435157866393, guid: 0789c1c141b5fd1469f788b30d8d1c08,
-    type: 3}
-  leftHandAttach: {fileID: 7325907192342027854}
-  rightHandAttach: {fileID: 7325907191146201695}
-  hasAnimationPose: 0
-  currentLeftHand: {fileID: 0}
-  currentRightHand: {fileID: 0}
-  grabAttachPoints: {fileID: 7325907190931382626}
-  interactable: {fileID: 7325907191753210639}
-  MaintainHandOnObject: 1
-  WaitTillEaseInTimeToMaintainPosition: 1
-  overrideEaseTime: 0
-  easeInTimeOverride: 0
 --- !u!114 &7325907191753210639
 MonoBehaviour:
   m_ObjectHideFlags: 0
