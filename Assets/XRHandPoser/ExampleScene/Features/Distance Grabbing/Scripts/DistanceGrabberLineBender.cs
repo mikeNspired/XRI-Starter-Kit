@@ -19,6 +19,8 @@ namespace MikeNspired.UnityXRHandPoser
             vertCount = vertexCount + .01f;
 
             OnValidate();
+            largeParticleArray = new ParticleSystem.Particle[largeParticles.main.maxParticles];
+            smallParticlesArray = new ParticleSystem.Particle[particleSystem.main.maxParticles];
         }
 
         private void OnValidate()
@@ -101,6 +103,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         [Tooltip("What line position small emitter rotates to look at")] [SerializeField]
         private int linePositionParticleLookAt = 25;
+        private ParticleSystem.Particle[] smallParticlesArray,largeParticleArray;
 
         private void UpdateParticles()
         {
@@ -130,8 +133,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             particleSystem.transform.LookAt(lineRenderer.GetPosition(linePositionParticleLookAt));
 
-            ParticleSystem.Particle[] particles = new ParticleSystem.Particle[particleSystem.main.maxParticles];
-            int totalParticles = particleSystem.GetParticles(particles);
+            int totalParticles = particleSystem.GetParticles(smallParticlesArray);
 
             float startLife = particleSystem.main.startLifetime.constant;
             var emission = particleSystem.emission;
@@ -149,28 +151,27 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 for (int j = 1; j <= particleMoveToCount; j++)
                 {
-                    if (particles[i].remainingLifetime > startLife - (startLife / particleMoveToCount * j))
+                    if (smallParticlesArray[i].remainingLifetime > startLife - (startLife / particleMoveToCount * j))
                     {
-                        particles[i].position = Vector3.Lerp(particles[i].position, particleMoveToTargets[j - 1], smallAttractSpeed * Time.deltaTime);
+                        smallParticlesArray[i].position = Vector3.Lerp(smallParticlesArray[i].position, particleMoveToTargets[j - 1], smallAttractSpeed * Time.deltaTime);
                         break;
                     }
                 }
             }
 
-            particleSystem.SetParticles(particles, totalParticles);
+            particleSystem.SetParticles(smallParticlesArray, totalParticles);
         }
 
         private void UpdateLargeParticles()
         {
-            ParticleSystem.Particle[] particles = new ParticleSystem.Particle[largeParticles.main.maxParticles];
-            int totalParticles = largeParticles.GetParticles(particles);
-            
+            int totalParticles = largeParticles.GetParticles(largeParticleArray);
+
             for (int i = 0; i < totalParticles; i++)
             {
-                particles[i].position = Vector3.Lerp(particles[i].position, transform.position, largeAttractSpeed * Time.deltaTime);
+                largeParticleArray[i].position = Vector3.Lerp(largeParticleArray[i].position, transform.position, largeAttractSpeed * Time.deltaTime);
             }
 
-            largeParticles.SetParticles(particles, totalParticles);
+            largeParticles.SetParticles(largeParticleArray, totalParticles);
         }
     }
 }
