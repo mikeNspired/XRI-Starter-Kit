@@ -33,7 +33,7 @@ namespace MikeNspired.UnityXRHandPoser
             var hand = other.GetComponentInParent<HandReference>();
             if (!hand) return;
             if (hand.GetComponentInChildren<XRDirectInteractor>().selectTarget) return;
-
+            
             currentHand = hand.Hand;
 
             BeginNewHandPoses(currentHand);

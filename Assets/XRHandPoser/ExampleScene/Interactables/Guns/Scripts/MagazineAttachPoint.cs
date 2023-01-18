@@ -36,7 +36,7 @@ namespace MikeNspired.UnityXRHandPoser
             xrGrabInteractable.onSelectEntered.AddListener(x => SetMagazineGrabbableState());
             xrGrabInteractable.onSelectExited.AddListener(x => SetMagazineGrabbableState());
 
-            collider.gameObject.SetActive(true);
+            collider.gameObject.SetActive(false);
             if (startingMagazine) CreateStartingMagazine();
         }
 

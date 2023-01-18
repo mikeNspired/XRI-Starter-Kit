@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace MikeNspired.UnityXRHandPoser
 {
-    public class GameObjectListActivator : MonoBehaviour
+    public class ListActivator : MonoBehaviour
     {
         public List<GameObject> objectList;
 

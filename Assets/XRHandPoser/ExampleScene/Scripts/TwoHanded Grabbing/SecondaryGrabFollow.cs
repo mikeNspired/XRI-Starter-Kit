@@ -93,7 +93,6 @@ namespace MikeNspired.UnityXRHandPoser
             mainGripHand.attachTransform.parent = startingParent;
             mainGripHand.attachTransform.localRotation = mainInteractableHandAttachTransformStartingRotation;
             newHandAttachTransform.parent = transform;
-            Debug.Log("Reset");
         }
 
         private void Update()

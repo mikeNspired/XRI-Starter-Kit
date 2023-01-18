@@ -70,7 +70,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void TryFire(bool state)
         {
             isFiring = state;
-            if (state)
+            if (state && !automaticFiring)
                 FireGun();
         }
 

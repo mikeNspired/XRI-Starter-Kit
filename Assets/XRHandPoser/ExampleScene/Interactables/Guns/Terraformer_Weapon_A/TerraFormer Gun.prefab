@@ -1740,6 +1740,8 @@ MonoBehaviour:
   infiniteAmmo: 0
   hapticDuration: 0.1
   hapticStrength: 0.5
+  fireSpeed: 0.25
+  automaticFiring: 0
   BulletFiredEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -1749,9 +1751,6 @@ MonoBehaviour:
   FiredLastBulletEvent:
     m_PersistentCalls:
       m_Calls: []
-  fireSpeed: 0.25
-  fireTimer: 0
-  isFiring: 0
 --- !u!114 &7325907191753210639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2879,10 +2878,10 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4c36035961b9a404c87d7498aaa65823, type: 2}
-  - {fileID: 2100000, guid: 4c36035961b9a404c87d7498aaa65823, type: 2}
-  - {fileID: 2100000, guid: 4c36035961b9a404c87d7498aaa65823, type: 2}
-  - {fileID: 2100000, guid: 4c36035961b9a404c87d7498aaa65823, type: 2}
+  - {fileID: 2100000, guid: 033fce726d044524caf4574ec4299fed, type: 2}
+  - {fileID: 2100000, guid: 033fce726d044524caf4574ec4299fed, type: 2}
+  - {fileID: 2100000, guid: 033fce726d044524caf4574ec4299fed, type: 2}
+  - {fileID: 2100000, guid: 033fce726d044524caf4574ec4299fed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

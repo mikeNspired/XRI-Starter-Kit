@@ -94,7 +94,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4c36035961b9a404c87d7498aaa65823, type: 2}
+  - {fileID: 2100000, guid: 033fce726d044524caf4574ec4299fed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -178,7 +178,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4c36035961b9a404c87d7498aaa65823, type: 2}
+  - {fileID: 2100000, guid: 033fce726d044524caf4574ec4299fed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -846,7 +846,8 @@ MonoBehaviour:
   interactable: {fileID: 4725369708827964299}
   MaintainHandOnObject: 1
   WaitTillEaseInTimeToMaintainPosition: 1
-  DisableHandAttachTransforms: 0
+  overrideEaseTime: 0
+  easeInTimeOverride: 0
 --- !u!54 &4725369708827964303
 Rigidbody:
   m_ObjectHideFlags: 0

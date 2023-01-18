@@ -18,8 +18,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             shellInstance.velocity = m_launchForce * m_FireTransform.forward;
 
-            m_ShootingAudio.clip = m_FireClip;
-            m_ShootingAudio.Play();
+            m_ShootingAudio.PlayOneShot(m_FireClip);
 
             GetComponent<Rigidbody>().AddForce(transform.forward * -m_launchPushbackForce);
         }

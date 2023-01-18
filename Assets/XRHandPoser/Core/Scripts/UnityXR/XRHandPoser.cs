@@ -9,8 +9,6 @@ namespace MikeNspired.UnityXRHandPoser
     /// Its main purpose is to quickly setup hand poses for each item, and then assign those poses to the hand when the item is grabbed.
     /// This script is driven by the XRGrabInteractable to be used with UnityXR. It uses the onSelectEnter and onSelectExit to work.
     /// </summary>
-    //[ExecuteInEditMode]
-
     public class XRHandPoser : HandPoser
     {
         public XRBaseInteractable interactable;
@@ -25,14 +23,6 @@ namespace MikeNspired.UnityXRHandPoser
             SubscribeToSelection();
         }
 
-        private void Update()
-        {
-            //     interactable = GetComponent<XRBaseInteractable>();    
-            // if (!interactable)
-            //     interactable = GetComponentInParent<XRBaseInteractable>();
-            // overrideEaseTime = false;
-        }
-
         private void SubscribeToSelection()
         {
             //Set hand animation on grab
@@ -44,8 +34,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void TryStartPosing(SelectEnterEventArgs x)
         {
-           // if (!x.interactorObject.transform.GetComponent<XRGrabInteractable>()) return;
-            
             var hand = x.interactorObject.transform.GetComponentInParent<HandReference>();
             if (!hand) return;
             BeginNewHandPoses(hand.Hand);
@@ -54,10 +42,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void TryReleaseHand(SelectExitEventArgs x)
         {
-          //  if (!x.interactorObject.transform.GetComponent<XRGrabInteractable>()) return;
-
-            //Simple fix to get sockets to work
-            //TODO add hand tracking, to possibly have one handposer instead of two, and to check if the hand released for two handed grabbing
             if (!x.interactorObject.transform.GetComponentInParent<HandReference>()) return;
             Release();
         }
@@ -96,6 +80,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (overrideEaseTime)
                 time = easeInTimeOverride;
 
+            Debug.Log("Ease In Time: " + time);
             return time;
         }
         private void OnValidate()

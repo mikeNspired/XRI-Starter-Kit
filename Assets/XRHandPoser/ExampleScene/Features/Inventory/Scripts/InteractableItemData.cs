@@ -30,7 +30,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void SetParentToPlayerForSmoothMovement()
         {
             if (interactable.selectingInteractor)
-                transform.parent = interactable.selectingInteractor.GetComponentInParent<XROrigin>().CameraFloorOffsetObject.transform;
+                transform.parent = interactable.selectingInteractor.transform.parent;
         }
 
         #endregion

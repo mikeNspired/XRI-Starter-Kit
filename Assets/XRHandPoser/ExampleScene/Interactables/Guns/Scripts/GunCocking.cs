@@ -83,8 +83,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void SlideFromHandPosition()
         {
-            transform.parent = originalParent;
-
             Vector3 worldAxis = transform.TransformDirection(LocalAxis);
 
             Vector3 distance = grabbingInteractor.transform.position - transform.position - grabbedOffset;
@@ -93,7 +91,6 @@ namespace MikeNspired.UnityXRHandPoser
             Vector3 targetPoint;
             if (projected > 0)
                 targetPoint = Vector3.MoveTowards(transform.localPosition, endPoint, projected);
-
             else
                 targetPoint = Vector3.MoveTowards(transform.localPosition, startPoint, -projected);
 
@@ -120,6 +117,7 @@ namespace MikeNspired.UnityXRHandPoser
                 hasReachedEnd = false;
                 GunCockedEvent.Invoke();
                 releaseAudio.PlaySound();
+                SetClosed();
             }
         }
 
@@ -138,6 +136,7 @@ namespace MikeNspired.UnityXRHandPoser
             isSelected = true;
             grabbedOffset = interactor.transform.position - transform.position;
             grabbingInteractor = interactor;
+            transform.parent = originalParent;
             transform.localPosition = startPoint;
         }
 

@@ -19,7 +19,7 @@ namespace MikeNspired.UnityXRHandPoser
         private Vector3 startPosition;
         private Quaternion startRotation;
         private Transform attachTransform;
-
+        private HandPoser currentHandPoser;
         private void OnValidate()
         {
             if (!Hand)
@@ -39,17 +39,19 @@ namespace MikeNspired.UnityXRHandPoser
             startRotation = xrDirectInteractor.attachTransform.localRotation;
             attachTransform = xrDirectInteractor.attachTransform;
         }
-
+    
+        
 
         private void OnGrab(XRBaseInteractable x)
         {
-            var handPoser = x.GetComponent<XRHandPoser>();
-            if (!handPoser)
-                handPoser = x.GetComponentInChildren<XRHandPoser>();
-
-            if (handPoser)
+            currentHandPoser = x.GetComponent<XRHandPoser>();
+            if (!currentHandPoser)
+                currentHandPoser = x.GetComponentInChildren<XRHandPoser>();
+            
+            Debug.Log("CurrentHandPoser: " + currentHandPoser);
+            if (currentHandPoser)
             {
-                var interactableAttach = LeftRight == LeftRight.Left ? handPoser.leftHandAttach : handPoser.rightHandAttach;
+                var interactableAttach = LeftRight == LeftRight.Left ? currentHandPoser.leftHandAttach : currentHandPoser.rightHandAttach;
 
                 Vector3 finalPosition = interactableAttach.localPosition * -1;
                 Quaternion finalRotation = Quaternion.Inverse(interactableAttach.localRotation);
@@ -61,7 +63,6 @@ namespace MikeNspired.UnityXRHandPoser
             }
 
             attachTransform.parent = transform;
-//            Debug.Log(x.GetComponent<XRHandPoser>().leftHandAttach.name + " " + x.GetComponent<XRHandPoser>().leftHandAttach.localPosition.ToString("f3") + " " + finalPosition.ToString("f3"));
         }
 
         public void ResetAttachTransform()
