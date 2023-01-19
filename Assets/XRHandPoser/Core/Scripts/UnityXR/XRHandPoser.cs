@@ -80,7 +80,6 @@ namespace MikeNspired.UnityXRHandPoser
             if (overrideEaseTime)
                 time = easeInTimeOverride;
 
-            Debug.Log("Ease In Time: " + time);
             return time;
         }
         private void OnValidate()

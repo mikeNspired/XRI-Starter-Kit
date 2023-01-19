@@ -16,20 +16,17 @@ namespace MikeNspired.UnityXRHandPoser
 
         #region TemporaryFixForSmoothMovementJerkyness
 
+        [Tooltip("Only needed for velocity and isKinematic movement")]
         public bool parentToPlayerOnGrabForSmoothMovement = true;
 
-        private XRBaseInteractable interactable;
+        private XRGrabInteractable interactable;
 
         private void Start()
         {
             if (!parentToPlayerOnGrabForSmoothMovement) return;
-            interactable = GetComponent<XRBaseInteractable>();
-            if (TryGetComponent(out XRGrabInteractable grabInteractable))
-            {
-                grabInteractable.onSelectEntered.AddListener(x => Invoke(nameof(SetParentToPlayerForSmoothMovement), grabInteractable.attachEaseInTime + Time.deltaTime));
-            }
-            else
-                interactable.onSelectEntered.AddListener(x => Invoke(nameof(SetParentToPlayerForSmoothMovement), Time.deltaTime));
+            interactable = GetComponent<XRGrabInteractable>();
+            if (!interactable || interactable.movementType == XRBaseInteractable.MovementType.Instantaneous) return;
+            interactable.onSelectEntered.AddListener(x => Invoke(nameof(SetParentToPlayerForSmoothMovement), interactable.attachEaseInTime + Time.deltaTime));
         }
 
         private void SetParentToPlayerForSmoothMovement()

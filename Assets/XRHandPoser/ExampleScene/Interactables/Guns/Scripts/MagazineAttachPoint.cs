@@ -76,7 +76,9 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (magazine) return;
             SetupNewMagazine(Instantiate(startingMagazine, end.position, end.rotation, transform));
-            MakeMagazineGrabbable();
+            magazine.DisableCollider();
+
+         //   MakeMagazineGrabbable();
         }
 
 

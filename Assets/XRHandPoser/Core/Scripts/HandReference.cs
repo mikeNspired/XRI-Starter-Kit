@@ -48,7 +48,6 @@ namespace MikeNspired.UnityXRHandPoser
             if (!currentHandPoser)
                 currentHandPoser = x.GetComponentInChildren<XRHandPoser>();
             
-            Debug.Log("CurrentHandPoser: " + currentHandPoser);
             if (currentHandPoser)
             {
                 var interactableAttach = LeftRight == LeftRight.Left ? currentHandPoser.leftHandAttach : currentHandPoser.rightHandAttach;

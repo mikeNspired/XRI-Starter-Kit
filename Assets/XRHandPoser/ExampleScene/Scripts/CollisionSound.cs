@@ -72,7 +72,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void CheckValid()
         {
             if (audioSource != null) return;
-            Debug.Log("Collision sound does not have audio source on : " + gameObject);
+            Debug.LogWarning("Collision sound does not have audio source on : " + gameObject);
             enabled = false;
         }
     }
