@@ -9,7 +9,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField]
         private InputActionReference openMenuInputLeftHand, openMenuInputRightHand;
         private InventorySlot[] inventorySlots;
-        public XRBaseController leftController = null, rightController = null;
+        public ActionBasedController leftController = null, rightController = null;
         [SerializeField] private AudioSource enableAudio = null, disableAudio = null;
 
         [SerializeField] private bool lookAtController = false;

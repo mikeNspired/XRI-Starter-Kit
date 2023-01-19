@@ -1,9 +1,6 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
@@ -41,7 +38,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         //Animation
         private int disableAnimatorHash, enableAnimatorHash, onHoverAnimatorHash, resetAnimatorHash;
-
 
         private bool isBusy, isDisabling;
         private Animator addItemAnimator, hasItemAnimator;
