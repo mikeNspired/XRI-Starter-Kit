@@ -75,7 +75,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void CreateStartingMagazine()
         {
             if (magazine) return;
-            SetupNewMagazine(Instantiate(startingMagazine, transform.position, end.rotation, transform));
+            SetupNewMagazine(Instantiate(startingMagazine, end.position, end.rotation, transform));
             MakeMagazineGrabbable();
         }
 

@@ -18,13 +18,18 @@ namespace MikeNspired.UnityXRHandPoser
 
         public bool parentToPlayerOnGrabForSmoothMovement = true;
 
-        private XRGrabInteractable interactable;
+        private XRBaseInteractable interactable;
 
         private void Start()
         {
             if (!parentToPlayerOnGrabForSmoothMovement) return;
-            interactable = GetComponent<XRGrabInteractable>();
-            interactable.onSelectEntered.AddListener(x => Invoke(nameof(SetParentToPlayerForSmoothMovement), Time.deltaTime));
+            interactable = GetComponent<XRBaseInteractable>();
+            if (TryGetComponent(out XRGrabInteractable grabInteractable))
+            {
+                grabInteractable.onSelectEntered.AddListener(x => Invoke(nameof(SetParentToPlayerForSmoothMovement), grabInteractable.attachEaseInTime + Time.deltaTime));
+            }
+            else
+                interactable.onSelectEntered.AddListener(x => Invoke(nameof(SetParentToPlayerForSmoothMovement), Time.deltaTime));
         }
 
         private void SetParentToPlayerForSmoothMovement()

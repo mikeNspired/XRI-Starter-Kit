@@ -36,7 +36,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             isBeingGrabbed = true;
             collider.isTrigger = false;
-            rigidBody.isKinematic = false;
+            rigidBody.isKinematic = true;
         }
 
         private void OnEnable()
