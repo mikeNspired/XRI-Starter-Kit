@@ -263,7 +263,7 @@ namespace MikeNspired.UnityXRHandPoser
             yield return null;
 
             item.GetComponent<OnGrabEnableDisable>()?.EnableAll(); //Force collider on to get collision events
-            item.transform.position += Vector3.one * 9999;
+            item.transform.position = Vector3.down * 9999;
 
             yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
 

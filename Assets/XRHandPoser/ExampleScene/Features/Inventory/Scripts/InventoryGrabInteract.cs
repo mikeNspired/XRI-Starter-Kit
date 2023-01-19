@@ -27,18 +27,18 @@ namespace MikeNspired.UnityXRHandPoser
 
             if (interactButton == InteractButton.grip)
             {
-                leftHand.selectActionValue.reference.GetInputAction().performed += x => SetControllerGrip(leftHand, true);
-                rightHand.selectActionValue.reference.GetInputAction().performed += x => SetControllerGrip(rightHand, true);
-                leftHand.selectActionValue.reference.GetInputAction().canceled += x => SetControllerGrip(leftHand, false);
-                rightHand.selectActionValue.reference.GetInputAction().canceled += x => SetControllerGrip(rightHand, false);
+                leftHand.selectAction.reference.GetInputAction().performed += x => SetControllerGrip(leftHand, true);
+                rightHand.selectAction.reference.GetInputAction().performed += x => SetControllerGrip(rightHand, true);
+                leftHand.selectAction.reference.GetInputAction().canceled += x => SetControllerGrip(leftHand, false);
+                rightHand.selectAction.reference.GetInputAction().canceled += x => SetControllerGrip(rightHand, false);
             }
 
             else
             {
-                leftHand.activateActionValue.reference.GetInputAction().performed += x => SetControllerGrip(leftHand, true);
-                rightHand.activateActionValue.reference.GetInputAction().performed += x => SetControllerGrip(rightHand, true);
-                leftHand.activateActionValue.reference.GetInputAction().canceled += x => SetControllerGrip(leftHand, false);
-                rightHand.activateActionValue.reference.GetInputAction().canceled += x => SetControllerGrip(rightHand, false);
+                leftHand.activateAction.reference.GetInputAction().performed += x => SetControllerGrip(leftHand, true);
+                rightHand.activateAction.reference.GetInputAction().performed += x => SetControllerGrip(rightHand, true);
+                leftHand.activateAction.reference.GetInputAction().canceled += x => SetControllerGrip(leftHand, false);
+                rightHand.activateAction.reference.GetInputAction().canceled += x => SetControllerGrip(rightHand, false);
             }
         }
 
@@ -69,6 +69,7 @@ namespace MikeNspired.UnityXRHandPoser
             }
             else if (isRightGripped && controller == rightHand)
             {
+                Debug.Log("Interacting: " + isRightGripped);
                 inventorySlot.TryInteractWithSlot(controller.GetComponentInChildren<XRDirectInteractor>());
                 isRightGripped = false;
             }
@@ -76,6 +77,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void SetControllerGrip(ActionBasedController controller, bool state)
         {
+                            Debug.Log("Set Controller Grip: " + controller.name + " " +  state);
+
             if (controller == leftHand)
                 isLeftGripped = state;
             else

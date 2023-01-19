@@ -58,7 +58,7 @@ MonoBehaviour:
   currentLeftHand: {fileID: 0}
   currentRightHand: {fileID: 0}
   grabAttachPoints: {fileID: 8860387950488161127}
-  interactable: {fileID: 4512551135419705717}
+  interactable: {fileID: 2971551517337442883}
   MaintainHandOnObject: 1
   WaitTillEaseInTimeToMaintainPosition: 1
   overrideEaseTime: 0
@@ -156,9 +156,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7200736839611136640}
-  - component: {fileID: 4512551135419705717}
+  - component: {fileID: 2971551517337442883}
   - component: {fileID: 8342543908489288889}
-  - component: {fileID: 3837541909545583755}
   - component: {fileID: 3183958582419657735}
   - component: {fileID: 6518390477190076921}
   m_Layer: 0
@@ -187,7 +186,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
---- !u!114 &4512551135419705717
+--- !u!114 &2971551517337442883
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -196,7 +195,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6993848295545338166}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ad34abafad169848a38072baa96cdb2, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a35f6cfbfba9b548aaa00d52cfe8a50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
@@ -277,52 +276,6 @@ MonoBehaviour:
   m_OnDeactivate:
     m_PersistentCalls:
       m_Calls: []
-  m_AttachTransform: {fileID: 4731092258182697523}
-  m_SecondaryAttachTransform: {fileID: 0}
-  m_UseDynamicAttach: 0
-  m_MatchAttachPosition: 1
-  m_MatchAttachRotation: 1
-  m_SnapToColliderVolume: 1
-  m_ReinitializeDynamicAttachEverySingleGrab: 1
-  m_AttachEaseInTime: 0
-  m_MovementType: 1
-  m_VelocityDamping: 1
-  m_VelocityScale: 1
-  m_AngularVelocityDamping: 1
-  m_AngularVelocityScale: 1
-  m_TrackPosition: 0
-  m_SmoothPosition: 0
-  m_SmoothPositionAmount: 5
-  m_TightenPosition: 0.5
-  m_TrackRotation: 0
-  m_SmoothRotation: 0
-  m_SmoothRotationAmount: 5
-  m_TightenRotation: 0.5
-  m_ThrowOnDetach: 0
-  m_ThrowSmoothingDuration: 0.25
-  m_ThrowSmoothingCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  m_ThrowVelocityScale: 1.5
-  m_ThrowAngularVelocityScale: 0.25
-  m_ForceGravityOnDetach: 0
-  m_RetainTransformParent: 1
-  m_AttachPointCompatibilityMode: 0
-  m_StartingSingleGrabTransformers: []
-  m_StartingMultipleGrabTransformers: []
-  m_AddDefaultGrabTransformers: 1
 --- !u!114 &8342543908489288889
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -333,21 +286,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b55b435c2b3c7b14e887e80846d342d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  hapticDuration: 0.1
-  hapticStrength: 0.1
-  velocityTracker: {fileID: 3837541909545583755}
---- !u!114 &3837541909545583755
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6993848295545338166}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 21110bc60f665f04ba1e3510e6f1705b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   trackedObject: {fileID: 0}
@@ -370,6 +308,10 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  xrGrabInteractable: {fileID: 0}
+  playerClimbingXR: {fileID: 0}
+  hapticDuration: 0.1
+  hapticStrength: 0.1
 --- !u!114 &3183958582419657735
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -512,7 +454,7 @@ PrefabInstance:
         type: 3}
       propertyPath: interactable
       value: 
-      objectReference: {fileID: 4512551135419705717}
+      objectReference: {fileID: 2971551517337442883}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

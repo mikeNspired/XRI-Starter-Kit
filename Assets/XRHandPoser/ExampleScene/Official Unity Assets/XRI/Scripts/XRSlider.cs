@@ -138,7 +138,7 @@ namespace MikeNspired.UnityXRHandPoser
         void SetValue(float value)
         {
             m_Value = value;
-            m_OnValueChange.Invoke(remap(0,1,m_RemapValueMin,m_RemapValueMax,m_Value));
+            m_OnValueChange?.Invoke(remap(0,1,m_RemapValueMin,m_RemapValueMax,m_Value));
         }
 
         void OnDrawGizmosSelected()

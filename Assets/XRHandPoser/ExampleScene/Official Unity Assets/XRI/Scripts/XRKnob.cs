@@ -215,7 +215,6 @@ namespace MikeNspired.UnityXRHandPoser
         {
             m_Interactor = args.interactorObject;
             m_Controller = m_Interactor.transform.GetComponentInParent<ActionBasedController>();
-            Debug.Log(m_Controller);
             m_PositionAngles.Reset();
             m_UpVectorAngles.Reset();
             m_ForwardVectorAngles.Reset();

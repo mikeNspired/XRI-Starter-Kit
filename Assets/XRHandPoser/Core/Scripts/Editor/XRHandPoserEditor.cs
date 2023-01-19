@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;

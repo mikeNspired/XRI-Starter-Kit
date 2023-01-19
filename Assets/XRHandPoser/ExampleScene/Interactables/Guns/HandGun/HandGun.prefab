@@ -445,6 +445,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0434d71d3368ea849bf51d3fbbcbb4c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  audioSource: {fileID: 1582212272}
+  audioClips: []
+  minPitch: -0.1
+  maxPitch: 0.1
+  minVolume: -0.1
+  maxVolume: 0.1
+  randomize: 1
+  playOnAwake: 0
+  playOnlyIfClipFinished: 0
+  playAsOneShot: 0
+  destroyAfterPlaying: 0
   interactable: {fileID: 220048107}
 --- !u!114 &1582212273
 MonoBehaviour:
@@ -1366,7 +1377,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: c1e5bc75c55010242b08ac81d095f371, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1660,6 +1671,8 @@ MonoBehaviour:
   infiniteAmmo: 0
   hapticDuration: 0.05
   hapticStrength: 1
+  fireSpeed: 0.25
+  automaticFiring: 0
   BulletFiredEvent:
     m_PersistentCalls:
       m_Calls:
@@ -1705,9 +1718,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  fireSpeed: 0.25
-  fireTimer: 0
-  isFiring: 0
 --- !u!114 &2271206862250411919
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1806,7 +1816,7 @@ MonoBehaviour:
   m_SnapToColliderVolume: 1
   m_ReinitializeDynamicAttachEverySingleGrab: 1
   m_AttachEaseInTime: 0.15
-  m_MovementType: 1
+  m_MovementType: 2
   m_VelocityDamping: 1
   m_VelocityScale: 1
   m_AngularVelocityDamping: 1
@@ -1966,7 +1976,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canInventory: 1
   canDistanceGrab: 1
-  parentToPlayerOnGrabForSmoothMovement: 1
 --- !u!54 &2271206862250411918
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2341,6 +2350,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0434d71d3368ea849bf51d3fbbcbb4c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  audioSource: {fileID: 5387411157997976039}
+  audioClips: []
+  minPitch: -0.1
+  maxPitch: 0.1
+  minVolume: -0.1
+  maxVolume: 0.1
+  randomize: 1
+  playOnAwake: 0
+  playOnlyIfClipFinished: 0
+  playAsOneShot: 0
+  destroyAfterPlaying: 0
   interactable: {fileID: 2271206862250411919}
 --- !u!114 &5387411157997976038
 MonoBehaviour:

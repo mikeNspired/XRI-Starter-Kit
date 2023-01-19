@@ -4,21 +4,20 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
-    public class ClimbGrabPoint : MonoBehaviour
+    public class ClimbGrabPoint : VelocityTracker
     {
-        private XRGrabInteractable xrGrabInteractable;
-        private PlayerClimbingXR playerClimbingXr;
+        [SerializeField] private XRBaseInteractable xrGrabInteractable;
+        [SerializeField] private PlayerClimbingXR playerClimbingXR;
         private XRBaseController xRController;
         private XRDirectInteractor xRDirectInteractor;
         private new Camera camera;
         public float hapticDuration = .1f;
         public float hapticStrength = .5f;
-        [SerializeField] private VelocityTracker velocityTracker;
 
-        private void Start()
+        protected new void Start()
         {
-            playerClimbingXr = FindObjectOfType<PlayerClimbingXR>();
-            xrGrabInteractable = GetComponent<XRGrabInteractable>();
+            base.Start();
+            OnValidate();
             xrGrabInteractable.onSelectEntered.AddListener(OnSelect);
             xrGrabInteractable.onSelectExited.AddListener(OnSelectExit);
             camera = Camera.main;
@@ -26,8 +25,10 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnValidate()
         {
-            if (velocityTracker == null)
-                velocityTracker = GetComponent<VelocityTracker>();
+            if (!playerClimbingXR)
+                playerClimbingXR = FindObjectOfType<PlayerClimbingXR>();
+            if (!xrGrabInteractable)
+                xrGrabInteractable = GetComponent<XRBaseInteractable>();
         }
 
         private void OnSelect(XRBaseInteractor interactor)
@@ -39,19 +40,17 @@ namespace MikeNspired.UnityXRHandPoser
             if (xRDirectInteractor)
                 SetClimberHand(xRController);
 
-            if (velocityTracker)
-            {
-                //controllerVelocity.SetController(interactor.transform);
-                velocityTracker.SetTrackedObject(interactor.GetComponentInParent<XROrigin>().transform);
-                velocityTracker.StartTracking();
-            }
+
+            //controllerVelocity.SetController(interactor.transform);
+            SetTrackedObject(interactor.GetComponentInParent<XROrigin>().transform);
+            StartTracking();
 
             interactor.GetComponentInParent<XRBaseController>().SendHapticImpulse(hapticStrength, hapticDuration);
         }
 
         private void SetClimberHand(XRBaseController controller)
         {
-            playerClimbingXr.SetClimbHand(controller);
+            playerClimbingXR.SetClimbHand(controller);
         }
 
         private void OnSelectExit(XRBaseInteractor interactor)
@@ -61,12 +60,10 @@ namespace MikeNspired.UnityXRHandPoser
 
             if (xRDirectInteractor)
             {
-                playerClimbingXr.RemoveClimbHand(xRController);
-                if (velocityTracker)
-                {
-                    playerClimbingXr.SetReleasedVelocity(velocityTracker.CurrentSmoothedVelocity);
-                    velocityTracker.StopTracking();
-                }
+                playerClimbingXR.RemoveClimbHand(xRController);
+
+                playerClimbingXR.SetReleasedVelocity(CurrentSmoothedVelocity);
+                StopTracking();
             }
         }
     }
