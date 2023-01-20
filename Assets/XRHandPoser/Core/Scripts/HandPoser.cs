@@ -1,6 +1,7 @@
 ﻿// Author MikeNspired. 
 using System.Linq;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -118,7 +119,11 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void CreateTransforms()
         {
-            CreateGrabTransform(ref grabAttachPoints, transform, nameof(grabAttachPoints));
+            if (transform.GetComponent<XRBaseInteractable>())
+                CreateGrabTransform(ref grabAttachPoints, transform, nameof(grabAttachPoints));
+            else
+                grabAttachPoints = transform;
+
             CreateGrabTransform(ref leftHandAttach, grabAttachPoints, nameof(leftHandAttach));
             CreateGrabTransform(ref rightHandAttach, grabAttachPoints, nameof(rightHandAttach));
 
@@ -181,7 +186,7 @@ namespace MikeNspired.UnityXRHandPoser
             
             hand = Instantiate(handPrefab);
             hand.name = hand.name.Replace("(Clone)", "").Trim();
-            hand.transform.parent = transform;
+            hand.transform.parent = grabAttachPoints;
             hand.transform.localPosition = Vector3.zero;
             hand.transform.localEulerAngles = Vector3.zero;
             hand.SetBones();
