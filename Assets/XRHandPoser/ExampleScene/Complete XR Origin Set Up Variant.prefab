@@ -1112,7 +1112,7 @@ PrefabInstance:
     - target: {fileID: 4134505312059479865, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4134505312059479865, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
@@ -1482,7 +1482,7 @@ PrefabInstance:
     - target: {fileID: 7313654230448209575, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
       propertyPath: m_Name
-      value: Complete XR Origin Set Up
+      value: Complete XR Origin Set Up Variant
       objectReference: {fileID: 0}
     - target: {fileID: 7313654230448209575, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
@@ -5307,11 +5307,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 7177199588867152965, guid: 716f04dfda0546543adcd047a6e0ab7b,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2098438971}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 716f04dfda0546543adcd047a6e0ab7b, type: 3}
 --- !u!114 &6100707055042254552 stripped
 MonoBehaviour:
@@ -5319,7 +5315,7 @@ MonoBehaviour:
     type: 3}
   m_PrefabInstance: {fileID: 3976845878962080414}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6100707055042254555}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cd2840027d898a2429c81034a0e40c6b, type: 3}
@@ -5331,26 +5327,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 3976845878962080414}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &6100707055042254555 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7177199588867152965, guid: 716f04dfda0546543adcd047a6e0ab7b,
-    type: 3}
-  m_PrefabInstance: {fileID: 3976845878962080414}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2098438971
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6100707055042254555}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 995e7e53aa4fea14685e128a8e82efe0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  note: The current XRToolKit from Unity only supports auto release and grabbing
-    using the action state "State Change" and will be fixed in their next release.
 --- !u!1001 &3976845879417650122
 PrefabInstance:
   m_ObjectHideFlags: 0
