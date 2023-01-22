@@ -1,4 +1,4 @@
-﻿// Copyright (c) MikeNspired. All Rights Reserved.
+﻿// Author MikeNspired. 
 
 using System;
 using System.Collections;
@@ -29,13 +29,14 @@ namespace MikeNspired.UnityXRHandPoser
             OnValidate();
             GetComponent<XRGrabInteractable>().onSelectEntered.AddListener(x => OnGrab());
             GetComponent<XRGrabInteractable>().onSelectExited.AddListener(x => isBeingGrabbed = false);
+            GetComponent<XRGrabInteractable>().onSelectExited.AddListener(x => ResetToGrabbableObject());
         }
 
         private void OnGrab()
         {
             isBeingGrabbed = true;
             collider.isTrigger = false;
-            rigidBody.isKinematic = false;
+            rigidBody.isKinematic = true;
         }
 
         private void OnEnable()
@@ -67,11 +68,13 @@ namespace MikeNspired.UnityXRHandPoser
         {
             collider.isTrigger = true;
             rigidBody.isKinematic = true;
-            rigidBody.velocity = Vector3.zero;
-            rigidBody.angularVelocity = Vector3.zero;
+            rigidBody.useGravity = true;
             
             EnableDistanceGrabbing(false);
         }
+        
+        
+        //TODO remove this method
         private void EnableDistanceGrabbing(bool state)
         {
             if (state)

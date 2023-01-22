@@ -1,9 +1,4 @@
-﻿// Copyright (c) MikeNspired. All Rights Reserved.
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using MikeNspired.UnityXRHandPoser;
+﻿// Author MikeNspired. 
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -12,8 +7,7 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class XRHandPoserHoverActivate : HandPoser
     {
-        [SerializeField] private XRGrabInteractable mainInteractable;
-        private Rigidbody rb;
+        [SerializeField] private XRBaseInteractable mainInteractable;
         private HandAnimator currentHand;
 
         public UnityEvent OnActivate;
@@ -29,27 +23,31 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnValidate()
         {
-            if (!rb)
-                rb = GetComponent<Rigidbody>();
             if (!mainInteractable)
-                mainInteractable = GetComponentInParent<XRGrabInteractable>();
+                mainInteractable = GetComponentInParent<XRBaseInteractable>();
         }
 
         private void OnTriggerEnter(Collider other)
         {
             if (currentHand) return;
-            var hand = other.GetComponent<HandReference>();
+            var hand = other.GetComponentInParent<HandReference>();
             if (!hand) return;
-            if (hand.GetComponent<XRDirectInteractor>().selectTarget) return;
+            if (hand.GetComponentInChildren<XRDirectInteractor>().selectTarget) return;
+            
+            currentHand = hand.Hand;
 
-            currentHand = hand.hand;
-
-            SetAttachForInstantaneous(currentHand);
             BeginNewHandPoses(currentHand);
             OnActivate.Invoke();
             currentHand.NewPoseStarting += ReleaseHand;
         }
-
+        
+        private void OnTriggerExit(Collider other)
+        {
+            var hand = other.GetComponentInParent<HandReference>();
+            if (!hand) return;
+            if (hand.GetComponentInChildren<XRDirectInteractor>().selectTarget) return;
+            ReleaseHand();
+        }
 
         private void ReleaseHand(bool isGrabbingItem)
         {
@@ -65,27 +63,7 @@ namespace MikeNspired.UnityXRHandPoser
             currentHand.NewPoseStarting -= ReleaseHand;
             currentHand = null;
             Release();
-            rb.ResetCenterOfMass();
             OnDeactivate.Invoke();
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            var hand = other.GetComponent<HandReference>();
-            if (!hand) return;
-            if (hand.GetComponent<XRDirectInteractor>().selectTarget) return;
-            ReleaseHand();
-        }
-
-
-        private void SetAttachForInstantaneous(HandAnimator hand)
-        {
-            if (!hand) return;
-            if (!CheckIfCorrectHand(hand)) return;
-
-            //Instantaneous movement uses the rigidbody center of mass as the attachment point. This updates that to the left or right attachpoint
-            var position = hand.handType == LeftRight.Left ? leftHandAttach.position : rightHandAttach.position;
-            rb.transform.InverseTransformPoint(position);
         }
 
         private void MoveHandToPoseTransforms(HandAnimator hand)

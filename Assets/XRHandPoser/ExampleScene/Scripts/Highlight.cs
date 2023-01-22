@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
@@ -11,15 +8,18 @@ namespace MikeNspired.UnityXRHandPoser
         public XRGrabInteractable xrGrabInteractable;
         public GameObject highlightModel;
 
-        private bool disableHighlighting;
+        private bool canHighlight;
 
-        // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
             OnValidate();
             highlightModel.SetActive(false);
             xrGrabInteractable.onSelectEntered.AddListener(x => DisableHighlighting());
             xrGrabInteractable.onSelectExited.AddListener(x => EnableHighlighting());
+            
+            //TODO add highlight on hover
+            // xrGrabInteractable.onHoverEnter.AddListener(x => HighlightMesh());
+            // xrGrabInteractable.onHoverExit.AddListener(x => RemoveHighlight());
         }
 
         private void OnValidate()
@@ -30,18 +30,18 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void DisableHighlighting()
         {
-            disableHighlighting = true;
+            canHighlight = true;
             RemoveHighlight();
         }
 
         public void EnableHighlighting()
         {
-            disableHighlighting = false;
+            canHighlight = false;
         }
 
         public void HighlightMesh()
         {
-            if (!disableHighlighting)
+            if (!canHighlight)
                 highlightModel.SetActive(true);
         }
 

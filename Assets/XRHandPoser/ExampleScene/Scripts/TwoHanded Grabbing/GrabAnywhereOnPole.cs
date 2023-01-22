@@ -1,37 +1,29 @@
-﻿using MikeNspired.UnityXRHandPoser;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.XR;
+﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class GrabAnywhereOnPole : MonoBehaviour
     {
-        [SerializeField] private XRGrabInteractable Interactable = null;
+        [SerializeField] private XRGrabInteractable Interactable;
+        [SerializeField] private Transform GrabbableHolder,LeftHandGrip, RightHandGrip;
+        [SerializeField] private Vector2 length;
 
-        [SerializeField] private Transform GrabbableHolder = null;
-        [SerializeField] private Transform LeftHandGrip = null, RightHandGrip = null;
-
-        [SerializeField] private bool rotateToFollowHand = true;
-
-        [SerializeField] private float maxHeight = 0;
-        [SerializeField] private float minHeight = 0;
-
-        private Transform LeftHand, RightHand, currentGrabber;
-        private bool leftFollow = true;
-        private bool rightFollow = true;
+        private Transform LeftHand, RightHand;
+        private HandReference currentHandGrabbing;
+        private bool leftFollow = true, rightFollow = true;
 
 
         private void Start()
         {
             OnValidate();
-            Interactable.onSelectEntered.AddListener(controller => EnableFollowOnHand(controller, false));
-            Interactable.onSelectEntered.AddListener(SetHand);
-            Interactable.onSelectExited.AddListener(controller => EnableFollowOnHand(controller, true));
-            Interactable.onSelectExited.AddListener(ReleaseHand);
+            Interactable.selectEntered.AddListener(controller => EnableFollowOnHand(controller.interactorObject, false));
+            Interactable.selectExited.AddListener(controller => EnableFollowOnHand(controller.interactorObject, true));
+            Interactable.selectExited.AddListener(ReleaseHand);
+            Interactable.attachTransform = GrabbableHolder;
+            LeftHandGrip.SetParent(transform);
+            RightHandGrip.SetParent(transform);
         }
-
 
         private void OnValidate()
         {
@@ -51,50 +43,40 @@ namespace MikeNspired.UnityXRHandPoser
 
             newPosition += GrabbableHolder.position;
 
-
             grip.position = newPosition;
             grip.localPosition = new Vector3(grip.localPosition.x,
-                Mathf.Clamp(grip.localPosition.y, -minHeight, maxHeight), grip.localPosition.z);
+                Mathf.Clamp(grip.localPosition.y, -length.x, length.y), grip.localPosition.z);
+        }
 
+        private void EnableFollowOnHand(IXRSelectInteractor hand, bool state)
+        {
+            currentHandGrabbing = hand.transform.GetComponentInParent<HandReference>();
 
-            if (rotateToFollowHand)
+            if (currentHandGrabbing.LeftRight == LeftRight.Left)
             {
-                grip.rotation = Quaternion.LookRotation(-((hand.position) - grip.transform.position), transform.up);
-            }
-        }
-
-        private bool CheckIfPositionInHeightConstraints(Vector3 newPosition)
-        {
-            return newPosition.y >= (transform.position - transform.up * minHeight).y
-                   && newPosition.y <= (transform.position + transform.up * maxHeight).y;
-        }
-
-        private void EnableFollowOnHand(XRBaseInteractor hand, bool state)
-        {
-            currentGrabber = hand.transform;
-            if (hand.GetComponent<HandReference>().LeftRight == LeftRight.Left)
                 leftFollow = state;
-            else
-                rightFollow = state;
-        }
-
-        private void SetHand(XRBaseInteractor controller)
-        {
-            currentGrabber = controller.transform;
-        }
-
-        private void ReleaseHand(XRBaseInteractor controller)
-        {
-            if (currentGrabber == controller.transform)
-            {
-                currentGrabber = null;
-                ReleaseHand(controller.GetComponent<HandReference>());
             }
+            else
+            {
+                rightFollow = state;
+            }
+        }
+
+        private void ReleaseHand(SelectExitEventArgs x)
+        {
+            var controllerHand = x.interactorObject.transform.GetComponentInParent<HandReference>();
+            if (currentHandGrabbing != controllerHand) return;
+            if (controllerHand.Hand.handType == LeftRight.Left)
+                leftFollow = true;
+            else
+                rightFollow = true;
+
+            currentHandGrabbing = null;
         }
 
         private void ReleaseHand(HandReference hand)
         {
-            if (hand.hand.handType == LeftRight.Left)
+            if (hand.Hand.handType == LeftRight.Left)
             {
                 LeftHand = null;
                 leftFollow = true;
@@ -104,26 +86,26 @@ namespace MikeNspired.UnityXRHandPoser
                 RightHand = null;
                 rightFollow = true;
             }
+            currentHandGrabbing = null;
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            HandReference hand = other.GetComponent<HandReference>();
+            HandReference hand = other.GetComponentInParent<HandReference>();
 
             if (!hand) return;
 
-            if (hand.hand.handType == LeftRight.Left)
+            if (hand.Hand.handType == LeftRight.Left)
                 LeftHand = other.transform;
             else
                 RightHand = other.transform;
         }
 
-
         private void OnTriggerExit(Collider other)
         {
-            HandReference hand = other.GetComponent<HandReference>();
+            HandReference hand = other.GetComponentInParent<HandReference>();
             if (!hand) return;
-            if (hand.transform == currentGrabber) return;
+            if (hand == currentHandGrabbing) return;
             ReleaseHand(hand);
         }
 
@@ -133,9 +115,9 @@ namespace MikeNspired.UnityXRHandPoser
 
             Gizmos.matrix = GrabbableHolder.parent.localToWorldMatrix;
             Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(localPosition - Vector3.up * minHeight, localPosition + Vector3.up * maxHeight);
-            Gizmos.DrawWireSphere(localPosition - Vector3.up * minHeight, .005f);
-            Gizmos.DrawWireSphere(localPosition + Vector3.up * maxHeight, .005f);
+            Gizmos.DrawLine(localPosition - Vector3.up * length.x, localPosition + Vector3.up * length.y);
+            Gizmos.DrawWireSphere(localPosition - Vector3.up * length.x, .025f);
+            Gizmos.DrawWireSphere(localPosition + Vector3.up * length.y, .025f);
         }
     }
 }

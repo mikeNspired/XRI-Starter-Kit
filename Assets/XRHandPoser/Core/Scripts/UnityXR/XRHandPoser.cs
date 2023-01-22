@@ -1,9 +1,7 @@
-// Copyright (c) MikeNspired. All Rights Reserved.
+// Author MikeNspired. 
 
-using System;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
-
 namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
@@ -13,81 +11,55 @@ namespace MikeNspired.UnityXRHandPoser
     /// </summary>
     public class XRHandPoser : HandPoser
     {
-        public XRGrabInteractable interactable;
-        public bool WaitForHandToAnimateToPosition = true;
-        public bool DisableHandAttachTransforms = false;
-
-        private Rigidbody rb;
-
+        public XRBaseInteractable interactable;
+        public bool MaintainHandOnObject = true;
+        public bool WaitTillEaseInTimeToMaintainPosition = true;
+        public bool overrideEaseTime = false;
+        public float easeInTimeOverride = 0;
         protected override void Awake()
         {
             base.Awake();
-
             OnValidate();
-
             SubscribeToSelection();
         }
 
         private void SubscribeToSelection()
         {
             //Set hand animation on grab
-            interactable.onSelectEntered.AddListener(x => SetAttachForInstantaneous(x.GetComponent<HandReference>()?.hand));
-            interactable.onSelectEntered.AddListener(x => BeginNewHandPoses(x.GetComponent<HandReference>()?.hand));
+            interactable.selectEntered.AddListener(TryStartPosing);
 
             //Set to default animations when item is released
-            interactable.onSelectExited.AddListener(x => Release());
-            interactable.onSelectExited.AddListener(x => rb.ResetCenterOfMass());
+            interactable.selectExited.AddListener(TryReleaseHand);
         }
 
-        private void OnDrawGizmosSelected()
+        private void TryStartPosing(SelectEnterEventArgs x)
         {
-            // interactable = GetComponent<XRGrabInteractable>();
-            /// rb = interactable.GetComponent<Rigidbody>();
-        }
-
-        private void OnValidate()
-        {
-            if (!interactable)
-                interactable = GetComponent<XRGrabInteractable>();
-
-            if (!interactable)
-                Debug.LogWarning(gameObject + " XRGrabPoser does not have an XRGrabInteractable assigned." + "  (Parent name) " + transform.parent);
-
-            if (!rb && interactable)
-                rb = interactable.GetComponent<Rigidbody>();
-        }
-
-        private void SetAttachForInstantaneous(HandAnimator hand)
-        {
+            var hand = x.interactorObject.transform.GetComponentInParent<HandReference>();
             if (!hand) return;
-            if (interactable.movementType != XRBaseInteractable.MovementType.Instantaneous) return;
-            if (!CheckIfPoseExistForHand(hand)) return;
+            BeginNewHandPoses(hand.Hand);
 
-            //Instantaneous movement uses the rigidbody center of mass as the attachment point. This updates that to the left or right attachpoint
-            var position = hand.handType == LeftRight.Left ? leftHandAttach.position : rightHandAttach.position;
-            position = rb.transform.InverseTransformPoint(position);
-            interactable.GetComponent<Rigidbody>().centerOfMass = position;
-            WaitForHandToAnimateToPosition = false;
+        }
+
+        private void TryReleaseHand(SelectExitEventArgs x)
+        {
+            if (!x.interactorObject.transform.GetComponentInParent<HandReference>()) return;
+            Release();
         }
 
         private void MoveHandToPoseTransforms(HandAnimator hand)
         {
             //Determines if the left or right hand is grabbed, and then sends over the proper attachment point to be assigned to the XRGrabInteractable.
             var attachPoint = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
-            hand.MoveHandToTarget(attachPoint, interactable.attachEaseInTime, WaitForHandToAnimateToPosition);
+            hand.MoveHandToTarget(attachPoint, GetEaseInTime(), WaitTillEaseInTimeToMaintainPosition);
         }
 
         protected override void BeginNewHandPoses(HandAnimator hand)
         {
             if (!hand || !CheckIfPoseExistForHand(hand)) return;
 
-            //Check if left or right hand to set attachment point
-            // if (!DisableHandAttachTransforms)
-            //     interactable.attachTransform = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
-
             base.BeginNewHandPoses(hand);
 
-             MoveHandToPoseTransforms(hand);
+            if (MaintainHandOnObject) MoveHandToPoseTransforms(hand);
         }
 
         private bool CheckIfPoseExistForHand(HandAnimator hand)
@@ -97,6 +69,27 @@ namespace MikeNspired.UnityXRHandPoser
             if (rightHandPose && hand.handType == LeftRight.Right)
                 return true;
             return false;
+        }
+
+        private float GetEaseInTime()
+        {
+            float time = 0;
+            interactable.TryGetComponent(out XRGrabInteractable xrGrabInteractable);
+            if (xrGrabInteractable)
+                time = xrGrabInteractable.attachEaseInTime;
+            if (overrideEaseTime)
+                time = easeInTimeOverride;
+
+            return time;
+        }
+        private void OnValidate()
+        {
+            if (!interactable)
+                interactable = GetComponent<XRBaseInteractable>();
+            if (!interactable)
+                interactable = GetComponentInParent<XRBaseInteractable>();
+            if (!interactable)
+                Debug.LogWarning(gameObject + " XRGrabPoser does not have an XRGrabInteractable assigned." + "  (Parent name) " + transform.parent);
         }
     }
 }

@@ -1,6 +1,7 @@
-﻿// Copyright (c) MikeNspired. All Rights Reserved.
+﻿// Author MikeNspired. 
 using System.Linq;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -68,7 +69,6 @@ namespace MikeNspired.UnityXRHandPoser
             if (!currentHandGrabbing) return;
 
             currentHandGrabbing.ReturnHandToPlayer();
-            currentHandGrabbing.ReleaseItemPoses();
             currentHandGrabbing.ReturnAnimationsToOriginal();
             currentHandGrabbing.ReturnToDefaultPosing();
             currentHandGrabbing = null;
@@ -78,7 +78,7 @@ namespace MikeNspired.UnityXRHandPoser
         //Tells the hand to begin the new poses
         private void SetToPose(HandAnimator hand, Pose primaryPose, Pose animPose)
         {
-            hand.BeginNewPoses(primaryPose, animPose);
+            hand.BeginNewPoses(primaryPose, animPose, true);
         }
 
 
@@ -119,7 +119,11 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void CreateTransforms()
         {
-            CreateGrabTransform(ref grabAttachPoints, transform, nameof(grabAttachPoints));
+            if (transform.GetComponent<XRBaseInteractable>())
+                CreateGrabTransform(ref grabAttachPoints, transform, nameof(grabAttachPoints));
+            else
+                grabAttachPoints = transform;
+
             CreateGrabTransform(ref leftHandAttach, grabAttachPoints, nameof(leftHandAttach));
             CreateGrabTransform(ref rightHandAttach, grabAttachPoints, nameof(rightHandAttach));
 
@@ -182,7 +186,7 @@ namespace MikeNspired.UnityXRHandPoser
             
             hand = Instantiate(handPrefab);
             hand.name = hand.name.Replace("(Clone)", "").Trim();
-            hand.transform.parent = transform;
+            hand.transform.parent = grabAttachPoints;
             hand.transform.localPosition = Vector3.zero;
             hand.transform.localEulerAngles = Vector3.zero;
             hand.SetBones();

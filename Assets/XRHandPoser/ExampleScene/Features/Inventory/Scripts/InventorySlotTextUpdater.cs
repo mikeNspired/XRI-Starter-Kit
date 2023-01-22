@@ -1,77 +1,75 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using MikeNspired.UnityXRHandPoser;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
 
-public class InventorySlotTextUpdater : MonoBehaviour
+namespace MikeNspired.UnityXRHandPoser
 {
-    public TextMeshProUGUI currentCount;
-    public TextMeshProUGUI maxCount;
-
-    private InventorySlot inventorySlot;
-
-    void Start()
+    public class InventorySlotTextUpdater : MonoBehaviour
     {
-        OnValidate();
-        inventorySlot.inventorySlotUpdated.AddListener(CheckTypes);
-        CheckTypes();
-    }
+        public TextMeshProUGUI currentCount;
+        public TextMeshProUGUI maxCount;
 
-    private void CheckTypes()
-    {
-        if (!inventorySlot.CurrentSlotItem) return;
+        private InventorySlot inventorySlot;
 
-        var projectile = inventorySlot.CurrentSlotItem.GetComponent<ProjectileWeapon>();
-        if (projectile)
+        void Start()
         {
-            CheckAmmo(projectile);
-            return;
+            OnValidate();
+            inventorySlot.inventorySlotUpdated.AddListener(CheckTypes);
+            CheckTypes();
         }
-        else
+
+        private void CheckTypes()
         {
-            HideText();
-        }
-    }
+            if (!inventorySlot.CurrentSlotItem) return;
 
-    private void CheckAmmo(ProjectileWeapon projectile)
-    {
-        if (!projectile.magazineAttach)
+            var projectile = inventorySlot.CurrentSlotItem.GetComponent<ProjectileWeapon>();
+            if (projectile)
+            {
+                CheckAmmo(projectile);
+                return;
+            }
+            else
+            {
+                HideText();
+            }
+        }
+
+        private void CheckAmmo(ProjectileWeapon projectile)
         {
-            SetTextToInfinity();
+            if (!projectile.magazineAttach)
+            {
+                SetTextToInfinity();
+            }
+            else
+            {
+                Magazine magazine = projectile.magazineAttach.Magazine;
+                if (magazine)
+                    SetText(magazine.CurrentAmmo.ToString(), magazine.MaxAmmo.ToString());
+            }
         }
-        else
+
+        private void SetText(string currentValue, string maxValue)
         {
-            Magazine magazine = projectile.magazineAttach.Magazine;
-            if (magazine)
-                SetText(magazine.CurrentAmmo.ToString(), magazine.MaxAmmo.ToString());
+            currentCount.text = currentValue;
+            maxCount.text = "/" + maxValue;
         }
-    }
 
-    private void SetText(string currentValue, string maxValue)
-    {
-        currentCount.text = currentValue;
-        maxCount.text = "/" + maxValue;
-    }
+        private void HideText()
+        {
+            currentCount.text = "";
+            maxCount.text = "";
+        }
 
-    private void HideText()
-    {
-        currentCount.text = "";
-        maxCount.text = "";
-    }
-
-    private void SetTextToInfinity()
-    {
-        currentCount.text = "";
-        maxCount.text = "∞";
-    }
+        private void SetTextToInfinity()
+        {
+            currentCount.text = "";
+            maxCount.text = "∞";
+        }
 
 
-    private void OnValidate()
-    {
-        if (!inventorySlot)
-            inventorySlot = GetComponent<InventorySlot>();
+        private void OnValidate()
+        {
+            if (!inventorySlot)
+                inventorySlot = GetComponent<InventorySlot>();
+        }
     }
 }

@@ -1,9 +1,6 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
@@ -41,7 +38,6 @@ namespace MikeNspired.UnityXRHandPoser
 
         //Animation
         private int disableAnimatorHash, enableAnimatorHash, onHoverAnimatorHash, resetAnimatorHash;
-
 
         private bool isBusy, isDisabling;
         private Animator addItemAnimator, hasItemAnimator;
@@ -140,18 +136,19 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnDisable() => CancelInvoke(nameof(SetNewItemModel));
 
-        public void TryInteractWithSlot(XRBaseInteractor controller)
+        public void TryInteractWithSlot(XRDirectInteractor controller)
         {
             if (isBusy || isDisabling) return;
             InteractWithSlot(controller);
         }
 
 
-        private void InteractWithSlot(XRBaseInteractor controller)
+        private void InteractWithSlot(XRDirectInteractor controller)
         {
             if (animateItemToSlotCoroutine != null) StopCoroutine(animateItemToSlotCoroutine);
-
-            var itemHandIsHolding = controller.selectTarget;
+            
+            XRBaseInteractable itemHandIsHolding = null;
+            if(controller.hasSelection) itemHandIsHolding = controller.selectTarget;
 
             //Check if item is allowed to be added to inventory
             if (itemHandIsHolding)
@@ -229,7 +226,7 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 if (boundCenterTransform)
                     boundCenterTransform.localScale = Vector3.Lerp(boundCenterTransform.localScale, Vector3.zero, timer / animationLength);
-                yield return new WaitForSeconds(Time.deltaTime);
+                yield return null;
                 timer += Time.deltaTime;
             }
             
@@ -266,7 +263,7 @@ namespace MikeNspired.UnityXRHandPoser
             yield return null;
 
             item.GetComponent<OnGrabEnableDisable>()?.EnableAll(); //Force collider on to get collision events
-            item.transform.position += Vector3.one * 9999;
+            item.transform.position = Vector3.down * 9999;
 
             yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
 

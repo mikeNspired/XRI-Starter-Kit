@@ -1,6 +1,5 @@
-﻿// Copyright (c) MikeNspired. All Rights Reserved.
+﻿// Author MikeNspired. 
 
-using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR;
@@ -14,58 +13,59 @@ namespace MikeNspired.UnityXRHandPoser
     /// </summary>
     public class XRControllerButtons : MonoBehaviour
     {
-        [SerializeField] private XRController xrController;
+        [SerializeField] private ActionBasedController actionBasedController;
 
+        public UnityEvent OnTriggerPressed;
+        public UnityEvent OnTriggerRelease;
         public UnityEventFloat OnTriggerValue;
         public UnityEvent OnGripPressed;
         public UnityEvent OnGripRelease;
+        public UnityEventFloat OnGripValue;
 
-        public bool gripValue;
+        public float gripValue;
         public float triggerValue;
 
         private InputDevice inputDevice;
-        private bool IsGripped;
-  
+        public bool IsGripped, IsTriggered;
+
         private void Start()
         {
             OnValidate();
-            if (xrController) 
-                inputDevice = xrController.inputDevice;
-            else
+            if (!actionBasedController)
                 enabled = false;
+
+            actionBasedController.selectAction.reference.GetInputAction().performed += x => Gripped(true);
+            actionBasedController.selectAction.reference.GetInputAction().canceled += x => Gripped(false);
+            actionBasedController.activateAction.reference.GetInputAction().performed += x => Triggered(true);
+            actionBasedController.activateAction.reference.GetInputAction().canceled += x => Triggered(false);
         }
 
         private void OnValidate()
         {
-            if (!xrController) xrController = GetComponentInParent<XRController>();
+            if (!actionBasedController) actionBasedController = GetComponentInParent<ActionBasedController>();
+        }
+
+        private void Gripped(bool state)
+        {
+            IsGripped = state;
+            if (state) OnGripPressed.Invoke();
+            else OnGripRelease.Invoke();
+        }
+
+        private void Triggered(bool state)
+        {
+            IsTriggered = state;
+            if (state) OnTriggerPressed.Invoke();
+            else OnTriggerRelease.Invoke();
         }
 
         private void Update()
         {
-            inputDevice = xrController.inputDevice;
-            inputDevice.TryGetFeatureValue(CommonUsages.trigger, out triggerValue);
+            triggerValue = actionBasedController.activateActionValue.action.ReadValue<float>();
+            gripValue = actionBasedController.selectActionValue.action.ReadValue<float>();
 
             OnTriggerValue.Invoke(triggerValue);
-
-            if (inputDevice.TryGetFeatureValue(CommonUsages.gripButton, out gripValue))
-            {
-                if (!IsGripped && gripValue)
-                {
-                    IsGripped = true;
-                    OnGripPressed.Invoke();
-                }
-                else if (IsGripped && !gripValue)
-                {
-                    IsGripped = false;
-                    OnGripRelease.Invoke();
-                }
-            }
+            OnGripValue.Invoke(gripValue);
         }
-    }
-
-
-    [System.Serializable]
-    public class UnityEventFloat : UnityEvent<float>
-    {
     }
 }

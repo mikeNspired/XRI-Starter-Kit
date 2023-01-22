@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
-using Pose = MikeNspired.UnityXRHandPoser.Pose;
 
 namespace MikeNspired.UnityXRHandPoser.Editor
 {
@@ -21,6 +19,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
         private HandAnimator mainScript;
 
         private bool showReferencePoses;
+        private bool showFingerSliders;
         private bool hasLeftHand;
         private bool hasRightHand;
         private AnimBool customizeValues;
@@ -29,7 +28,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
 
         protected void OnEnable()
         {
-            mainScript = (HandAnimator) target;
+            mainScript = (HandAnimator)target;
 
             handType = serializedObject.FindProperty("handType");
             drawHelperSpheres = serializedObject.FindProperty("drawHelperSpheres");
@@ -52,6 +51,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             DrawCurrentPoses();
             DrawSetHandPoserAnimations();
             ReferencePoses();
+            FingerSliders();
             serializedObject.ApplyModifiedProperties();
             DrawButtons();
             DrawMessages();
@@ -85,8 +85,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             GUILayout.EndHorizontal();
 
             labelToolTip = new GUIContent("Root Bone", "Root bone of skeleton on hand");
-            mainScript.RootBone = EditorGUILayout.ObjectField(labelToolTip, mainScript.RootBone, typeof(Pose),true ) as Pose;
-
+            mainScript.RootBone = EditorGUILayout.ObjectField(labelToolTip, mainScript.RootBone, typeof(Pose), true) as Pose;
 
             labelToolTip = new GUIContent("Time To New Pose", "Time hand skeleton animates to next pose");
             mainScript.animationTimeToNewPose = EditorGUILayout.FloatField(labelToolTip, mainScript.animationTimeToNewPose);
@@ -210,7 +209,6 @@ namespace MikeNspired.UnityXRHandPoser.Editor
 
             EditorGUILayout.EndFadeGroup();
 
-
             GUI.enabled = mainScript.RootBone;
             var labelToolTip = new GUIContent("Save Pose", "Save current hand position as a new pose");
 
@@ -221,7 +219,6 @@ namespace MikeNspired.UnityXRHandPoser.Editor
 
             GUILayout.EndHorizontal();
         }
-
 
         private void DrawMessages()
         {
@@ -283,6 +280,102 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             Rect horizontalLine = EditorGUILayout.GetControlRect(GUILayout.Height(1f));
             horizontalLine.height = 1f;
             EditorGUI.DrawRect(horizontalLine, Color.black);
+        }
+
+        private float indexValue, middleValue, ringValue, pinkyValue, thumbValue;
+
+        private void FingerSliders()
+        {
+            GUILayout.Space(5f);
+            GUILayout.Label("Finger Sliders", EditorStyles.boldLabel);
+            DrawLine();
+            GUILayout.Space(5f);
+
+            var labelToolTip = new GUIContent("Show Joint Sliders", "Use these sliders to help start a new pose");
+            showFingerSliders = EditorGUILayout.Toggle(labelToolTip, showFingerSliders);
+            customizeValues.value = showFingerSliders;
+            if (EditorGUILayout.BeginFadeGroup(customizeValues.faded))
+            {
+                if (mainScript.defaultPose && mainScript.goalPose)
+                {
+                    if (mainScript.indexTopTransform)
+                        SetSlider("Index Finger", ref indexValue, mainScript.indexTopTransform);
+                    if (mainScript.middleTopTransform)
+                        SetSlider("Middle Finger", ref middleValue, mainScript.middleTopTransform);
+                    if (mainScript.ringTopTransform)
+                        SetSlider("Ring Finger", ref ringValue, mainScript.ringTopTransform);
+                    if (mainScript.pinkyTopTransform)
+                        SetSlider("Pinky Finger", ref pinkyValue, mainScript.pinkyTopTransform);
+                    if (mainScript.thumbTopTransform)
+                        SetSlider("Thumb Finger", ref thumbValue, mainScript.thumbTopTransform);
+                }
+
+                RequiredFields();
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(mainScript);
+            }
+
+            GUILayout.Space(5f);
+            DrawLine();
+            GUILayout.Space(5f);
+
+            EditorGUILayout.EndFadeGroup();
+
+            void SetSlider(string label, ref float value, Transform transform)
+            {
+                GUILayout.BeginHorizontal();
+                EditorGUI.BeginChangeCheck();
+                value = EditorGUILayout.Slider(label, value, 0f, 1f);
+                if (EditorGUI.EndChangeCheck())
+                    mainScript.SetPoseByValue(transform, mainScript.defaultPose, mainScript.goalPose, value);
+                GUILayout.EndHorizontal();
+            }
+
+            void RequiredFields()
+            {
+                EditorGUI.BeginChangeCheck();
+
+                GUILayout.BeginHorizontal();
+                labelToolTip = new GUIContent("Default Pose", "Pose the hand will be in when no buttons are being pressed");
+                mainScript.defaultPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.defaultPose, typeof(Pose), true) as Pose;
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                labelToolTip = new GUIContent("Goal Pose", "Pose the hand will be in when no buttons are being pressed");
+                mainScript.goalPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.goalPose, typeof(Pose), true) as Pose;
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                labelToolTip = new GUIContent("Index Finger Parent Transform", "Root bone of skeleton on hand");
+                mainScript.indexTopTransform = EditorGUILayout.ObjectField(labelToolTip, mainScript.indexTopTransform, typeof(Transform), true) as Transform;
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                labelToolTip = new GUIContent("Middle Finger Parent Transform", "Root bone of skeleton on hand");
+                mainScript.middleTopTransform = EditorGUILayout.ObjectField(labelToolTip, mainScript.middleTopTransform, typeof(Transform), true) as Transform;
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                labelToolTip = new GUIContent("Ring Finger Parent Transform", "Root bone of skeleton on hand");
+                mainScript.ringTopTransform = EditorGUILayout.ObjectField(labelToolTip, mainScript.ringTopTransform, typeof(Transform), true) as Transform;
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                labelToolTip = new GUIContent("Pinky Finger Parent Transform", "Root bone of skeleton on hand");
+                mainScript.pinkyTopTransform = EditorGUILayout.ObjectField(labelToolTip, mainScript.pinkyTopTransform, typeof(Transform), true) as Transform;
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                labelToolTip = new GUIContent("Thumb Finger Parent Transform", "Root bone of skeleton on hand");
+                mainScript.thumbTopTransform = EditorGUILayout.ObjectField(labelToolTip, mainScript.thumbTopTransform, typeof(Transform), true) as Transform;
+                GUILayout.EndHorizontal();
+
+                if (EditorGUI.EndChangeCheck())
+                    EditorUtility.SetDirty(mainScript);
+            }
         }
     }
 }

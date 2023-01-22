@@ -1,4 +1,4 @@
-﻿// Copyright (c) MikeNspired. All Rights Reserved.
+﻿// Author MikeNspired. 
 
 using System;
 using System.Collections;
@@ -17,7 +17,6 @@ namespace MikeNspired.UnityXRHandPoser
         private InputActionReference activationInput;
 
         [SerializeField] private XRDirectInteractor directInteractor = null;
-        [SerializeField] private ControllerInput buttonControllerInput = ControllerInput.gripButton;
         [SerializeField] private DistanceGrabberLineBender lineEffect = null;
         [SerializeField] private AudioRandomize launchAudio = null;
         [SerializeField] private SphereCollider mainHandCollider = null;
@@ -299,12 +298,17 @@ namespace MikeNspired.UnityXRHandPoser
             }
         }
 
-        private void Reset(XRBaseInteractable arg0)
+        private void Reset(XRBaseInteractable x)
         {
             CancelTarget(currentTarget);
             isLaunching = false;
             mainHandCollider.radius = mainHandColliderStartingSize;
+
+            if (!x.TryGetComponent(out Rigidbody rb) || rb.isKinematic) return;
+            rb.velocity = Vector3.zero;
         }
+
+       
 
         private void TryToLaunchItem(Transform target)
         {
@@ -366,8 +370,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (target)
             {
                 StopHighlight(currentTarget);
-                target.GetComponent<Rigidbody>().useGravity = true;
-                target.GetComponent<Rigidbody>().drag = 0;
+                // target.GetComponent<Rigidbody>().drag = 0;
             }
 
             StopLine();
@@ -424,21 +427,15 @@ namespace MikeNspired.UnityXRHandPoser
         private float dragHoldAmount = 0;
 
         private Vector3 velocity;
-
+        private float startingDrag;
         private IEnumerator SimulateProjectile(Transform target)
         {
             var rigidBody = target.GetComponent<Rigidbody>();
-
-            float elapse_time = 0;
-            rigidBody.useGravity = false;
+            startingDrag = rigidBody.drag;
             Vector3 goalPosition = transform.position + Vector3.up * verticalGoalAddOn;
             Vector3 startPosition = target.position;
             Quaternion startRotation = target.rotation;
-
             velocity = goalPosition - target.position;
-
-            //Add velocity for when the lerping action stops the item keeps moving
-            rigidBody.velocity = velocity * velocitySpeedWhenFinished;
 
             //Add some randomRotation to item
             // rigidBody.angularVelocity = UnityEngine.Random.onUnitSphere * randomRotationSpeed;
@@ -447,8 +444,11 @@ namespace MikeNspired.UnityXRHandPoser
 
             mainHandCollider.radius = mainHandColliderSizeGrow;
 
+            float elapse_time = 0;
             while (elapse_time <= newFlightTime)
             {
+                rigidBody.Sleep();
+
                 float currentStep = elapse_time / (newFlightTime);
 
                 //Position
@@ -469,10 +469,10 @@ namespace MikeNspired.UnityXRHandPoser
 
             StartCoroutine(ShrinkCollider());
             rigidBody.drag = dragHoldAmount;
+            rigidBody.velocity = velocity * velocitySpeedWhenFinished;
+            rigidBody.WakeUp();
             yield return new WaitForSeconds(dragTime);
-            rigidBody.drag = 0;
-
-            rigidBody.useGravity = true;
+            rigidBody.drag = startingDrag;
             isLaunching = false;
         }
 
@@ -563,7 +563,6 @@ namespace MikeNspired.UnityXRHandPoser
             CommonUsages.triggerButton,
             CommonUsages.gripButton
         };
-
 
         private void TryToAutoGrab()
         {

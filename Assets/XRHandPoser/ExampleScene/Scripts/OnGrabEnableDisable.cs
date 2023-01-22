@@ -1,7 +1,5 @@
-﻿// Copyright (c) MikeNspired. All Rights Reserved.
+﻿// Author MikeNspired. 
 
-
-using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;

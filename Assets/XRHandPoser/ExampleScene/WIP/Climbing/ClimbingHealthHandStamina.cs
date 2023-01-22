@@ -3,121 +3,101 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class ClimbingHealthHandStamina : MonoBehaviour
+namespace MikeNspired.UnityXRHandPoser
 {
-    public float stamina, maxStamina;
-
-    public float drainRate = .9f, regainRate = 1;
-
-    public List<MeshRenderer> staminaBlocks;
-    public Material hasStaminaMat, noStaminaMat;
-    public bool isDraining, isActive, isDisplayed;
-
-    public UnityEvent OutOfStamina;
-
-
-    private void Start()
+    public class ClimbingHealthHandStamina : MonoBehaviour
     {
-        // foreach (var block in staminaBlocks)
-        // {
-        //     block.material = hasStaminaMat;
-        // }
-        Deactivate();
-    }
+        public float stamina, maxStamina;
+        public float drainRate = .9f, regainRate = 1;
+        public List<MeshRenderer> staminaBlocks;
+        public Material hasStaminaMat, noStaminaMat;
+        public bool isDraining, isActive;
+        public UnityEvent OutOfStamina;
 
-    private void Update()
-    {
-        if (!isDraining)
-            RegainStamina();
-        else
-            DrainStamina();
+        private void Start() => Deactivate();
 
-        SetStaminaColor();
-
-        if (Input.GetKeyDown(KeyCode.A))
-            Deactivate();
-        if (Input.GetKeyDown(KeyCode.D))
-            Activate();
-    }
-
-    public void Activate()
-    {
-        isActive = true;
-        isDraining = true;
-        StopAllCoroutines();
-        StartCoroutine(ShowHello());
-    }
-
-    public void Deactivate()
-    {
-        isActive = false;
-        isDraining = false;
-        StartCoroutine(RegainThanDeactivate());
-    }
-
-
-    public void StartDraining()
-    {
-        isDraining = true;
-    }
-
-    public void StopDraining()
-    {
-        isDraining = false;
-    }
-
-    private void DrainStamina()
-    {
-        stamina -= drainRate * Time.deltaTime;
-        stamina = Mathf.Clamp(stamina, 0, Mathf.Infinity);
-        if (stamina <= 0)
-            OutOfStamina.Invoke();
-    }
-
-    private void RegainStamina()
-    {
-        stamina += regainRate * Time.deltaTime;
-        stamina = Mathf.Clamp(stamina, 0, maxStamina);
-    }
-
-    private void SetStaminaColor()
-    {
-        for (int i = 0; i < staminaBlocks.Count; i++)
-            staminaBlocks[i].material = stamina > i ? hasStaminaMat : noStaminaMat;
-    }
-
-    private IEnumerator RegainThanDeactivate()
-    {
-        while (stamina < maxStamina)
+        private void Update()
         {
-            yield return null;
-            RegainStamina();
+            if (!isDraining)
+                RegainStamina();
+            else
+                DrainStamina();
+
+            SetStaminaColor();
         }
 
-        foreach (var t in staminaBlocks)
+        public void Activate()
         {
-            t.gameObject.SetActive(false);
-            yield return null;
+            isActive = true;
+            isDraining = true;
+            StopAllCoroutines();
+            StartCoroutine(ActivateDisplay());
         }
-    }
 
-    public void HideDisplay()
-    {
-        foreach (var t in staminaBlocks) t.gameObject.SetActive(false);
-    }
-
-    public void ShowDisplay()
-    {
-        foreach (var t in staminaBlocks) t.gameObject.SetActive(true);
-    }
-
-    private IEnumerator ShowHello()
-    {
-        for (var index = staminaBlocks.Count - 1; index >= 0; index--)
+        public void Deactivate()
         {
-            var t = staminaBlocks[index];
-            t.gameObject.SetActive(true);
-            yield return null;
+            isActive = false;
+            isDraining = false;
+            StartCoroutine(RegainAndDeactivateDisplay());
+        }
+
+        public void StartDraining() => isDraining = true;
+
+        public void StopDraining() => isDraining = false;
+
+        private void DrainStamina()
+        {
+            stamina -= drainRate * Time.deltaTime;
+            stamina = Mathf.Clamp(stamina, 0, Mathf.Infinity);
+            if (stamina <= 0)
+                OutOfStamina?.Invoke();
+        }
+
+        private void RegainStamina()
+        {
+            stamina += regainRate * Time.deltaTime;
+            stamina = Mathf.Clamp(stamina, 0, maxStamina);
+        }
+
+        private void SetStaminaColor()
+        {
+            for (int i = 0; i < staminaBlocks.Count; i++)
+                staminaBlocks[i].material = stamina > i ? hasStaminaMat : noStaminaMat;
+        }
+
+        public void HideDisplay()
+        {
+            foreach (var t in staminaBlocks) t.gameObject.SetActive(false);
+        }
+
+        public void ShowDisplay()
+        {
+            foreach (var t in staminaBlocks) t.gameObject.SetActive(true);
+        }
+
+        private IEnumerator ActivateDisplay()
+        {
+            for (var index = staminaBlocks.Count - 1; index >= 0; index--)
+            {
+                var t = staminaBlocks[index];
+                t.gameObject.SetActive(true);
+                yield return null;
+            }
+        }
+
+        private IEnumerator RegainAndDeactivateDisplay()
+        {
+            while (stamina < maxStamina)
+            {
+                yield return null;
+                RegainStamina();
+            }
+
+            foreach (var t in staminaBlocks)
+            {
+                t.gameObject.SetActive(false);
+                yield return null;
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) MikeNspired. All Rights Reserved.
+﻿// Author MikeNspired. 
 
 using System.Collections;
 using System.Collections.Generic;
@@ -72,7 +72,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             if (!playerHandModel)
             {
-                playerHandModel = interactor.GetComponent<HandReference>().hand.GetComponentInChildren<SkinnedMeshRenderer>();
+                playerHandModel = interactor.GetComponentInParent<HandReference>().Hand.GetComponentInChildren<SkinnedMeshRenderer>();
                 originalMaterial = playerHandModel.material;
             }
             

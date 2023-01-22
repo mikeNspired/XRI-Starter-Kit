@@ -11,12 +11,12 @@ namespace MikeNspired.UnityXRHandPoser
     {
         ImpactType GetImpactType();
     }
+    public enum ImpactType
+    {
+        Metal,
+        Flesh,
+        Wood,
+        Neutral
+    }
 }
 
-public enum ImpactType
-{
-    Metal,
-    Flesh,
-    Wood,
-    Neutral
-}

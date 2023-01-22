@@ -26,8 +26,6 @@ namespace MikeNspired.UnityXRHandPoser
                 particleSystemSplash.Stop();
         }
 
-
-
         public void TakeDamage(float damage, GameObject damager)
         {
             onHit.Invoke(damage);

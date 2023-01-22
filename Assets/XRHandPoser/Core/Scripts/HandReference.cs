@@ -1,9 +1,5 @@
-﻿// Copyright (c) MikeNspired. All Rights Reserved.
+﻿// Author MikeNspired. 
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using NUnit.Framework.Internal;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -16,63 +12,68 @@ namespace MikeNspired.UnityXRHandPoser
     /// </summary>
     public class HandReference : MonoBehaviour
     {
-        public HandAnimator hand;
-
+        public HandAnimator Hand;
         public LeftRight LeftRight;
+        [SerializeField] private XRDirectInteractor xrDirectInteractor;
 
+        private Vector3 startPosition;
+        private Quaternion startRotation;
+        private Transform attachTransform;
+        private HandPoser currentHandPoser;
         private void OnValidate()
         {
-            if (!hand)
-                hand = GetComponentInChildren<HandAnimator>();
+            if (!Hand)
+                Hand = GetComponentInChildren<HandAnimator>();
+            if (!xrDirectInteractor)
+                xrDirectInteractor = GetComponent<XRDirectInteractor>();
         }
 
         private void Start() => OnValidate();
 
         private void Awake()
         {
-            GetComponent<XRDirectInteractor>().onSelectEntered.AddListener(OnGrab);
-            GetComponent<XRDirectInteractor>().onSelectExited.AddListener(Reset);
+            xrDirectInteractor.onSelectEntered.AddListener(OnGrab);
+            xrDirectInteractor.onSelectExited.AddListener(x => ResetAttachTransform());
 
-            XRDirectInteractor = GetComponent<XRDirectInteractor>();
-            startPosition = XRDirectInteractor.attachTransform.localPosition;
-            startRotation = XRDirectInteractor.attachTransform.localRotation;
-            attachTransform = XRDirectInteractor.attachTransform;
+            startPosition = xrDirectInteractor.attachTransform.localPosition;
+            startRotation = xrDirectInteractor.attachTransform.localRotation;
+            attachTransform = xrDirectInteractor.attachTransform;
         }
-
-        private XRDirectInteractor XRDirectInteractor;
-        private Vector3 startPosition;
-        private Quaternion startRotation;
-        private Transform attachTransform;
+    
+        
 
         private void OnGrab(XRBaseInteractable x)
         {
-            //Vector3 offset = x.GetComponent<XRHandPoser>().rightHandAttach.localPosition - startPosition;
-            Vector3 finalPosition = x.GetComponent<XRHandPoser>().rightHandAttach.localPosition * -1; //- offset;
+            currentHandPoser = x.GetComponent<XRHandPoser>();
+            if (!currentHandPoser)
+                currentHandPoser = x.GetComponentInChildren<XRHandPoser>();
             
-            Quaternion finalRotation = Quaternion.Inverse(x.GetComponent<XRHandPoser>().rightHandAttach.localRotation);
+            if (currentHandPoser)
+            {
+                var interactableAttach = LeftRight == LeftRight.Left ? currentHandPoser.leftHandAttach : currentHandPoser.rightHandAttach;
 
-            finalPosition = RotatePointAroundPivot(finalPosition, Vector3.zero, finalRotation.eulerAngles);
+                Vector3 finalPosition = interactableAttach.localPosition * -1;
+                Quaternion finalRotation = Quaternion.Inverse(interactableAttach.localRotation);
 
-            attachTransform.localPosition = finalPosition;
-            attachTransform.localRotation = finalRotation;
+                finalPosition = RotatePointAroundPivot(finalPosition, Vector3.zero, finalRotation.eulerAngles);
+
+                attachTransform.localPosition = finalPosition;
+                attachTransform.localRotation = finalRotation;
+            }
 
             attachTransform.parent = transform;
-            // Debug.Log(x.GetComponent<XRHandPoser>().rightHandAttach.name + " " + x.GetComponent<XRHandPoser>().rightHandAttach.localPosition.ToString("f3") + " " + finalPosition.ToString("f3"));
         }
 
-        private void Reset(XRBaseInteractable x)
+        public void ResetAttachTransform()
         {
-            attachTransform.parent = hand.transform;
-
-            GetComponent<XRDirectInteractor>().attachTransform.localPosition = startPosition;
-            GetComponent<XRDirectInteractor>().attachTransform.localRotation = startRotation;
-            // x.GetComponent<XRGrabInteractable>().attachTransform.position = x.GetComponent<XRHandPoser>().rightHandAttach.position;
-            //x.GetComponent<XRGrabInteractable>().attachTransform.rotation = x.GetComponent<XRHandPoser>().rightHandAttach.rotation;
+            attachTransform.parent = Hand.transform;
+            attachTransform.localPosition = startPosition;
+            attachTransform.localRotation = startRotation;
         }
 
         private void Update()
         {
-            if(Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.P))
                 Debug.Break();
         }
 
