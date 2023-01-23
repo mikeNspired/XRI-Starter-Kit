@@ -569,6 +569,7 @@ GameObject:
   - component: {fileID: 2296123125588691542}
   - component: {fileID: 8040565125907551266}
   - component: {fileID: 5641517004825948104}
+  - component: {fileID: 568925223161584788}
   m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
@@ -662,6 +663,25 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &568925223161584788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8075199479620850075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 1
+  outlineColor: {r: 0.19424175, g: 0.9150943, b: 0.90824723, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+  _baseInteractable: {fileID: 0}
 --- !u!1 &8441284446960704173
 GameObject:
   m_ObjectHideFlags: 0

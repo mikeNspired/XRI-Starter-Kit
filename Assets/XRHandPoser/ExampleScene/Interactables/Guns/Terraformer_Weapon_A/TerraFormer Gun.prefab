@@ -1962,7 +1962,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canInventory: 1
   canDistanceGrab: 1
-  parentToPlayerOnGrabForSmoothMovement: 1
 --- !u!114 &257953795825498150
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2192,6 +2191,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7325907191993959308}
+  - component: {fileID: 5857454879133377268}
   m_Layer: 0
   m_Name: Models
   m_TagString: Untagged
@@ -2217,6 +2217,25 @@ Transform:
   m_Father: {fileID: 7325907191753210638}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5857454879133377268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7325907191993959299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 1
+  outlineColor: {r: 0.19424175, g: 0.9150943, b: 0.90824723, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+  _baseInteractable: {fileID: 0}
 --- !u!1 &7325907192058840017
 GameObject:
   m_ObjectHideFlags: 0

@@ -318,7 +318,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canInventory: 1
   canDistanceGrab: 1
-  parentToPlayerOnGrabForSmoothMovement: 1
 --- !u!114 &6763218313910514973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -935,6 +934,10 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1165870508078599652, guid: a1599a30e5a969448896b246b4f9c92c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 209546381458772702}
     - targetCorrespondingSourceObject: {fileID: 1165870508078716110, guid: a1599a30e5a969448896b246b4f9c92c,
         type: 3}
       insertIndex: -1
@@ -975,3 +978,28 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 1
+--- !u!1 &6763218313306694919 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1165870508078599652, guid: a1599a30e5a969448896b246b4f9c92c,
+    type: 3}
+  m_PrefabInstance: {fileID: 5617614044894521571}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &209546381458772702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6763218313306694919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 1
+  outlineColor: {r: 0.19424175, g: 0.9150943, b: 0.90824723, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+  _baseInteractable: {fileID: 0}

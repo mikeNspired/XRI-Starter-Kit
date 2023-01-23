@@ -308,7 +308,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  xrGrabInteractable: {fileID: 0}
+  xrGrabInteractable: {fileID: 2971551517337442883}
   playerClimbingXR: {fileID: 0}
   hapticDuration: 0.1
   hapticStrength: 0.1
@@ -562,8 +562,37 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ddbeaa3a53d22154f8ef71f92e790816,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 434769651433433573}
   m_SourcePrefab: {fileID: 100100000, guid: ddbeaa3a53d22154f8ef71f92e790816, type: 3}
+--- !u!1 &5962013604405755681 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: ddbeaa3a53d22154f8ef71f92e790816,
+    type: 3}
+  m_PrefabInstance: {fileID: 6808380616139833968}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &434769651433433573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5962013604405755681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 1
+  outlineColor: {r: 0.19424175, g: 0.9150943, b: 0.90824723, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+  _baseInteractable: {fileID: 0}
 --- !u!4 &6482513180879152539 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: ddbeaa3a53d22154f8ef71f92e790816,

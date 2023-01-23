@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1754752610074145771}
   - component: {fileID: 3666577524707327421}
   - component: {fileID: 2315757036045682451}
+  - component: {fileID: 3726893982558035763}
   m_Layer: 0
   m_Name: Knob
   m_TagString: Untagged
@@ -134,6 +135,25 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.053850874
   m_Center: {x: -0.000000067055225, y: 0.048587378, z: -0.00083098747}
+--- !u!114 &3726893982558035763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1437672436447973821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 1
+  outlineColor: {r: 0.19424175, g: 0.9150943, b: 0.90824723, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+  _baseInteractable: {fileID: 0}
 --- !u!1 &2155810196582736443
 GameObject:
   m_ObjectHideFlags: 0
@@ -278,9 +298,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6819829145024912171}
   - {fileID: 675962120618860233}
   - {fileID: 174884788428391965}
+  - {fileID: 6819829145024912171}
   m_Father: {fileID: 0}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
