@@ -125,13 +125,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineMode: 1
-  outlineColor: {r: 0.19424175, g: 0.9150943, b: 0.90824723, a: 1}
-  outlineWidth: 2
-  precomputeOutline: 0
-  bakeKeys: []
-  bakeValues: []
-  _baseInteractable: {fileID: 0}
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
+  m_EffectDistance: {x: 1, y: -1}
+  m_UseGraphicAlpha: 1
+  _baseInteractable: {fileID: 5838703705205395593}
 --- !u!1 &2820405889087891024
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,18 +1,17 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
 
 public class XRQuickOutline : Outline
 {
     [SerializeField] private XRBaseInteractable _baseInteractable;
 
-    private void OnValidate()
+    private new void OnValidate()
     {
         if (!_baseInteractable)
             _baseInteractable = GetComponentInParent<XRBaseInteractable>();
     }
 
-    private void Start()
+    private new void Start()
     {
         OnValidate();
         _baseInteractable.hoverEntered.AddListener(x => enabled = true);

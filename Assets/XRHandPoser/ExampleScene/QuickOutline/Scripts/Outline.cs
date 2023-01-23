@@ -100,6 +100,8 @@ public class Outline : MonoBehaviour {
   }
 
   void OnEnable() {
+    Debug.Log("tt");
+
     foreach (var renderer in renderers) {
 
       // Append outline shaders
@@ -109,6 +111,8 @@ public class Outline : MonoBehaviour {
       materials.Add(outlineFillMaterial);
 
       renderer.materials = materials.ToArray();
+      Debug.Log(renderer);
+
     }
   }
 
@@ -127,6 +131,7 @@ public class Outline : MonoBehaviour {
     if (precomputeOutline && bakeKeys.Count == 0) {
       Bake();
     }
+    Debug.Log("Test");
   }
 
   void Update() {
