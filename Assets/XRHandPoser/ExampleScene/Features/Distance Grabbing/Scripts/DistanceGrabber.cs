@@ -12,9 +12,7 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class DistanceGrabber : MonoBehaviour
     {
-        [Header("Main")] 
-        [SerializeField]
-        private InputActionReference activationInput;
+        [Header("Main")] [SerializeField] private InputActionReference activationInput;
 
         [SerializeField] private XRDirectInteractor directInteractor = null;
         [SerializeField] private DistanceGrabberLineBender lineEffect = null;
@@ -76,6 +74,7 @@ namespace MikeNspired.UnityXRHandPoser
         [Header("Line Canceling")] [SerializeField] [Tooltip("When to cancel trying to grab item based on rotation. A value of 0 lets you rotate this perpendicular to pointing at the item before canceling.")]
         private float dotProductCancel = .2f;
 
+        [SerializeField] private Color highlightColor;
 
         private float sphereStartingSize, sphereCastStartingSize;
         private XRInteractionManager interactionManager = null;
@@ -308,7 +307,6 @@ namespace MikeNspired.UnityXRHandPoser
             rb.velocity = Vector3.zero;
         }
 
-       
 
         private void TryToLaunchItem(Transform target)
         {
@@ -352,17 +350,22 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void HighLight()
         {
-            var highlight = currentTarget.GetComponent<Highlight>();
-            if (highlight)
-                highlight.HighlightMesh();
+            var outline = currentTarget.GetComponentInChildren<XRQuickOutline>();
+            if (outline) outline.HighlightWithColor(highlightColor);
+            // var highlight = currentTarget.GetComponent<Highlight>();
+            // if (highlight)
+            //     highlight.HighlightMesh();
         }
 
         private void StopHighlight(Transform target)
         {
             if (!target) return;
-            var highlight = target.GetComponent<Highlight>();
-            if (highlight)
-                highlight.RemoveHighlight();
+            var outline = currentTarget.GetComponentInChildren<XRQuickOutline>();
+            if (outline) outline.StopHighlight();
+            // if (!target) return;
+            // var highlight = target.GetComponent<Highlight>();
+            // if (highlight)
+            //     highlight.RemoveHighlight();
         }
 
         private void CancelTarget(Transform target)
@@ -428,6 +431,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private Vector3 velocity;
         private float startingDrag;
+
         private IEnumerator SimulateProjectile(Transform target)
         {
             var rigidBody = target.GetComponent<Rigidbody>();
