@@ -1579,6 +1579,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5906133055034871709, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      propertyPath: m_Parameters.widthMultiplier
+      value: 0.005
+      objectReference: {fileID: 0}
     - target: {fileID: 5918495036138106549, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
       propertyPath: m_Radius
@@ -1928,6 +1933,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Layer
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8340661700907349775, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      propertyPath: m_Parameters.widthMultiplier
+      value: 0.005
       objectReference: {fileID: 0}
     - target: {fileID: 8399303704244521723, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
@@ -2467,6 +2477,7 @@ MonoBehaviour:
   teleportRayInteractor: {fileID: 5343623006565634315}
   teleportActivate: {fileID: -8061240218431744966, guid: c348712bda248c246b8c49b3db54643f,
     type: 3}
+  teleportationProvider: {fileID: 0}
 --- !u!114 &5343623006882414071 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 9014170783705847993, guid: 895f6f3c2d334633b5800312285058d2,
@@ -2521,6 +2532,7 @@ MonoBehaviour:
   teleportRayInteractor: {fileID: 7038351210788105374}
   teleportActivate: {fileID: 1263111715868034790, guid: c348712bda248c246b8c49b3db54643f,
     type: 3}
+  teleportationProvider: {fileID: 0}
 --- !u!4 &5343623007595494675 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 9014170785475729501, guid: 895f6f3c2d334633b5800312285058d2,

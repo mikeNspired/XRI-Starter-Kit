@@ -72,6 +72,14 @@ namespace MikeNspired.UnityXRHandPoser
             launchVelocity.z /= 1 + launchVelocityDrag.x * Time.deltaTime;
             characterController.Move(launchVelocity * Time.deltaTime);
         }
+        
+        private void FixedUpdate()
+        {
+            if (!isClimbing) return;
+
+            BeginLocomotion();
+            Climb();
+        }
 
         public void SetClimbHand(XRBaseController controller)
         {
@@ -170,13 +178,7 @@ namespace MikeNspired.UnityXRHandPoser
             // playerMovement.ResumeColliderAdjustment();
         }
 
-        private void FixedUpdate()
-        {
-            if (!isClimbing) return;
-
-            BeginLocomotion();
-            Climb();
-        }
+     
 
         private XRNode GetClimbingHandNode()
         {
