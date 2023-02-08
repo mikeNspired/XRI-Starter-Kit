@@ -29282,7 +29282,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canInventory: 1
   canDistanceGrab: 1
-  parentToPlayerOnGrabForSmoothMovement: 1
 --- !u!114 &6514702999508965952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -38838,6 +38837,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4896383899834082740}
   - component: {fileID: 4708589635994841803}
+  - component: {fileID: 3271438230989512739}
   m_Layer: 0
   m_Name: Hand
   m_TagString: Untagged
@@ -38930,6 +38930,26 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.07336266, y: -0.017608088, z: -0.010325428}
     m_Extent: {x: 0.09701611, y: 0.038285233, z: 0.051807534}
   m_DirtyAABB: 0
+--- !u!114 &3271438230989512739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5503489423726745599}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 0.77254903, g: 0.5185857, b: 0.43529412, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+  needsUpdate: 0
+  _baseInteractable: {fileID: 3626242251110275236}
 --- !u!1 &6786459959270975299
 GameObject:
   m_ObjectHideFlags: 0

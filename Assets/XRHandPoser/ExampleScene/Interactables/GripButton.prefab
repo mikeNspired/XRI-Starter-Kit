@@ -96,6 +96,7 @@ GameObject:
   - component: {fileID: 5830454433233333252}
   - component: {fileID: 2072936686157027770}
   - component: {fileID: 6721219108936320600}
+  - component: {fileID: 8634627721825920637}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -189,6 +190,25 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.053850874
   m_Center: {x: -0.000000067055225, y: 0.04, z: -0.00083098747}
+--- !u!114 &8634627721825920637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624589710311998083}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 1
+  outlineColor: {r: 0.19424175, g: 0.9150943, b: 0.90824723, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+  _baseInteractable: {fileID: 0}
 --- !u!1 &3547275352610296707
 GameObject:
   m_ObjectHideFlags: 0
@@ -480,7 +500,7 @@ Transform:
   - {fileID: 7495442862462579953}
   - {fileID: 3547275352610296708}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!114 &6750865915470691438
 MonoBehaviour:

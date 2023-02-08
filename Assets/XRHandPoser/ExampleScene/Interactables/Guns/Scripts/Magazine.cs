@@ -77,16 +77,7 @@ namespace MikeNspired.UnityXRHandPoser
         //TODO remove this method
         private void EnableDistanceGrabbing(bool state)
         {
-            if (state)
-            {
-                GetComponent<Highlight>()?.EnableHighlighting();
-                GetComponent<InteractableItemData>().canDistanceGrab = true;
-            }
-            else
-            {
-                GetComponent<Highlight>()?.DisableHighlighting();
-                GetComponent<InteractableItemData>().canDistanceGrab = false;
-            }
+            GetComponent<InteractableItemData>().canDistanceGrab = state;
         }
         
 

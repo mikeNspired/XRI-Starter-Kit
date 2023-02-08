@@ -1019,6 +1019,7 @@ GameObject:
   - component: {fileID: 1928494572756454123}
   - component: {fileID: 1928494572756454120}
   - component: {fileID: 1928494572756454121}
+  - component: {fileID: 4623912777259316567}
   m_Layer: 0
   m_Name: DoorHandle
   m_TagString: Untagged
@@ -1112,6 +1113,25 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.09062165
   m_Center: {x: 0.07207672, y: -0.000000038184243, z: 0.051603604}
+--- !u!114 &4623912777259316567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1928494572756454134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 1
+  outlineColor: {r: 0.19424175, g: 0.9150943, b: 0.90824723, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+  _baseInteractable: {fileID: 0}
 --- !u!1 &1928494572774082566
 GameObject:
   m_ObjectHideFlags: 0
@@ -1416,6 +1436,7 @@ GameObject:
   - component: {fileID: 1928494573027611765}
   - component: {fileID: 1928494573027611762}
   - component: {fileID: 1928494573027611763}
+  - component: {fileID: 3237251210141782758}
   m_Layer: 0
   m_Name: DoorHandle
   m_TagString: Untagged
@@ -1509,6 +1530,25 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.09062165
   m_Center: {x: 0.07207672, y: -0.000000038184243, z: 0.051603604}
+--- !u!114 &3237251210141782758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1928494573027611760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075827f8af62bfd4c866574390e41c50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 1
+  outlineColor: {r: 0.19424175, g: 0.9150943, b: 0.90824723, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+  _baseInteractable: {fileID: 0}
 --- !u!1 &1928494573068846458
 GameObject:
   m_ObjectHideFlags: 0
@@ -1744,7 +1784,7 @@ Transform:
   - {fileID: 1928494573019372326}
   - {fileID: 1928494574145246106}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1928494573389556328
 MonoBehaviour:
