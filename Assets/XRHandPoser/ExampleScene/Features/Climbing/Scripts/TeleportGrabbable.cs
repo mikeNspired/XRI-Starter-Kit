@@ -14,7 +14,7 @@ namespace MikeNspired.UnityXRHandPoser
                 h.CancelClimbing();
             }
 
-            base.Activate();
+            base.TeleportWithFeetAtLocation();
         }
     }
 }
