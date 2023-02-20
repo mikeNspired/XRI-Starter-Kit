@@ -101,7 +101,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (hasReachedEnd == false && (transform.localPosition - endPoint).magnitude <= .001f)
             {
                 hasReachedEnd = true;
-                pullBackAudio.PlaySound();
+                pullBackAudio.Play();
             }
         }
 
@@ -116,7 +116,7 @@ namespace MikeNspired.UnityXRHandPoser
             {
                 hasReachedEnd = false;
                 GunCockedEvent.Invoke();
-                releaseAudio.PlaySound();
+                releaseAudio.Play();
                 SetClosed();
             }
         }

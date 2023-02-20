@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using static Unity.Mathematics.math;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -20,7 +21,7 @@ namespace MikeNspired.UnityXRHandPoser
             GetStartingValues();
             Randomize();
             if (playOnAwake)
-                PlaySound();
+                Play();
         }
 
         protected void OnValidate()
@@ -50,11 +51,11 @@ namespace MikeNspired.UnityXRHandPoser
             originalVolume = audioSource.volume;
         }
 
-        public void PlaySound()
+        public void Play(float volume = 1)
         {
             if (!audioSource.enabled) return;
 
-            audioSource.volume = originalVolume;
+            audioSource.volume = remap(0, 1, 0, originalVolume, volume);;
             audioSource.pitch = originalPitch;
 
             if (playOnlyIfClipFinished && audioSource.isPlaying)

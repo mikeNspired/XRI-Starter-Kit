@@ -267,8 +267,10 @@ namespace MikeNspired.UnityXRHandPoser
             StopHandPositionTracking();
             if (AnimateHandToPosition != null) StopCoroutine(AnimateHandToPosition);
 
-            AnimateHandToPosition = AnimateHandTransformLocal(handMoveToTargetAnimationTime, new TransformStruct(originalPosition, originalRotation, Vector3.zero));
-            StartCoroutine(AnimateHandToPosition);
+             transform.localPosition = originalPosition;
+             transform.localRotation = originalRotation;
+            // AnimateHandToPosition = AnimateHandTransformLocal(handMoveToTargetAnimationTime, new TransformStruct(originalPosition, originalRotation, Vector3.zero));
+            // StartCoroutine(AnimateHandToPosition);
         }
 
         private IEnumerator AnimateHandToTransform(float animationLength, Transform newTransform)

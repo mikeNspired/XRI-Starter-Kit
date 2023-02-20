@@ -130,7 +130,7 @@ namespace MikeNspired.UnityXRHandPoser
                 return;
             }
 
-            SearchWithRayCast();
+            SearchForObjects();
 
             InitiateGrabStartFromTrigger();
             CheckToCancel();
@@ -161,10 +161,9 @@ namespace MikeNspired.UnityXRHandPoser
                 debugOverLapSphere.transform.localScale = Vector3.one * overlapSphereRadius * 2;
         }
 
-        private void SearchWithRayCast()
+        private void SearchForObjects()
         {
             if (isActive) return;
-
 
             if (rayCastSearch)
             {
@@ -172,9 +171,9 @@ namespace MikeNspired.UnityXRHandPoser
                 {
                     rayCastDebugPosition = rayCastHit.point;
                     Collider[] closestHits = Physics.OverlapSphere(rayCastHit.point, overlapSphereRadius, rayCastMask, QueryTriggerInteraction.Ignore);
-                    Transform[] potentialGrabbaleItems = Array.ConvertAll(closestHits, s => s.transform);
+                    Transform[] potentialGrabbableItems = Array.ConvertAll(closestHits, s => s.transform);
                     ScaleOverlapSphere();
-                    if (CheckForNearest(potentialGrabbaleItems, rayCastHit.point))
+                    if (CheckForNearest(potentialGrabbableItems, rayCastHit.point))
                         return;
                 }
                 else
@@ -235,7 +234,7 @@ namespace MikeNspired.UnityXRHandPoser
 
                     var interactable = hit.transform.GetComponentInParent<XRGrabInteractable>();
                     //Check if interactable or if its being grabbed then ignore
-                    if (!interactable || interactable.selectingInteractor) continue;
+                    if (!interactable || interactable.selectingInteractor || !interactable.enabled) continue;
 
                     //Check if allowed to DistanceGrab
                     var itemData = interactable.GetComponent<InteractableItemData>();
@@ -329,7 +328,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void Launch(Transform target)
         {
             launchAudio.transform.position = target.position;
-            launchAudio.PlaySound();
+            launchAudio.Play();
             isLaunching = true;
             CancelTarget(target);
 
@@ -441,9 +440,8 @@ namespace MikeNspired.UnityXRHandPoser
             Quaternion startRotation = target.rotation;
             velocity = goalPosition - target.position;
 
-            //Add some randomRotation to item
-            // rigidBody.angularVelocity = UnityEngine.Random.onUnitSphere * randomRotationSpeed;
-            rigidBody.angularVelocity = Vector3.zero;
+            if(!rigidBody.isKinematic)
+                rigidBody.angularVelocity = Vector3.zero;
             var newFlightTime = Mathf.Clamp(flightTimeMultiplier * velocity.magnitude, minFlightTime, 999);
 
             mainHandCollider.radius = mainHandColliderSizeGrow;

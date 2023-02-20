@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
@@ -16,7 +17,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         [SerializeField] private GunType gunType = null;
         [SerializeField] private GameObject ammoModels = null;
-        [SerializeField] private new Collider collider = null;
+        [FormerlySerializedAs("collider")] [SerializeField] private Collider _ = null;
         [SerializeField] private Rigidbody rigidBody = null;
         public bool IsBeingGrabbed() => isBeingGrabbed;
         public GunType GunType => gunType;
@@ -24,7 +25,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void Start()
         {
-            startingColliderPosition = collider.transform.localPosition;
+            startingColliderPosition = _.transform.localPosition;
             
             OnValidate();
             GetComponent<XRGrabInteractable>().onSelectEntered.AddListener(x => OnGrab());
@@ -35,13 +36,13 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnGrab()
         {
             isBeingGrabbed = true;
-            collider.isTrigger = false;
+            _.isTrigger = false;
             rigidBody.isKinematic = true;
         }
 
         private void OnEnable()
         {
-            collider.transform.localPosition = startingColliderPosition;
+            _.transform.localPosition = startingColliderPosition;
         }
 
         public void DisableCollider()
@@ -52,7 +53,7 @@ namespace MikeNspired.UnityXRHandPoser
         public void EnableCollider()
         {
             ReturnMovedColliders();
-            collider.enabled = true;
+            _.enabled = true;
             EnableDistanceGrabbing(true);
         }
 
@@ -60,13 +61,13 @@ namespace MikeNspired.UnityXRHandPoser
         {
             EnableCollider();
             isBeingGrabbed = false;
-            collider.isTrigger = false;
+            _.isTrigger = false;
             rigidBody.isKinematic = false;
             transform.parent = null;
         }
         public void SetupForGunAttachment()
         {
-            collider.isTrigger = true;
+            _.isTrigger = true;
             rigidBody.isKinematic = true;
             rigidBody.useGravity = true;
             
@@ -83,8 +84,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnValidate()
         {
-            if (!collider)
-                collider = GetComponentInChildren<Collider>();
+            if (!_)
+                _ = GetComponentInChildren<Collider>();
             if (!rigidBody)
                 rigidBody = GetComponentInChildren<Rigidbody>();
         }
@@ -107,17 +108,17 @@ namespace MikeNspired.UnityXRHandPoser
             //objectToMove.GetComponent<CollidersSetToTrigger>()?.SetAllToTrigger();
             yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
 
-            collider.transform.position += Vector3.one * 9999;
+            _.transform.position += Vector3.one * 9999;
             //Lets physics respond to collider disappearing before disabling object physics update needs to run twice
             yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
-            collider.enabled = false;
-            collider.transform.localPosition = startingColliderPosition;
+            _.enabled = false;
+            _.transform.localPosition = startingColliderPosition;
         }
 
         public void ReturnMovedColliders()
         {
             StopAllCoroutines();
-            collider.transform.localPosition = startingColliderPosition;
+            _.transform.localPosition = startingColliderPosition;
         }
     }
 }

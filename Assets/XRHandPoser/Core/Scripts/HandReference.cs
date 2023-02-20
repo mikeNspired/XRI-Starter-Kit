@@ -14,12 +14,14 @@ namespace MikeNspired.UnityXRHandPoser
     {
         public HandAnimator Hand;
         public LeftRight LeftRight;
-        [SerializeField] private XRDirectInteractor xrDirectInteractor;
+        public HandReference otherHand;
+        public XRDirectInteractor xrDirectInteractor;
 
         private Vector3 startPosition;
         private Quaternion startRotation;
         private Transform attachTransform;
         private HandPoser currentHandPoser;
+
         private void OnValidate()
         {
             if (!Hand)
@@ -39,18 +41,19 @@ namespace MikeNspired.UnityXRHandPoser
             startRotation = xrDirectInteractor.attachTransform.localRotation;
             attachTransform = xrDirectInteractor.attachTransform;
         }
-    
-        
+
 
         private void OnGrab(XRBaseInteractable x)
         {
             currentHandPoser = x.GetComponent<XRHandPoser>();
             if (!currentHandPoser)
                 currentHandPoser = x.GetComponentInChildren<XRHandPoser>();
-            
+
             if (currentHandPoser)
             {
-                var interactableAttach = LeftRight == LeftRight.Left ? currentHandPoser.leftHandAttach : currentHandPoser.rightHandAttach;
+                var interactableAttach = LeftRight == LeftRight.Left
+                    ? currentHandPoser.leftHandAttach
+                    : currentHandPoser.rightHandAttach;
 
                 Vector3 finalPosition = interactableAttach.localPosition * -1;
                 Quaternion finalRotation = Quaternion.Inverse(interactableAttach.localRotation);

@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.XR.Interaction.Toolkit;
+#if (UNITY_EDITOR) 
 
 namespace MikeNspired.UnityXRHandPoser.Editor
 {
@@ -60,3 +61,4 @@ namespace MikeNspired.UnityXRHandPoser.Editor
         }
     }
 }
+#endif

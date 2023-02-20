@@ -55,6 +55,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void SetControllerGrip(ActionBasedController controller, bool state)
         {
             if (!controllers.Contains(controller)) return;
+            if (!inventorySlot.gameObject.activeInHierarchy) return;
             inventorySlot.TryInteractWithSlot(controller.GetComponentInChildren<XRDirectInteractor>());
         }
 

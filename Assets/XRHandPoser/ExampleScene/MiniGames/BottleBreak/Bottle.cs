@@ -29,7 +29,7 @@ namespace MikeNspired.UnityXRHandPoser
         public void TakeDamage(float damage, GameObject damager)
         {
             onHit.Invoke(damage);
-            GetComponent<AudioRandomize>().PlaySound();
+            GetComponent<AudioRandomize>().Play();
             particleSystemSplash.transform.parent = null;
             particleSystemSplash.gameObject.SetActive(true);
             particleSystemSplash.Play();

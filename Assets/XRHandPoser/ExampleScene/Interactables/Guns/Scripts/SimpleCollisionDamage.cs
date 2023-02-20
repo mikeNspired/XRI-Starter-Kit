@@ -7,7 +7,7 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class SimpleCollisionDamage : MonoBehaviour
     {
-        [SerializeField] private float damage = 10;
+        [SerializeField] protected float damage = 10;
         [SerializeField] private GameObject metalDecal = null;
         [SerializeField] private GameObject fleshDecal = null;
         [SerializeField] private GameObject woodDecal = null;
@@ -17,9 +17,11 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (collision.rigidbody?.GetComponent<SimpleCollisionDamage>()) return;
 
-            collision.transform.GetComponentInParent<IDamageable>()?.TakeDamage(damage, gameObject);
-
-            CheckForImpacteDecalType(collision);
+            var damageable = collision.transform.GetComponentInParent<IDamageable>();
+            if (damageable != null)
+                Damage(damageable);
+            
+            CheckForImpactDecalType(collision);
 
             if (destroyOnCollision)
                 Destroy(gameObject);
@@ -29,13 +31,17 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (!triggerDamage) return;
             
-            other.transform.GetComponentInParent<IDamageable>()?.TakeDamage(damage, gameObject);
+            var damageable = other.transform.GetComponentInParent<IDamageable>();
+            if (damageable != null)
+                Damage(damageable);
             
             if (destroyOnCollision)
                 Destroy(gameObject);
         }
 
-        void CheckForImpacteDecalType(Collision collision)
+        protected virtual void Damage(IDamageable damageable) => damageable.TakeDamage(damage,gameObject);
+
+        private void CheckForImpactDecalType(Collision collision)
         {
             var impact = collision.transform.GetComponentInParent<IImpactType>();
 
@@ -65,12 +71,11 @@ namespace MikeNspired.UnityXRHandPoser
                 SpawnDecal(collision, metalDecal);
         }
 
-
-        static void SpawnDecal(Collision hit, GameObject decalPrefab)
+        private static void SpawnDecal(Collision hit, GameObject decalPrefab)
         {
             if (!decalPrefab) return;
             
-            var spawnedDecal = Instantiate(decalPrefab, hit.collider.transform, true);
+            var spawnedDecal = Instantiate(decalPrefab, null, true);
             
             var contact = hit.contacts[0];
             spawnedDecal.transform.position = contact.point;

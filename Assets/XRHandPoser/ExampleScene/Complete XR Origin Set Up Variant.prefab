@@ -1579,6 +1579,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5906133055034871709, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      propertyPath: m_Parameters.widthMultiplier
+      value: 0.005
+      objectReference: {fileID: 0}
     - target: {fileID: 5918495036138106549, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
       propertyPath: m_Radius
@@ -1928,6 +1933,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Layer
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8340661700907349775, guid: 895f6f3c2d334633b5800312285058d2,
+        type: 3}
+      propertyPath: m_Parameters.widthMultiplier
+      value: 0.005
       objectReference: {fileID: 0}
     - target: {fileID: 8399303704244521723, guid: 895f6f3c2d334633b5800312285058d2,
         type: 3}
@@ -2451,6 +2461,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Hand: {fileID: 7412812375126945944}
   LeftRight: 1
+  otherHand: {fileID: 0}
   xrDirectInteractor: {fileID: 4049551477774368206}
 --- !u!114 &1338314092
 MonoBehaviour:
@@ -2505,6 +2516,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Hand: {fileID: 8187405859542935085}
   LeftRight: 0
+  otherHand: {fileID: 0}
   xrDirectInteractor: {fileID: 7773215864709982242}
 --- !u!114 &1993725669
 MonoBehaviour:
