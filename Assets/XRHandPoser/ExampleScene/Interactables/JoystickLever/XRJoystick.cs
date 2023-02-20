@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using static Unity.Mathematics.math;
@@ -7,7 +9,7 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class XRJoystick : MonoBehaviour
     {
-        [SerializeField] private XRGrabInteractable xrGrabInteractable = null;
+        [SerializeField] private XRBaseInteractable xrGrabInteractable = null;
         [SerializeField] private Transform rotationPoint = null;
         [SerializeField] private float maxAngle = 60;
         [SerializeField] private float shaftLength = .2f;
@@ -25,6 +27,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         public UnityEventVector2 ValueChanged;
         public UnityEventFloat SingleValueChanged;
+        private Vector3 handOffSetFromStartOfGrab;
 
         private void Start()
         {
@@ -45,7 +48,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnValidate()
         {
             if (!xrGrabInteractable)
-                xrGrabInteractable = GetComponent<XRGrabInteractable>();
+                xrGrabInteractable = GetComponent<XRBaseInteractable>();
 
             SetStartPosition();
         }
@@ -61,13 +64,12 @@ namespace MikeNspired.UnityXRHandPoser
         {
             StopAllCoroutines();
             hand = x.interactorObject.transform;
+            handOffSetFromStartOfGrab = x.interactorObject.transform.position - transform.position;
         }
+
 
         private void Update()
         {
-            // transform.position = originalPositionTracker.position;
-            // transform.rotation = originalPositionTracker.rotation;
-
             if (!hand) return;
 
             GetVectorProjectionFromHand(out var locRot);
@@ -78,7 +80,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void GetVectorProjectionFromHand(out Vector3 locRot)
         {
             //Projection
-            Vector3 positionToProject = hand.position;
+            Vector3 positionToProject = hand.position - handOffSetFromStartOfGrab;
             Vector3 v = positionToProject - transform.position;
             Vector3 projection = Vector3.ProjectOnPlane(v, originalPositionTracker.up);
 
@@ -137,7 +139,7 @@ namespace MikeNspired.UnityXRHandPoser
             InvokeUnityEvents();
         }
 
-        private void OnDrawGizmos()
+        private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.cyan;
             if (xAxis && yAxis)

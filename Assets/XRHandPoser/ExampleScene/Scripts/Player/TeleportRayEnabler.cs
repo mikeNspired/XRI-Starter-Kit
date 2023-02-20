@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -7,32 +8,36 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class TeleportRayEnabler : MonoBehaviour
     {
-        [SerializeField] private XRRayInteractor teleportRayInteractor = null;
-        [SerializeField] private InputActionReference teleportActivate = null;
-        private XRInteractorLineVisual lineVisual;
+        [SerializeField] private XRRayInteractor teleportRayInteractor;
+        [SerializeField] private InputActionReference teleportActivate;
+        [SerializeField] private TeleportationProvider teleportationProvider;
+
         private void Start()
         {
+            OnValidate();
             LogMessages();
             teleportActivate.GetInputAction().performed += context => EnableRay();
             teleportActivate.GetInputAction().canceled += context => DisableRay();
-            //lineVisual = teleportRayInteractor.GetComponent<XRInteractorLineVisual>();
-        }
-        
-        private void EnableRay()
-        {
-            teleportRayInteractor.enabled = true;
-            //lineVisual.enabled = true;
+            teleportRayInteractor.enabled = false;
         }
 
-        private void DisableRay()
+        private void OnValidate()
         {
-            StartCoroutine(DisableInteractable());
-           // lineVisual.enabled = false;
+            if (!teleportationProvider) teleportationProvider = GetComponentInParent<TeleportationProvider>();
         }
+
+        private void EnableRay()
+        {
+            if (!teleportationProvider.enabled) return;
+            teleportRayInteractor.enabled = true;
+        }
+
+        //If the ray is not disabled after waiting till next frame, the teleport does not occur
+        private void DisableRay() => StartCoroutine(DisableInteractable());
 
         private IEnumerator DisableInteractable()
         {
-            yield return new WaitForSeconds(Time.deltaTime);
+            yield return null;
             teleportRayInteractor.enabled = false;
         }
       

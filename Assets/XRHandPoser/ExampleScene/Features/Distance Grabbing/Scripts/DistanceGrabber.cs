@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 using CommonUsages = UnityEngine.XR.CommonUsages;
@@ -74,7 +75,7 @@ namespace MikeNspired.UnityXRHandPoser
         [Header("Line Canceling")] [SerializeField] [Tooltip("When to cancel trying to grab item based on rotation. A value of 0 lets you rotate this perpendicular to pointing at the item before canceling.")]
         private float dotProductCancel = .2f;
 
-        [SerializeField] private Color highlightColor;
+        [SerializeField] private Color outlineColor;
 
         private float sphereStartingSize, sphereCastStartingSize;
         private XRInteractionManager interactionManager = null;
@@ -350,10 +351,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void HighLight()
         {
             var outline = currentTarget.GetComponentInChildren<XRQuickOutline>();
-            if (outline) outline.HighlightWithColor(highlightColor);
-            // var highlight = currentTarget.GetComponent<Highlight>();
-            // if (highlight)
-            //     highlight.HighlightMesh();
+            if (outline) outline.HighlightWithColor(outlineColor);
         }
 
         private void StopHighlight(Transform target)
@@ -361,10 +359,6 @@ namespace MikeNspired.UnityXRHandPoser
             if (!target) return;
             var outline = currentTarget.GetComponentInChildren<XRQuickOutline>();
             if (outline) outline.StopHighlight();
-            // if (!target) return;
-            // var highlight = target.GetComponent<Highlight>();
-            // if (highlight)
-            //     highlight.RemoveHighlight();
         }
 
         private void CancelTarget(Transform target)
@@ -372,7 +366,6 @@ namespace MikeNspired.UnityXRHandPoser
             if (target)
             {
                 StopHighlight(currentTarget);
-                // target.GetComponent<Rigidbody>().drag = 0;
             }
 
             StopLine();

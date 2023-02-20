@@ -4,7 +4,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 namespace MikeNspired.UnityXRHandPoser
 {
-    public class Grenade : MonoBehaviour
+    public class Grenade : MonoBehaviour, IDamageable
     {
         [SerializeField] private XRGrabInteractable interactable = null;
         [SerializeField] private GameObject Explosion = null;
@@ -73,6 +73,11 @@ namespace MikeNspired.UnityXRHandPoser
             yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
             //Lets physics respond to collider disappearing before disabling object physics update needs to run twice
             Destroy(gameObject);
+        }
+
+        public void TakeDamage(float damage, GameObject damager)
+        {
+            TriggerGrenade();
         }
     }
 }

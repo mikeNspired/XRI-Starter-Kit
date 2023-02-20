@@ -10390,6 +10390,7 @@ MonoBehaviour:
   maxVolume: 0.25
   timeTillCanPlayAgain: 0.1
   maxVelocity: 5
+  blah: 0
 --- !u!114 &6727071543392115320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13115,13 +13116,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineMode: 0
-  outlineColor: {r: 0.5019608, g: 0.7176471, b: 0.8666667, a: 1}
+  outlineColor: {r: 0.33333334, g: 0.7019608, b: 1, a: 1}
   outlineWidth: 2
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
   needsUpdate: 0
   _baseInteractable: {fileID: 6727071543392115318}
+  onlyHighlightsWhenNotSelected: 0
 --- !u!1 &8442678441668515201
 GameObject:
   m_ObjectHideFlags: 0
@@ -15692,13 +15694,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineMode: 0
-  outlineColor: {r: 0.5019608, g: 0.7176471, b: 0.8666667, a: 1}
+  outlineColor: {r: 0.33333334, g: 0.7019608, b: 1, a: 1}
   outlineWidth: 2
   precomputeOutline: 0
   bakeKeys: []
   bakeValues: []
   needsUpdate: 0
   _baseInteractable: {fileID: 6727071543392115318}
+  onlyHighlightsWhenNotSelected: 0
 --- !u!1 &8442678442265469137
 GameObject:
   m_ObjectHideFlags: 0

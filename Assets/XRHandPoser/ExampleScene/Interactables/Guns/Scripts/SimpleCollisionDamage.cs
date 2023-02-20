@@ -60,7 +60,7 @@ namespace MikeNspired.UnityXRHandPoser
                         SpawnDecal(collision, woodDecal);
                         break;
                     case ImpactType.Neutral:
-                        SpawnDecal(collision, metalDecal);
+                        SpawnDecal(collision, null);
                         break;
                     default:
                         SpawnDecal(collision, metalDecal);

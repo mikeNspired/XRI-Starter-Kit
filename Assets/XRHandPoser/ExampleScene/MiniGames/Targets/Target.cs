@@ -1,5 +1,6 @@
 using System.Globalization;
 using NaughtyAttributes;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -91,7 +92,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             textAnimator.gameObject.SetActive(false);
             textAnimator.gameObject.SetActive(true);
-            textAnimator.GetComponent<TextMesh>().text = damage.ToString(CultureInfo.InvariantCulture);
+            textAnimator.GetComponent<TextMeshPro>().text = damage.ToString(CultureInfo.InvariantCulture);
         }
     }
 }
