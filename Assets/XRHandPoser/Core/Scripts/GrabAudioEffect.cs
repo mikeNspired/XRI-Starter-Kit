@@ -12,7 +12,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void Start()
         {
             if (interactable)
-                interactable.selectEntered.AddListener(x => PlaySound());
+                interactable.selectEntered.AddListener(x => Play());
             else
                 Debug.Log("XRGrabInteractable not found on : " + gameObject.name + " to play hand grabbing sound effect");
         }

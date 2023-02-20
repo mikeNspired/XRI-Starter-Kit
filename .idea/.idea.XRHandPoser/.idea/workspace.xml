@@ -6,27 +6,71 @@
   <component name="ChangeListManager">
     <list default="true" id="f5c86fcd-2cce-4f8d-ad34-5e5a73ca1a15" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.XRHandPoser/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.XRHandPoser/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XR/Settings/OpenXR Package Settings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XR/Settings/OpenXR Package Settings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Art/Materials/Transparent Controller.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Art/Materials/Transparent Controller.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Climbing/Art/Emissive Transparent LightBlue.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Climbing/Art/Emissive Transparent LightBlue.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Climbing/Art/Emissive Transparent Red.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Climbing/Art/Emissive Transparent Red.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Climbing/Art/RockClimbingPoint.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Climbing/Art/RockClimbingPoint.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Climbing/Scripts/ClimbGrabPoint.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Climbing/Scripts/ClimbGrabPoint.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Distance Grabbing/Scripts/DistanceGrabber.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Distance Grabbing/Scripts/DistanceGrabber.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/FireHand/FireHand.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/FireHand/FireHand.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/FlashLight/Flashlight.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/FlashLight/Flashlight.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Grenades/EnergyGrenade.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Grenades/EnergyGrenade.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/HandGun Infinte Ammo.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/HandGun Infinte Ammo.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/HandGun Magazine.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/HandGun Magazine.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/HandGun.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/HandGun.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Rifle/Rifle 2H- Simple - No Collider Switching.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Rifle/Rifle 2H- Simple - No Collider Switching.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Rifle/Rifle Magazine.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Rifle/Rifle Magazine.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Distance Grabbing/Scripts/DistanceGrabberLineBender.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Distance Grabbing/Scripts/DistanceGrabberLineBender.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Ammo/Ammo With Bullets.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Ammo/Ammo With Bullets.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Ammo/EmptyShell.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Ammo/EmptyShell.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Ammo/Magazine.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Ammo/Magazine.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Ammo/SingleBullet.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Ammo/SingleBullet.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Model/AnimatedGun.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/HandGun/Model/AnimatedGun.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Rifle/Model/Gun.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Rifle/Model/Gun.fbx.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Scripts/Magazine.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Scripts/Magazine.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Terraformer_Weapon_A/TerraFormer Gun.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Terraformer_Weapon_A/TerraFormer Gun.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Random Prefabs/TinyHat.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Random Prefabs/TinyHat.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Random Prefabs/ZomBear.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Random Prefabs/ZomBear.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Torch.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Torch.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/MiniGames/Bowling/Prefabs/Bowling Ball.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/MiniGames/Bowling/Prefabs/Bowling Ball.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XR-Interaction-Toolkit-Assets/Prefabs/InstantCube.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XR-Interaction-Toolkit-Assets/Prefabs/InstantCube.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/QuickOutline/Scripts/Outline.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/QuickOutline/Scripts/Outline.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/Highlight.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/Highlight.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/XRQuickOutline.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/XRQuickOutline.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRHandPoser.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRHandPoser.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Terraformer_Weapon_A/Art/Gun.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Terraformer_Weapon_A/Art/Gun.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/RecurveBow/Arrow/recurveBowArrow_01_SK.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/RecurveBow/Arrow/recurveBowArrow_01_SK.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/RecurveBow/Bow/recurveBow_01_SK.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/RecurveBow/Bow/recurveBow_01_SK.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/RecurveBow/Scripts/PullInteraction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/RecurveBow/Scripts/PullInteraction.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/MiniGames/Bowling/Art/Lane.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/MiniGames/Bowling/Art/Lane.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/MiniGames/Bowling/Art/pin.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/MiniGames/Bowling/Art/pin.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/EffectExamples/WeaponEffects/Models/ShellCasing.FBX.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/EffectExamples/WeaponEffects/Models/ShellCasing.FBX.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/CornerWall.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/CornerWall.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Flashlight.FBX.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Flashlight.FBX.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/FloorLong.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/FloorLong.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/PotionBottle2.FBX.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/PotionBottle2.FBX.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/PotionBottle2Broken.FBX.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/PotionBottle2Broken.FBX.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Railing.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Railing.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/SideWall.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/SideWall.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/SmallLight.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/SmallLight.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Stairs.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Stairs.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Step.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Step.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Zombunny.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Models/Zombunny.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Tank/Models/Shell.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Tank/Models/Shell.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Tank/Models/Tank.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/Tank/Models/Tank.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/VikingVillage/Models/Props/prop_halberd_01.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/VikingVillage/Models/Props/prop_halberd_01.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/VikingVillage/Models/Props/prop_sword_01.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/VikingVillage/Models/Props/prop_sword_01.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/VikingVillage/Models/Props/prop_torch_01.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/VikingVillage/Models/Props/prop_torch_01.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XR-Interaction-Toolkit-Assets/Models/SafetyHat_Low.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XR-Interaction-Toolkit-Assets/Models/SafetyHat_Low.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XR-Interaction-Toolkit-Assets/Models/fileAnchorWall.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XR-Interaction-Toolkit-Assets/Models/fileAnchorWall.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XR-Interaction-Toolkit-Assets/Models/teleportHightlight.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XR-Interaction-Toolkit-Assets/Models/teleportHightlight.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Button.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Button.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Dial.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Dial.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Door.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Door.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/DoorKey.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/DoorKey.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/FlipSwitch.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/FlipSwitch.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Joystick.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Joystick.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Lever.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Lever.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/PushButton.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/PushButton.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Slider.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Slider.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Wheel.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Official Unity Assets/XRI/Models/Wheel.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/Reusable/CollisionSound.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/Reusable/CollisionSound.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/WIP/DebugPlayerMove.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/WIP/DebugPlayerMove.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/WIP/DebugPlayerMoveEditor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/WIP/DebugPlayerMoveEditor.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/Primitive_Cylinder.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/Primitive_Cylinder.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/Primitive_Pyramid.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/Primitive_Pyramid.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/Primitive_Torus.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/Primitive_Torus.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/Primitive_Wedge.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/Primitive_Wedge.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/XRControllerLeft.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/XRControllerLeft.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/XRControllerRight.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Starter Assets/Models/XRControllerRight.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Tunneling Vignette/TunnelingVignetteHemisphere.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/XRI Starter Assets 2.3.0-pre.1/Tunneling Vignette/TunnelingVignetteHemisphere.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/Hands &amp; Poses/Robot Hand/Model/RobotHand.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/Hands &amp; Poses/Robot Hand/Model/RobotHand.fbx.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/XRHandPoser/Hands &amp; Poses/Robot Hand/RightHand_Robot.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/XRHandPoser/Hands &amp; Poses/Robot Hand/RightHand_Robot.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,46 +79,35 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/Core/Scripts/HandReference.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Climbing/VelocityTracker.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Features/Inventory/Scripts/InteractableItemData.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Scripts/MatchTransform.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Scripts/ProjectileWeapon.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/Guns/Scripts/SimpleCollisionDamage.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/Player/IgnoreCharacterControllerCollider.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Interactables/RecurveBow/Scripts/AutoSpawnObjectInHandOnGrab.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/MiniGames/Targets/TargetPoints.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/Player/IgnoreCharacterControllerCollider.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/Player/TeleportRayEnabler.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/Reusable/DebugPrint.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/Reusable/SpawnPrefabInSocket.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/TwoHanded Grabbing/GrabAnywhereOnPole.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/TwoHanded Grabbing/SecondaryGrabFollow.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/Scripts/XRQuickOutline.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/WIP/AmmoBackPack/AmmoBackPack.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/WIP/Climbing/ClimbGrabPoint.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/WIP/Climbing/MoveToLocation.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/WIP/Climbing/PlayerClimbingXR.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/XRHandPoser/ExampleScene/WIP/Climbing/TeleportGrabbable.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.inputsystem@1.4.4/Samples~/InGameHints/InGameHintsExample.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.inputsystem@1.4.4/Samples~/RebindingUI/RebindActionUIEditor.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.inputsystem@1.4.4/Samples~/SimpleDemo/SimpleControls.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.inputsystem@1.4.4/Tests/TestFixture/InputTestFixture.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.mathematics@1.2.6/Unity.Mathematics/math.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.render-pipelines.core@14.0.4/Tests/Editor/RenderGraphTests.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.render-pipelines.core@14.0.6/Runtime/XR/XROcclusionMesh.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@1.0.0/Editor/UI/SelectableEditor.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@1.0.0/Editor/UI/SliderEditor.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@1.0.0/Runtime/EventSystem/EventTrigger.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@1.0.0/Runtime/UI/Core/Dropdown.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@1.0.0/Runtime/UI/Core/Layout/LayoutRebuilder.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@1.0.0/Runtime/UI/Core/Navigation.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@1.0.0/Runtime/UI/Core/RectMask2D.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.ugui@1.0.0/Tests/Editor/Canvas/AssertionFailureOnOutputVertexCount.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/10b6135e63434fdba4fc6c109928ab3b50800/97/7801fc7e/Test.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/3d4183cb0b7c40c5b0dc47ef3ba696bff000/ff/f968387b/InputDevice.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bae255e3e08e46f7bc2fbd23dde96338158800/55/1af12c51/Pose.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bae255e3e08e46f7bc2fbd23dde96338158800/df/7edc365d/Transform.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/06/40abd26f/UnityEvent`1.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/5e/cbf799c4/Pose.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/97/62fdb3f2/Component.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/bdd20210bb844b2e88e1149ea99da5ef16c200/d7/c20b7725/MonoBehaviour.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d6232873609549b8a045fa15811a5bd346a800/27/f8af49c7/Exception.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d6232873609549b8a045fa15811a5bd346a800/5e/d4d636ed/SystemException.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d6232873609549b8a045fa15811a5bd346a800/67/b33a5a7d/NullReferenceException.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/f7044ab663d344a2badf1160e57d1c1d93c400/44/774288c6/Editor.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/3ea01e77be99618395f448b16bd7cc2bd4248bd9e5d8474964b2d97f39c5d74/System.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.xr.interaction.toolkit@2.3.0-pre.1/Runtime/Interaction/Interactables/XRGrabInteractable.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.xr.interaction.toolkit@2.3.0-pre.1/Runtime/Interaction/XRInteractionManager.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.xr.interaction.toolkit@2.3.0-pre.1/Runtime/Locomotion/Continuous/ActionBasedContinuousTurnProvider.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Library/PackageCache/com.unity.xr.interaction.toolkit@2.3.0-pre.1/Tests/Editor/InteractionLayerUpdaterTest.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -98,21 +131,35 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;rider.run.widget.enabled.cache&quot;: &quot;false&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;rider.external.source.directories&quot;: [
+      &quot;C:\\Users\\yulaw\\AppData\\Roaming\\JetBrains\\Rider2022.3\\resharper-host\\DecompilerCache&quot;,
+      &quot;C:\\Users\\yulaw\\AppData\\Roaming\\JetBrains\\Rider2022.3\\resharper-host\\SourcesCache&quot;,
+      &quot;C:\\Users\\yulaw\\AppData\\Local\\Symbols\\src&quot;
+    ]
   }
 }</component>
   <component name="RunManager" selected="Standalone Player.UnitTests (batch mode)">
     <configuration name="Standalone Player" type="RunUnityExe" factoryName="Unity Executable">
-      <option name="EXE_PATH" value="$PROJECT_DIR$/../Builds\HandPoser Export Test.exe" />
+      <option name="EXE_PATH" value="$PROJECT_DIR$/Builds\BlankVR.exe" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="C:\.Projects\Unity\Builds" />
       <option name="PASS_PARENT_ENVS" value="1" />
       <option name="USE_EXTERNAL_CONSOLE" value="0" />
       <method v="2" />
     </configuration>
+    <configuration name="Start Unity" type="RunUnityExe" factoryName="Unity Executable">
+      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\2022.2.6f1\Editor\Unity.exe" />
+      <option name="PROGRAM_PARAMETERS" value="-projectPath C:\.Projects\Unity\XRHandPoser -debugCodeOptimization" />
+      <option name="WORKING_DIRECTORY" value="C:\.Projects\Unity\XRHandPoser" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <method v="2" />
+    </configuration>
     <configuration name="UnitTests (batch mode)" type="RunUnityExe" factoryName="Unity Executable">
-      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\2022.2.2f1\Editor\Unity.exe" />
+      <option name="EXE_PATH" value="C:\Program Files\Unity\Hub\Editor\2022.2.6f1\Editor\Unity.exe" />
       <option name="PROGRAM_PARAMETERS" value="-runTests -batchmode -projectPath C:\.Projects\Unity\XRHandPoser -testResults Logs/results.xml -testPlatform EditMode -debugCodeOptimization" />
       <option name="WORKING_DIRECTORY" value="C:\.Projects\Unity\XRHandPoser" />
       <option name="PASS_PARENT_ENVS" value="1" />
@@ -150,6 +197,14 @@
       <updated>1674191302400</updated>
       <workItem from="1674191310713" duration="1157000" />
       <workItem from="1674505350346" duration="5394000" />
+      <workItem from="1675994132641" duration="13396000" />
+      <workItem from="1676184854861" duration="4618000" />
+      <workItem from="1676314576840" duration="453000" />
+      <workItem from="1676516905203" duration="912000" />
+      <workItem from="1676598799085" duration="8912000" />
+      <workItem from="1676615219224" duration="9768000" />
+      <workItem from="1676677494657" duration="3385000" />
+      <workItem from="1676845759174" duration="3987000" />
     </task>
     <servers />
   </component>

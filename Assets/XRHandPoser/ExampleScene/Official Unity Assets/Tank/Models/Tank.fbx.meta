@@ -1,178 +1,476 @@
 fileFormatVersion: 2
 guid: 002e2a607f5b64c48be0b3b0d8b8bfdd
-timeCreated: 1429189962
-licenseType: Store
 ModelImporter:
-  serializedVersion: 18
-  fileIDToRecycleName:
-    100000: LeftTrackjoint1
-    100002: LeftTrackjoint10
-    100004: LeftTrackjoint11
-    100006: LeftTrackjoint12
-    100008: LeftTrackjoint13
-    100010: LeftTrackjoint14
-    100012: LeftTrackjoint15
-    100014: LeftTrackjoint16
-    100016: LeftTrackjoint17
-    100018: LeftTrackjoint18
-    100020: LeftTrackjoint19
-    100022: LeftTrackjoint2
-    100024: LeftTrackjoint20
-    100026: LeftTrackjoint21
-    100028: LeftTrackjoint22
-    100030: LeftTrackjoint23
-    100032: LeftTrackjoint24
-    100034: LeftTrackjoint3
-    100036: LeftTrackjoint4
-    100038: LeftTrackjoint5
-    100040: LeftTrackjoint6
-    100042: LeftTrackjoint7
-    100044: LeftTrackjoint8
-    100046: LeftTrackjoint9
-    100048: LeftWheeFrontlEnd
-    100050: LeftWheeFrontlEnd 1
-    100052: LeftWheelFront
-    100054: LeftWheelRear
-    100056: LeftWheelRearEnd
-    100058: RightTrackjoint1
-    100060: RightTrackjoint10
-    100062: RightTrackjoint11
-    100064: RightTrackjoint12
-    100066: RightTrackjoint13
-    100068: RightTrackjoint14
-    100070: RightTrackjoint15
-    100072: RightTrackjoint16
-    100074: RightTrackjoint17
-    100076: RightTrackjoint18
-    100078: RightTrackjoint19
-    100080: RightTrackjoint2
-    100082: RightTrackjoint20
-    100084: RightTrackjoint21
-    100086: RightTrackjoint22
-    100088: RightTrackjoint23
-    100090: RightTrackjoint24
-    100092: RightTrackjoint3
-    100094: RightTrackjoint4
-    100096: RightTrackjoint5
-    100098: RightTrackjoint6
-    100100: RightTrackjoint7
-    100102: RightTrackjoint8
-    100104: RightTrackjoint9
-    100106: RightWheelFront
-    100108: RightWheelRear
-    100110: RightWheelRearEnd
-    100112: //RootNode
-    100114: TankChassis
-    100116: TankTracksLeft
-    100118: TankTracksRight
-    100120: TankTurret
-    100122: TracksRig
-    100124: TankRenderers
-    400000: LeftTrackjoint1
-    400002: LeftTrackjoint10
-    400004: LeftTrackjoint11
-    400006: LeftTrackjoint12
-    400008: LeftTrackjoint13
-    400010: LeftTrackjoint14
-    400012: LeftTrackjoint15
-    400014: LeftTrackjoint16
-    400016: LeftTrackjoint17
-    400018: LeftTrackjoint18
-    400020: LeftTrackjoint19
-    400022: LeftTrackjoint2
-    400024: LeftTrackjoint20
-    400026: LeftTrackjoint21
-    400028: LeftTrackjoint22
-    400030: LeftTrackjoint23
-    400032: LeftTrackjoint24
-    400034: LeftTrackjoint3
-    400036: LeftTrackjoint4
-    400038: LeftTrackjoint5
-    400040: LeftTrackjoint6
-    400042: LeftTrackjoint7
-    400044: LeftTrackjoint8
-    400046: LeftTrackjoint9
-    400048: LeftWheeFrontlEnd
-    400050: LeftWheeFrontlEnd 1
-    400052: LeftWheelFront
-    400054: LeftWheelRear
-    400056: LeftWheelRearEnd
-    400058: RightTrackjoint1
-    400060: RightTrackjoint10
-    400062: RightTrackjoint11
-    400064: RightTrackjoint12
-    400066: RightTrackjoint13
-    400068: RightTrackjoint14
-    400070: RightTrackjoint15
-    400072: RightTrackjoint16
-    400074: RightTrackjoint17
-    400076: RightTrackjoint18
-    400078: RightTrackjoint19
-    400080: RightTrackjoint2
-    400082: RightTrackjoint20
-    400084: RightTrackjoint21
-    400086: RightTrackjoint22
-    400088: RightTrackjoint23
-    400090: RightTrackjoint24
-    400092: RightTrackjoint3
-    400094: RightTrackjoint4
-    400096: RightTrackjoint5
-    400098: RightTrackjoint6
-    400100: RightTrackjoint7
-    400102: RightTrackjoint8
-    400104: RightTrackjoint9
-    400106: RightWheelFront
-    400108: RightWheelRear
-    400110: RightWheelRearEnd
-    400112: //RootNode
-    400114: TankChassis
-    400116: TankTracksLeft
-    400118: TankTracksRight
-    400120: TankTurret
-    400122: TracksRig
-    400124: TankRenderers
-    2300000: TankChassis
-    2300002: TankTurret
-    2300004: //RootNode
-    2300006: TankTracksLeft
-    2300008: TankTracksRight
-    3300000: TankChassis
-    3300002: TankTurret
-    3300004: //RootNode
-    3300006: TankTracksLeft
-    3300008: TankTracksRight
-    4300000: TankChassis
-    4300002: TankTurret
-    4300004: TankTracksLeft
-    4300006: TankTracksRight
-    7400000: LeftTrackForward
-    7400002: RightTrackForward
-    9500000: //RootNode
-    13700000: TankTracksLeft
-    13700002: TankTracksRight
+  serializedVersion: 22200
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: LeftTrackjoint1
+  - first:
+      1: 100002
+    second: LeftTrackjoint10
+  - first:
+      1: 100004
+    second: LeftTrackjoint11
+  - first:
+      1: 100006
+    second: LeftTrackjoint12
+  - first:
+      1: 100008
+    second: LeftTrackjoint13
+  - first:
+      1: 100010
+    second: LeftTrackjoint14
+  - first:
+      1: 100012
+    second: LeftTrackjoint15
+  - first:
+      1: 100014
+    second: LeftTrackjoint16
+  - first:
+      1: 100016
+    second: LeftTrackjoint17
+  - first:
+      1: 100018
+    second: LeftTrackjoint18
+  - first:
+      1: 100020
+    second: LeftTrackjoint19
+  - first:
+      1: 100022
+    second: LeftTrackjoint2
+  - first:
+      1: 100024
+    second: LeftTrackjoint20
+  - first:
+      1: 100026
+    second: LeftTrackjoint21
+  - first:
+      1: 100028
+    second: LeftTrackjoint22
+  - first:
+      1: 100030
+    second: LeftTrackjoint23
+  - first:
+      1: 100032
+    second: LeftTrackjoint24
+  - first:
+      1: 100034
+    second: LeftTrackjoint3
+  - first:
+      1: 100036
+    second: LeftTrackjoint4
+  - first:
+      1: 100038
+    second: LeftTrackjoint5
+  - first:
+      1: 100040
+    second: LeftTrackjoint6
+  - first:
+      1: 100042
+    second: LeftTrackjoint7
+  - first:
+      1: 100044
+    second: LeftTrackjoint8
+  - first:
+      1: 100046
+    second: LeftTrackjoint9
+  - first:
+      1: 100048
+    second: LeftWheeFrontlEnd
+  - first:
+      1: 100050
+    second: LeftWheeFrontlEnd 1
+  - first:
+      1: 100052
+    second: LeftWheelFront
+  - first:
+      1: 100054
+    second: LeftWheelRear
+  - first:
+      1: 100056
+    second: LeftWheelRearEnd
+  - first:
+      1: 100058
+    second: RightTrackjoint1
+  - first:
+      1: 100060
+    second: RightTrackjoint10
+  - first:
+      1: 100062
+    second: RightTrackjoint11
+  - first:
+      1: 100064
+    second: RightTrackjoint12
+  - first:
+      1: 100066
+    second: RightTrackjoint13
+  - first:
+      1: 100068
+    second: RightTrackjoint14
+  - first:
+      1: 100070
+    second: RightTrackjoint15
+  - first:
+      1: 100072
+    second: RightTrackjoint16
+  - first:
+      1: 100074
+    second: RightTrackjoint17
+  - first:
+      1: 100076
+    second: RightTrackjoint18
+  - first:
+      1: 100078
+    second: RightTrackjoint19
+  - first:
+      1: 100080
+    second: RightTrackjoint2
+  - first:
+      1: 100082
+    second: RightTrackjoint20
+  - first:
+      1: 100084
+    second: RightTrackjoint21
+  - first:
+      1: 100086
+    second: RightTrackjoint22
+  - first:
+      1: 100088
+    second: RightTrackjoint23
+  - first:
+      1: 100090
+    second: RightTrackjoint24
+  - first:
+      1: 100092
+    second: RightTrackjoint3
+  - first:
+      1: 100094
+    second: RightTrackjoint4
+  - first:
+      1: 100096
+    second: RightTrackjoint5
+  - first:
+      1: 100098
+    second: RightTrackjoint6
+  - first:
+      1: 100100
+    second: RightTrackjoint7
+  - first:
+      1: 100102
+    second: RightTrackjoint8
+  - first:
+      1: 100104
+    second: RightTrackjoint9
+  - first:
+      1: 100106
+    second: RightWheelFront
+  - first:
+      1: 100108
+    second: RightWheelRear
+  - first:
+      1: 100110
+    second: RightWheelRearEnd
+  - first:
+      1: 100112
+    second: //RootNode
+  - first:
+      1: 100114
+    second: TankChassis
+  - first:
+      1: 100116
+    second: TankTracksLeft
+  - first:
+      1: 100118
+    second: TankTracksRight
+  - first:
+      1: 100120
+    second: TankTurret
+  - first:
+      1: 100122
+    second: TracksRig
+  - first:
+      1: 100124
+    second: TankRenderers
+  - first:
+      4: 400000
+    second: LeftTrackjoint1
+  - first:
+      4: 400002
+    second: LeftTrackjoint10
+  - first:
+      4: 400004
+    second: LeftTrackjoint11
+  - first:
+      4: 400006
+    second: LeftTrackjoint12
+  - first:
+      4: 400008
+    second: LeftTrackjoint13
+  - first:
+      4: 400010
+    second: LeftTrackjoint14
+  - first:
+      4: 400012
+    second: LeftTrackjoint15
+  - first:
+      4: 400014
+    second: LeftTrackjoint16
+  - first:
+      4: 400016
+    second: LeftTrackjoint17
+  - first:
+      4: 400018
+    second: LeftTrackjoint18
+  - first:
+      4: 400020
+    second: LeftTrackjoint19
+  - first:
+      4: 400022
+    second: LeftTrackjoint2
+  - first:
+      4: 400024
+    second: LeftTrackjoint20
+  - first:
+      4: 400026
+    second: LeftTrackjoint21
+  - first:
+      4: 400028
+    second: LeftTrackjoint22
+  - first:
+      4: 400030
+    second: LeftTrackjoint23
+  - first:
+      4: 400032
+    second: LeftTrackjoint24
+  - first:
+      4: 400034
+    second: LeftTrackjoint3
+  - first:
+      4: 400036
+    second: LeftTrackjoint4
+  - first:
+      4: 400038
+    second: LeftTrackjoint5
+  - first:
+      4: 400040
+    second: LeftTrackjoint6
+  - first:
+      4: 400042
+    second: LeftTrackjoint7
+  - first:
+      4: 400044
+    second: LeftTrackjoint8
+  - first:
+      4: 400046
+    second: LeftTrackjoint9
+  - first:
+      4: 400048
+    second: LeftWheeFrontlEnd
+  - first:
+      4: 400050
+    second: LeftWheeFrontlEnd 1
+  - first:
+      4: 400052
+    second: LeftWheelFront
+  - first:
+      4: 400054
+    second: LeftWheelRear
+  - first:
+      4: 400056
+    second: LeftWheelRearEnd
+  - first:
+      4: 400058
+    second: RightTrackjoint1
+  - first:
+      4: 400060
+    second: RightTrackjoint10
+  - first:
+      4: 400062
+    second: RightTrackjoint11
+  - first:
+      4: 400064
+    second: RightTrackjoint12
+  - first:
+      4: 400066
+    second: RightTrackjoint13
+  - first:
+      4: 400068
+    second: RightTrackjoint14
+  - first:
+      4: 400070
+    second: RightTrackjoint15
+  - first:
+      4: 400072
+    second: RightTrackjoint16
+  - first:
+      4: 400074
+    second: RightTrackjoint17
+  - first:
+      4: 400076
+    second: RightTrackjoint18
+  - first:
+      4: 400078
+    second: RightTrackjoint19
+  - first:
+      4: 400080
+    second: RightTrackjoint2
+  - first:
+      4: 400082
+    second: RightTrackjoint20
+  - first:
+      4: 400084
+    second: RightTrackjoint21
+  - first:
+      4: 400086
+    second: RightTrackjoint22
+  - first:
+      4: 400088
+    second: RightTrackjoint23
+  - first:
+      4: 400090
+    second: RightTrackjoint24
+  - first:
+      4: 400092
+    second: RightTrackjoint3
+  - first:
+      4: 400094
+    second: RightTrackjoint4
+  - first:
+      4: 400096
+    second: RightTrackjoint5
+  - first:
+      4: 400098
+    second: RightTrackjoint6
+  - first:
+      4: 400100
+    second: RightTrackjoint7
+  - first:
+      4: 400102
+    second: RightTrackjoint8
+  - first:
+      4: 400104
+    second: RightTrackjoint9
+  - first:
+      4: 400106
+    second: RightWheelFront
+  - first:
+      4: 400108
+    second: RightWheelRear
+  - first:
+      4: 400110
+    second: RightWheelRearEnd
+  - first:
+      4: 400112
+    second: //RootNode
+  - first:
+      4: 400114
+    second: TankChassis
+  - first:
+      4: 400116
+    second: TankTracksLeft
+  - first:
+      4: 400118
+    second: TankTracksRight
+  - first:
+      4: 400120
+    second: TankTurret
+  - first:
+      4: 400122
+    second: TracksRig
+  - first:
+      4: 400124
+    second: TankRenderers
+  - first:
+      23: 2300000
+    second: TankChassis
+  - first:
+      23: 2300002
+    second: TankTurret
+  - first:
+      23: 2300004
+    second: //RootNode
+  - first:
+      23: 2300006
+    second: TankTracksLeft
+  - first:
+      23: 2300008
+    second: TankTracksRight
+  - first:
+      33: 3300000
+    second: TankChassis
+  - first:
+      33: 3300002
+    second: TankTurret
+  - first:
+      33: 3300004
+    second: //RootNode
+  - first:
+      33: 3300006
+    second: TankTracksLeft
+  - first:
+      33: 3300008
+    second: TankTracksRight
+  - first:
+      43: 4300000
+    second: TankChassis
+  - first:
+      43: 4300002
+    second: TankTurret
+  - first:
+      43: 4300004
+    second: TankTracksLeft
+  - first:
+      43: 4300006
+    second: TankTracksRight
+  - first:
+      74: 7400000
+    second: LeftTrackForward
+  - first:
+      74: 7400002
+    second: RightTrackForward
+  - first:
+      95: 9500000
+    second: //RootNode
+  - first:
+      137: 13700000
+    second: TankTracksLeft
+  - first:
+      137: 13700002
+    second: TankTracksRight
+  externalObjects: {}
   materials:
-    importMaterials: 1
+    materialImportMode: 1
     materialName: 0
     materialSearch: 1
+    materialLocation: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
+    resampleCurves: 1
     optimizeGameObjects: 1
+    removeConstantScaleCurves: 0
     motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
     animationCompression: 0
-    animationRotationError: .5
-    animationPositionError: .5
-    animationScaleError: .5
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
     animationWrapMode: 0
     extraExposedTransformPaths: []
+    extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
       name: LeftTrackForward
       takeName: Take 001
+      internalID: 0
       firstFrame: 0
       lastFrame: 30
       wrapMode: 0
@@ -180,6 +478,7 @@ ModelImporter:
       level: 0
       cycleOffset: 0
       loop: 0
+      hasAdditiveReferencePose: 0
       loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 0
@@ -320,9 +619,11 @@ ModelImporter:
         weight: 1
       maskType: 0
       maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
     - serializedVersion: 16
       name: RightTrackForward
       takeName: Take 001
+      internalID: 0
       firstFrame: 30
       lastFrame: 60
       wrapMode: 0
@@ -330,6 +631,7 @@ ModelImporter:
       level: 0
       cycleOffset: 0
       loop: 0
+      hasAdditiveReferencePose: 0
       loopTime: 1
       loopBlend: 0
       loopBlendOrientation: 0
@@ -470,44 +772,77 @@ ModelImporter:
         weight: 1
       maskType: 0
       maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
     isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1
     meshCompression: 0
     addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importVisibility: 0
     importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    nodeNameCollisionStrategy: 0
+    fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 1
     useFileUnits: 1
-    optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
-    splitTangentsAcrossUV: 1
     normalImportMode: 0
-    tangentImportMode: 1
+    tangentImportMode: 4
+    normalCalculationMode: 0
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 1
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
   importAnimation: 0
-  copyAvatar: 0
   humanDescription:
+    serializedVersion: 3
     human: []
     skeleton: []
-    armTwist: .5
-    foreArmTwist: .5
-    upperLegTwist: .5
-    legTwist: .5
-    armStretch: .0500000007
-    legStretch: .0500000007
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
     feetSpacing: 0
+    globalScale: 1
     rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 0
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 

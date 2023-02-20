@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using NaughtyAttributes;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -104,6 +105,7 @@ namespace MikeNspired.UnityXRHandPoser
             }
         }
 
+        [Button()]
         public void StartGame()
         {
             StopAllCoroutines();
@@ -142,7 +144,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void TargetHit(float damage)
         {
-            totalTargetsHit.SetValue(totalTargetsHit.GetValue() + 1);
+            totalTargetsHit.SetValue(totalTargetsHit.GetValue() + damage);
             StartCoroutine(ActivateAnotherTarget());
         }
 
