@@ -1,5 +1,4 @@
 using MikeNspired.UnityXRHandPoser;
-using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -10,7 +9,7 @@ public class AutoSpawnObjectInHandOnGrab : MonoBehaviour
 
     private HandReference currentHand, otherHand;
 
-    private void Start()
+    private void Start()    
     {
         _xrBaseInteractable.selectEntered.AddListener(OnGrab);
         _xrBaseInteractable.selectExited.AddListener(OnRelease);

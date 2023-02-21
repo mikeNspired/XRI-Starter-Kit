@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using NaughtyAttributes;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -105,7 +104,6 @@ namespace MikeNspired.UnityXRHandPoser
             }
         }
 
-        [Button()]
         public void StartGame()
         {
             StopAllCoroutines();

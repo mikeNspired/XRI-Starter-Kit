@@ -1,5 +1,4 @@
 using System.Globalization;
-using NaughtyAttributes;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -31,7 +30,6 @@ namespace MikeNspired.UnityXRHandPoser
             targetPoints = GetComponentsInChildren<TargetPoints>();
         }
 
-        [Button()]
         public void TestHit()
         {
             TargetHit(1);

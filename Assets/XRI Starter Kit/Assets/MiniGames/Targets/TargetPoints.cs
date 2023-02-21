@@ -1,5 +1,4 @@
 using MikeNspired.UnityXRHandPoser;
-using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -18,7 +17,6 @@ public class TargetPoints : MonoBehaviour, IDamageable
         onHit.Invoke(points);
     }
     
-    [Button()]
     public void Hit()
     {
         if (!canTakeDamage) return;
