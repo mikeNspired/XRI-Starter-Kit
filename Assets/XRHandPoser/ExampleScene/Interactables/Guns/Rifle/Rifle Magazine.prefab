@@ -321,7 +321,7 @@ MonoBehaviour:
   CurrentAmmo: 30
   gunType: {fileID: 11400000, guid: 28e951b9ddb12e045826cb58c8ba0ad6, type: 2}
   ammoModels: {fileID: 3217367507332200334}
-  collider: {fileID: 8252189506900701473}
+  _: {fileID: 8252189506900701473}
   rigidBody: {fileID: 3217367507161224165}
 --- !u!114 &3217367507161224163
 MonoBehaviour:
@@ -370,6 +370,7 @@ MonoBehaviour:
   maxVolume: 0.4
   timeTillCanPlayAgain: 0.1
   maxVelocity: 15
+  blah: 0
 --- !u!54 &3217367507161224165
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -715,13 +716,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineMode: 1
-  outlineColor: {r: 0.5019608, g: 0.7176471, b: 0.8666667, a: 1}
+  outlineColor: {r: 0.3339622, g: 0.7001907, b: 1, a: 1}
   outlineWidth: 2
-  precomputeOutline: 0
+  precomputeOutline: 1
   bakeKeys: []
   bakeValues: []
   needsUpdate: 0
   _baseInteractable: {fileID: 3217367507161224161}
+  onlyHighlightsWhenNotSelected: 0
 --- !u!1 &3217367508071755076
 GameObject:
   m_ObjectHideFlags: 0
