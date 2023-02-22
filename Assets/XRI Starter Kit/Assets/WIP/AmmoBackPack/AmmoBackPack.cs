@@ -12,8 +12,6 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private XRGrabInteractable magazine2 = null;
         [SerializeField] private GunType gunType1 = null;
         [SerializeField] private GunType gunType2 = null;
-        [SerializeField] private float itemGrabTimeout = .5f;
-        private float itemGrabTimeoutTimer;
         private XRInteractionManager interactionManager;
         private XRSimpleInteractable simpleInteractable;
 
@@ -82,7 +80,6 @@ namespace MikeNspired.UnityXRHandPoser
             yield return new WaitForFixedUpdate();
             if (currentInteractor.selectTarget) yield break;
             interactionManager.SelectEnter(currentInteractor, newMagazine);
-            itemGrabTimeoutTimer = 0;
         }
     }
 }

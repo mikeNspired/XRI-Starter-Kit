@@ -6,16 +6,18 @@ namespace MikeNspired.UnityXRHandPoser
     {
         [SerializeField] private Color color1 = Color.black;
         [SerializeField] private Color color2 = Color.black;
-        
+
+        [SerializeField] private Light mixedLight;
 
         private Color startingColor;
+        private float startingIntensity;
         private LightmapData[] startingLightMaps;
 
         private void Start()
         {
             startingColor = RenderSettings.ambientLight;
-             startingLightMaps = LightmapSettings.lightmaps;
-
+            startingLightMaps = LightmapSettings.lightmaps;
+            startingIntensity = mixedLight.intensity;
         }
 
         public void SetToColor1()
@@ -32,10 +34,12 @@ namespace MikeNspired.UnityXRHandPoser
         {
             RenderSettings.ambientLight = Color.black;
             LightmapSettings.lightmaps = new LightmapData[] { };
+            mixedLight.intensity = .1f;
         }
 
         public void ReturnToStartingColor()
         {
+            mixedLight.intensity = startingIntensity;
             RenderSettings.ambientLight = startingColor;
             LightmapSettings.lightmaps = startingLightMaps;
         }

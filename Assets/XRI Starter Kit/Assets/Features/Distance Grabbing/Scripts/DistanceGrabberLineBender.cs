@@ -88,7 +88,7 @@ namespace MikeNspired.UnityXRHandPoser
 
 
         [Header("Particle Settings")] [SerializeField]
-        private ParticleSystem particleSystem = null;
+        private new ParticleSystem particleSystem = null;
 
         [SerializeField] private ParticleSystem largeParticles = null;
         [SerializeField] private float smallAttractSpeed = 2f, largeAttractSpeed = .5f;
