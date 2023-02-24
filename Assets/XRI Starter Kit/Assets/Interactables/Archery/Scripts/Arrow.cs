@@ -18,7 +18,6 @@ public class Arrow : MonoBehaviour
     private bool inAir = false;
     private Rigidbody rb;
     private Collider[] colliders;
-    private float bouncePower = 1;
 
     protected void Awake()
     {

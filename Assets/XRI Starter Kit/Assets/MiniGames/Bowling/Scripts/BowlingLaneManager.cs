@@ -12,7 +12,7 @@ namespace MikeNspired.UnityXRHandPoser
         private Vector3 startingPinsLocation;
         private int ballCounter, pinCounter, pinScoreCounter;
         private bool paused;
-        private float animationTime = 1;
+        private float animationTime = 1, ballSpawnSpeed = 3f;
 
         private void Start()
         {
@@ -81,7 +81,7 @@ namespace MikeNspired.UnityXRHandPoser
             yield return new WaitForSeconds(1);
             ball.transform.position = spawnRespawnPoint.transform.position;
             ball.transform.rotation = spawnRespawnPoint.transform.rotation;
-            ball.GetComponent<Rigidbody>().velocity = ball.transform.forward;
+            ball.GetComponent<Rigidbody>().velocity = ball.transform.forward * ballSpawnSpeed;
         }
 
         private void ResetPins()

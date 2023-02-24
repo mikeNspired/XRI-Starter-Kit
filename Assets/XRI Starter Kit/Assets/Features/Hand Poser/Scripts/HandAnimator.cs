@@ -146,12 +146,8 @@ namespace MikeNspired.UnityXRHandPoser
             StartCoroutine(AnimateByTriggerValue);
         }
 
-
-        private bool animateToPoseComplete;
-
         private IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose)
         {
-            animateToPoseComplete = false;
             float timer = 0;
             while (timer <= animationTimeToNewPose + Time.deltaTime)
             {
@@ -170,8 +166,6 @@ namespace MikeNspired.UnityXRHandPoser
                 timer += Time.deltaTime;
                 yield return new WaitForSeconds(Time.deltaTime);
             }
-
-            animateToPoseComplete = true;
         }
 
         private IEnumerator AnimateToPoseByValue2(Pose newPose, ControllerButtons button)

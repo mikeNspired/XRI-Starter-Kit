@@ -1,5 +1,6 @@
 // Author MikeNspired
 
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -67,6 +68,11 @@ namespace MikeNspired.UnityXRHandPoser
 
             counter++;
             LayoutRebuilder.ForceRebuildLayoutImmediate(textParent as RectTransform);
+        }
+
+        public void Clear()
+        {
+            foreach (var text in textList) text.GetComponentInChildren<TextMeshProUGUI>().text = "";
         }
     }
 }
