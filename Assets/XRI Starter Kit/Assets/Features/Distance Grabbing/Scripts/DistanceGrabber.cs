@@ -562,7 +562,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void TryToAutoGrab()
         {
             if (!autoGrabIfGripping) return;
-            if (directInteractor.selectTarget) return;
+            if (directInteractor.selectTarget || !currentTarget) return;
             if (Vector3.Distance(currentTarget.position, transform.position) >= distanceToAutoGrab) return;
 
             if (!isInputActivated) return;
