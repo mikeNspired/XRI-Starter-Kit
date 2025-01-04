@@ -1,51 +1,45 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class Grenade : MonoBehaviour, IDamageable
     {
         [SerializeField] private XRGrabInteractable interactable = null;
-        [SerializeField] private GameObject Explosion = null;
+        [SerializeField] private GameObject explosionPrefab = null;
         [SerializeField] private AudioSource activationSound = null;
         [SerializeField] private GameObject meshLightActivation = null;
-        [SerializeField] private float detonationTime = 3;
+        [SerializeField] private float detonationTime = 3f;
         [SerializeField] private bool startTimerAfterActivation = false;
 
         private bool canActivate;
         private XRInteractionManager interactionManager;
 
-        // Start is called before the first frame update
-        void Start()
+        private void Awake()
         {
-            OnValidate();
             interactable = GetComponent<XRGrabInteractable>();
-            interactable.onActivate.AddListener(TurnOnGrenade);
-            interactable.onSelectExited.AddListener(Activate);
+            interactionManager = FindFirstObjectByType<XRInteractionManager>();
+
+            interactable.activated.AddListener(TurnOnGrenade);
+            interactable.selectExited.AddListener(Activate);
+
             if (meshLightActivation)
                 meshLightActivation.SetActive(false);
         }
 
-        private void OnValidate()
-        {
-            if (!interactable)
-                interactable = GetComponent<XRGrabInteractable>();
-            if (!interactionManager)
-                interactionManager = FindObjectOfType<XRInteractionManager>();
-        }
-
-        private void TurnOnGrenade(XRBaseInteractor interactor)
+        private void TurnOnGrenade(ActivateEventArgs args)
         {
             canActivate = true;
-            meshLightActivation.SetActive(true);
-            activationSound.Play();
+            if (meshLightActivation) meshLightActivation.SetActive(true);
+            activationSound?.Play();
 
             if (startTimerAfterActivation)
                 Invoke(nameof(TriggerGrenade), detonationTime);
         }
 
-        private void Activate(XRBaseInteractor interactor)
+        private void Activate(SelectExitEventArgs args)
         {
             if (canActivate && !startTimerAfterActivation)
                 Invoke(nameof(TriggerGrenade), detonationTime);
@@ -53,25 +47,23 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void TriggerGrenade()
         {
-            Explosion.SetActive(true);
-            Explosion.transform.parent = null;
-            Explosion.transform.localEulerAngles = Vector3.zero;
+            if (explosionPrefab)
+            {
+                explosionPrefab.SetActive(true);
+                explosionPrefab.transform.parent = null;
+                explosionPrefab.transform.localEulerAngles = Vector3.zero;
+            }
 
-            if (interactable.selectingInteractor)
-                interactionManager.SelectExit(interactable.selectingInteractor, interactable);
+            if (interactable.firstInteractorSelecting != null)
+                interactionManager.SelectExit(interactable.firstInteractorSelecting, interactable);
 
-            StartCoroutine(MoveAndDisableCollider());
-            //gameObject.SetActive(false);
-            // Destroy(gameObject,1);
+            StartCoroutine(MoveAndDisable());
         }
 
-        private IEnumerator MoveAndDisableCollider()
+        private IEnumerator MoveAndDisable()
         {
-            //objectToMove.GetComponent<CollidersSetToTrigger>()?.SetAllToTrigger();
-
             transform.position += Vector3.one * 9999;
             yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
-            //Lets physics respond to collider disappearing before disabling object physics update needs to run twice
             Destroy(gameObject);
         }
 

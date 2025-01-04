@@ -271,7 +271,7 @@ namespace MikeNspired.UnityXRHandPoser
             m_AppliedForce = 0.0f;
 
             // Zero out any existing velocity, we are going to set force manually if needed
-            m_Rigidbody.velocity = Vector3.zero;
+            m_Rigidbody.linearVelocity = Vector3.zero;
             m_Rigidbody.angularVelocity = Vector3.zero;
 
             UpdateBufferedCollision();
@@ -440,7 +440,7 @@ namespace MikeNspired.UnityXRHandPoser
             // When exiting collision, we lock to the last known rigidbody position.
             // This is because we can end up putting fairly strong forces on this object
             // If a parent or pure transform change invalidates the collision these forces can cause an object to move through things
-            m_Rigidbody.velocity = Vector3.zero;
+            m_Rigidbody.linearVelocity = Vector3.zero;
             m_Rigidbody.position = m_LastPosition;
             transform.position = m_LastPosition;
         }

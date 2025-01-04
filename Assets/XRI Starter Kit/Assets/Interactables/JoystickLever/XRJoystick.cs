@@ -3,6 +3,7 @@ using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using static Unity.Mathematics.math;
 
 namespace MikeNspired.UnityXRHandPoser
@@ -50,7 +51,8 @@ namespace MikeNspired.UnityXRHandPoser
             if (!xrGrabInteractable)
                 xrGrabInteractable = GetComponent<XRBaseInteractable>();
 
-            SetStartPosition();
+            if(rotationPoint)
+                SetStartPosition();
         }
 
         private void SetStartPosition()

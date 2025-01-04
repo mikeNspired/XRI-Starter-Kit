@@ -5,19 +5,19 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class ReleaseHandAtDistance : MonoBehaviour
     {
-        [SerializeField] private XRBaseInteractable baseInteractable;
+        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable baseInteractable;
         [SerializeField] private float distance = .2f;
         [SerializeField] public bool debugSpheresEnabled;
 
-        private IXRSelectInteractor interactor;
-        private IXRSelectInteractable interactable;
+        private UnityEngine.XR.Interaction.Toolkit.Interactors.IXRSelectInteractor interactor;
+        private UnityEngine.XR.Interaction.Toolkit.Interactables.IXRSelectInteractable interactable;
         private XRInteractionManager interactionManager;
 
         private void Start()
         {
             OnValidate();
             LogMessages();
-            interactable = baseInteractable.GetComponent<IXRSelectInteractable>();
+            interactable = baseInteractable.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.IXRSelectInteractable>();
             interactable.selectEntered.AddListener(x => interactor = x.interactorObject);
             interactable.selectExited.AddListener(x => interactor = null);
         }
@@ -25,7 +25,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnValidate()
         {
             if (!baseInteractable)
-                baseInteractable = GetComponentInParent<XRBaseInteractable>();
+                baseInteractable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
             if (!interactionManager)
                 interactionManager = FindObjectOfType<XRInteractionManager>();
         }

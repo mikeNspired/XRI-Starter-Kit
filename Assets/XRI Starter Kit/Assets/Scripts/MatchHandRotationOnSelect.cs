@@ -1,30 +1,42 @@
-﻿// Author MikeNspired. 
-
+﻿// Author: MikeNspired
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class MatchHandRotationOnSelect : MonoBehaviour
     {
-        public XRBaseInteractable interactable;
-        public Transform HandAttachTransformParent;
+        [SerializeField]
+        private XRBaseInteractable interactable;
 
-        private void OnValidate()
+        [SerializeField]
+        private Transform handAttachTransformParent;
+
+        void OnValidate()
         {
-            if (!interactable) interactable = GetComponent<XRBaseInteractable>();
+            if (!interactable)
+                interactable = GetComponent<XRBaseInteractable>();
         }
 
-        private void Start()
+        void Start()
         {
             OnValidate();
-            interactable.onSelectEntered.AddListener(x => SetPosition(x.GetComponentInParent<HandReference>()?.Hand));
+            
+            // Listen for a select event, then rotate the hand attach transform
+            interactable.selectEntered.AddListener(args =>
+            {
+                var handRef = args.interactorObject.transform.GetComponentInParent<HandReference>();
+                if (handRef?.Hand == null) return;
+                SetPosition(handRef.Hand);
+            });
         }
 
-        private void SetPosition(HandAnimator handAnimator)
+        void SetPosition(HandAnimator handAnimator)
         {
             var handDirection = handAnimator.transform.forward;
-            HandAttachTransformParent.transform.forward = Vector3.ProjectOnPlane(handDirection, transform.up);
+            handAttachTransformParent.transform.forward =
+                Vector3.ProjectOnPlane(handDirection, transform.up);
         }
     }
 }

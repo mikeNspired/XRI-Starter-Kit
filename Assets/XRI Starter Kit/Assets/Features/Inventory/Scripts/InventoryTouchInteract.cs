@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -22,7 +22,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (!enabled) return;
 
-            var controller = other.GetComponent<XRDirectInteractor>();
+            var controller = other.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.XRDirectInteractor>();
 
             if (!controller) return;
 

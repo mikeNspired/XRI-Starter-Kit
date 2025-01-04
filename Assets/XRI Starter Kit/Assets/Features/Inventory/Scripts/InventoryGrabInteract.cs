@@ -1,42 +1,33 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.InputSystem;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class InventoryGrabInteract : MonoBehaviour
     {
-        [SerializeField] private InteractButton interactButton = InteractButton.grip;
-        [SerializeField] private InventoryManager inventoryManager;
+        [SerializeField] private InputActionReference leftControllerInput, rightControllerInput;
+        [SerializeField] private InventoryManager inventoryManager; 
 
-        private List<ActionBasedController> controllers = new List<ActionBasedController>();
+        private List<ControllerInputActionManager> hoveringControllers = new List<ControllerInputActionManager>();
         private InventorySlot inventorySlot;
-        private ActionBasedController leftHand, rightHand;
-
-        private enum InteractButton
-        {
-            trigger,
-            grip
-        };
 
         private void Start()
         {
             OnValidate();
 
-            if (interactButton == InteractButton.grip)
+            if (leftControllerInput?.action != null)
             {
-                leftHand.selectAction.reference.GetInputAction().performed += x => SetControllerGrip(leftHand, true);
-                rightHand.selectAction.reference.GetInputAction().performed += x => SetControllerGrip(rightHand, true);
-                leftHand.selectAction.reference.GetInputAction().canceled += x => SetControllerGrip(leftHand, false);
-                rightHand.selectAction.reference.GetInputAction().canceled += x => SetControllerGrip(rightHand, false);
+                leftControllerInput.action.performed += _ => CheckControllerInteraction(inventoryManager.leftController);
+                leftControllerInput.action.canceled += _ => CheckControllerInteraction(inventoryManager.leftController);
             }
 
-            else
+            if (rightControllerInput?.action != null)
             {
-                leftHand.activateAction.reference.GetInputAction().performed += x => SetControllerGrip(leftHand, true);
-                rightHand.activateAction.reference.GetInputAction().performed += x => SetControllerGrip(rightHand, true);
-                leftHand.activateAction.reference.GetInputAction().canceled += x => SetControllerGrip(leftHand, false);
-                rightHand.activateAction.reference.GetInputAction().canceled += x => SetControllerGrip(rightHand, false);
+                rightControllerInput.action.performed += _ => CheckControllerInteraction(inventoryManager.rightController);
+                rightControllerInput.action.canceled += _ => CheckControllerInteraction(inventoryManager.rightController);
             }
         }
 
@@ -44,33 +35,34 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (!inventoryManager)
                 inventoryManager = GetComponentInParent<InventoryManager>();
+
             if (!inventorySlot)
                 inventorySlot = GetComponent<InventorySlot>();
-            if (!leftHand && inventoryManager)
-                leftHand = inventoryManager.leftController;
-            if (!rightHand && inventoryManager)
-                rightHand = inventoryManager.rightController;
         }
 
-        private void SetControllerGrip(ActionBasedController controller, bool state)
+        private void CheckControllerInteraction(ControllerInputActionManager controller)
         {
-            if (!controllers.Contains(controller)) return;
-            if (!inventorySlot.gameObject.activeInHierarchy) return;
-            inventorySlot.TryInteractWithSlot(controller.GetComponentInChildren<XRDirectInteractor>());
+            if (!hoveringControllers.Contains(controller) || !inventorySlot.gameObject.activeInHierarchy) return;
+            
+            var interactor = controller.GetComponentInChildren<XRDirectInteractor>();
+            if (interactor != null)
+                inventorySlot.TryInteractWithSlot(interactor);
         }
 
         private void OnTriggerEnter(Collider other)
         {
             if (!other.TryGetComponent(out XRBaseInteractor interactor)) return;
-            var controller = interactor.GetComponentInParent<ActionBasedController>();
 
-            if (controller && !controllers.Contains(controller)) controllers.Add(controller);
+            var controller = interactor.GetComponentInParent<ControllerInputActionManager>();
+            if (controller != null && !hoveringControllers.Contains(controller))
+                hoveringControllers.Add(controller);
         }
 
         private void OnTriggerExit(Collider other)
         {
-            var controller = other.GetComponentInParent<ActionBasedController>();
-            if (controller) controllers.Remove(controller);
+            var controller = other.GetComponentInParent<ControllerInputActionManager>();
+            if (controller != null)
+                hoveringControllers.Remove(controller);
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿// Author MikeNspired. 
+﻿// Author MikeNspired.
 using UnityEngine;
-using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -10,21 +10,19 @@ namespace MikeNspired.UnityXRHandPoser
     /// If the value is 0 the 'MovingObject' will be at the original starting position/rotation. 
     /// If the value is 1 the 'MovingObject' will be at the endPosition position/rotation.
     /// This class moves objects based on localPosition so make sure they have the same Parent.
-    /// This class will be updated when the new input system is released.
     /// </summary>
     public class AnimationTransformOnTriggerValue : MonoBehaviour
     {
-        [Tooltip("The Transform that you want to be animated based on trigger value")] [SerializeField]
-        private Transform MovingObject = null;
+        [Tooltip("The Transform that you want to be animated based on trigger value")]
+        [SerializeField] private Transform MovingObject;
 
-        [Tooltip("The Transform ('Typically an empty gameObject') that you want the 'MovingObject' to be animated to")] [SerializeField]
-        private Transform endPosition = null;
+        [Tooltip("The Transform ('Typically an empty gameObject') that you want the 'MovingObject' to be animated to")]
+        [SerializeField] private Transform endPosition;
 
-        [SerializeField] private XRGrabInteractable interactable = null;
+        [SerializeField] private XRGrabInteractable interactable;
+
         private TransformStruct startingPosition;
-        private InputDevice inputDevice;
         private XRControllerButtons buttons;
-
 
         private void Start()
         {
@@ -32,8 +30,9 @@ namespace MikeNspired.UnityXRHandPoser
             startingPosition.rotation = MovingObject.localRotation;
 
             if (!interactable) interactable = GetComponent<XRGrabInteractable>();
-            interactable.onSelectEntered.AddListener(SetController);
-            interactable.onSelectExited.AddListener(RemoveController);
+
+            interactable.selectEntered.AddListener(args => SetController(args));
+            interactable.selectExited.AddListener(args => buttons = null);
         }
 
         private void OnValidate()
@@ -41,24 +40,19 @@ namespace MikeNspired.UnityXRHandPoser
             if (!interactable) interactable = GetComponent<XRGrabInteractable>();
         }
 
-        private void RemoveController(XRBaseInteractor controller) => buttons = null;
-
-        private void SetController(XRBaseInteractor controller)
+        private void SetController(SelectEnterEventArgs args)
         {
-            buttons = controller.GetComponentInParent<HandReference>().Hand.GetComponent<XRControllerButtons>();
+            if (args.interactorObject is { } interactor)
+                buttons = interactor.transform.GetComponentInParent<HandReference>()?.Hand.GetComponent<XRControllerButtons>();
         }
-
 
         private void Update()
         {
-            //If not controller is being grabbed, will stop this update loop
-            if (!buttons) return;
-            float value = buttons.triggerValue;
-            var newPosition = Vector3.Lerp(startingPosition.position, endPosition.localPosition, value);
-            var newRotation = Quaternion.Lerp(startingPosition.rotation, endPosition.localRotation, value);
+            if (buttons == null) return;
 
-            MovingObject.localPosition = newPosition;
-            MovingObject.localRotation = newRotation;
+            float value = buttons.triggerValue;
+            MovingObject.localPosition = Vector3.Lerp(startingPosition.position, endPosition.localPosition, value);
+            MovingObject.localRotation = Quaternion.Lerp(startingPosition.rotation, endPosition.localRotation, value);
         }
     }
 }

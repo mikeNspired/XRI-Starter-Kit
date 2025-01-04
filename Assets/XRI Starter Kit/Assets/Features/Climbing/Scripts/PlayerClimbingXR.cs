@@ -3,113 +3,148 @@ using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion; // For LocomotionProvider / LocomotionMediator
 
 namespace MikeNspired.UnityXRHandPoser
 {
+    /// <summary>
+    /// Simple climbing approach that disables gravity and manually moves a CharacterController,
+    /// using LocomotionMediator for beginning and ending locomotion.
+    /// </summary>
+    [AddComponentMenu("XR/Locomotion/Player Climbing XR")]
     public class PlayerClimbingXR : LocomotionProvider
     {
-        [SerializeField] private XRInteractionManager xrInteractionManager = null;
+        [Header("References")]
+        [SerializeField] private XRInteractionManager xrInteractionManager;
+        [SerializeField] private DynamicMoveProvider playerMovement;
+        [SerializeField] private CharacterController characterController;
+        [SerializeField] private XROrigin xrOrigin;
+        [SerializeField] private LayerMask checkGroundLayerMask = 1; // Not used in this minimal snippet
 
-        [SerializeField] private ContinuousMoveProviderBase playerMovement = null;
-        [SerializeField] private CharacterController characterController = null;
-        [SerializeField] private XROrigin xrOrigin = null;
-        [SerializeField] private LayerMask checkGroundLayerMask = 1;
+        [Header("Climb Speed")]
+        [SerializeField] private float oneHandClimbSpeed = 0.6f;
+        [SerializeField] private float twoHandClimbSpeed = 1f;
 
-        [Header("Climb Speed")] [SerializeField]
-        private float oneHandClimbSpeed = .6f;
+        [Header("Return To Old Location On Previous Hand Release")]
+        [SerializeField] private float returnDistance = 0.1f;
+        [SerializeField] private AnimationCurve returnToPlayerCurve = AnimationCurve.Linear(1f, 1f, 1f, 0f);
+        [SerializeField] private float returnAnimationLength = 0.25f;
 
-        [SerializeField] private float twoHandClimbSpeed = 1;
+        [Header("Launching")]
+        [SerializeField] private float launchSpeedMultiplier = 2f;
+        [SerializeField] private Vector3 launchVelocityDrag = new Vector3(0.1f, 0.1f, 0.1f);
 
-        private XRBaseController climbingHand, previousHand;
+        private ControllerInputActionManager climbingHand;
+        private ControllerInputActionManager previousHand;
+
         private Vector3 overPosition = Vector3.zero;
+        private Vector3 prevLocation = Vector3.zero;
         private float climbSpeed;
 
-        [Header("Return To Old Location On Previous Hand Release")] [SerializeField]
-        private float returnDistance = .1f;
-
-        [SerializeField] private AnimationCurve returnToPlayerCurve = AnimationCurve.Linear(1f, 1f, 1f, 0f);
-        [SerializeField] private float returnAnimationLength = .25f;
-        private Vector3 prevLocation = Vector3.zero;
-
-        [Header("Launching")] [SerializeField] private float launchSpeedMultiplier = 2;
-        [SerializeField] private Vector3 launchVelocityDrag = new Vector3(.1f, .1f, .1f);
+        // For "launch" motion after letting go
         private Vector3 launchVelocity = Vector3.up;
 
+        private bool isClimbing;
+        private bool isReturningPlayer;
 
-        private void Start()
-        {
-            OnValidate();
-        }
+        private void Start() => OnValidate();
 
         private void OnValidate()
         {
-            if (!gameObject.activeInHierarchy) return;
-            if (!system)
-                system = GetComponent<LocomotionSystem>();
+            if (!mediator)
+                mediator = GetComponent<LocomotionMediator>();
+
             if (!playerMovement)
-                playerMovement = GetComponent<ContinuousMoveProviderBase>();
+                playerMovement = GetComponent<DynamicMoveProvider>();
+
             if (!xrOrigin)
                 xrOrigin = GetComponentInParent<XROrigin>();
+
             if (!xrInteractionManager)
-                xrInteractionManager = FindObjectOfType<XRInteractionManager>();
+                xrInteractionManager = FindFirstObjectByType<XRInteractionManager>();
+
             if (!characterController)
-                characterController = FindObjectOfType<CharacterController>();
+                characterController = FindFirstObjectByType<CharacterController>();
         }
 
-        public void Update()
+        private void Update()
         {
-            if (characterController.isGrounded && !isClimbing)
+            // If grounded and not climbing, restore gravity & zero launch velocity
+            if (characterController && characterController.isGrounded && !isClimbing)
             {
                 playerMovement.useGravity = true;
                 launchVelocity = Vector3.zero;
                 return;
             }
 
-            if (isClimbing || overPosition != Vector3.zero) return;
-            launchVelocity.x /= 1 + launchVelocityDrag.x * Time.deltaTime;
-            launchVelocity.y += Physics.gravity.y * Time.fixedDeltaTime;
+            // If actively climbing or we have an "overPosition," skip applying launch motion
+            if (isClimbing || overPosition != Vector3.zero)
+                return;
 
-            launchVelocity.z /= 1 + launchVelocityDrag.x * Time.deltaTime;
-            characterController.Move(launchVelocity * Time.deltaTime);
+            // Apply "launch" motion with drag
+            launchVelocity.x /= 1 + launchVelocityDrag.x * Time.deltaTime;
+            launchVelocity.y += Physics.gravity.y * Time.deltaTime;
+            launchVelocity.z /= 1 + launchVelocityDrag.z * Time.deltaTime;
+
+            characterController?.Move(launchVelocity * Time.deltaTime);
         }
-        
+
         private void FixedUpdate()
         {
-            if (!isClimbing) return;
+            // If not climbing, nothing to do
+            if (!isClimbing)
+                return;
 
-            BeginLocomotion();
-            Climb();
+            // If mediator says "Preparing," try to start locomotion right now
+            if (locomotionState == LocomotionState.Preparing)
+                TryStartLocomotionImmediately();
+
+            // If mediator says "Moving," keep climbing
+            if (locomotionState == LocomotionState.Moving)
+                Climb();
         }
 
-        public void SetClimbHand(XRBaseController controller)
+        #region Public Climb Interface
+
+        /// <summary>
+        /// Called when a new climbing hand grabs a climbable object.
+        /// </summary>
+        public void SetClimbHand(ControllerInputActionManager controller)
         {
             ClimbingStarted();
 
+            // Example: If your hand has "ClimbingStamina" logic
             var stamina = controller.GetComponentInParent<HandReference>().Hand.GetComponent<ClimbingStamina>();
             stamina.Activate();
             stamina.OutOfStamina.AddListener(CancelClimbing);
 
+            // Record the player's position before they move (for return logic)
             prevLocation = xrOrigin.transform.position;
 
+            // If there's already a climbingHand, push that into 'previousHand'
             if (climbingHand)
                 previousHand = climbingHand;
 
+            // Set the new "climbingHand" to our new controller
             climbingHand = controller;
 
+            // Adjust climb speed based on whether we have 1 or 2 hands
             AdjustMoveSpeed();
         }
 
-        private void AdjustMoveSpeed()
+        /// <summary>
+        /// Called when one climbing hand is released.
+        /// </summary>
+        public void RemoveClimbHand(ControllerInputActionManager controller)
         {
-            climbSpeed = previousHand ? twoHandClimbSpeed : oneHandClimbSpeed;
-        }
-
-        public void RemoveClimbHand(XRBaseController controller)
-        {
+            // Deactivate stamina logic
             var stamina = controller.GetComponentInChildren<ClimbingStamina>();
             stamina.Deactivate();
             stamina.OutOfStamina.RemoveListener(CancelClimbing);
 
+            // If that was our active climbing hand, revert to 'previousHand' if available
             if (climbingHand == controller)
             {
                 climbingHand = null;
@@ -121,34 +156,43 @@ namespace MikeNspired.UnityXRHandPoser
                 }
             }
 
+            // If that was the "previousHand," just clear it
             if (previousHand == controller)
                 previousHand = null;
 
             AdjustMoveSpeed();
 
+            // If no hands left, end climbing
             if (previousHand == null && climbingHand == null)
                 ClimbingEnded();
         }
 
+        /// <summary>
+        /// Cancel climbing (e.g., out of stamina).
+        /// </summary>
         public void CancelClimbing()
         {
             ClimbingEnded();
 
+            // Release the previous hand’s climb, if still selected
             if (previousHand)
             {
                 var prevInteractor = previousHand.GetComponentInChildren<XRDirectInteractor>();
-                if (prevInteractor.hasSelection)
+                if (prevInteractor && prevInteractor.interactablesSelected.Count > 0)
                 {
-                    xrInteractionManager.SelectExit(prevInteractor, prevInteractor.selectTarget);
+                    var selectedInteractable = prevInteractor.interactablesSelected[0];
+                    xrInteractionManager.SelectExit(prevInteractor, selectedInteractable);
                 }
             }
 
+            // Release the current climbing hand’s climb
             if (climbingHand)
             {
                 var climbInteractor = climbingHand.GetComponentInChildren<XRDirectInteractor>();
-                if (climbInteractor.hasSelection)
+                if (climbInteractor && climbInteractor.interactablesSelected.Count > 0)
                 {
-                    xrInteractionManager.SelectExit(climbInteractor, climbInteractor.selectTarget);
+                    var selectedInteractable = climbInteractor.interactablesSelected[0];
+                    xrInteractionManager.SelectExit(climbInteractor, selectedInteractable);
                 }
             }
 
@@ -156,90 +200,123 @@ namespace MikeNspired.UnityXRHandPoser
             previousHand = null;
         }
 
-        private bool isClimbing = false;
+        /// <summary>
+        /// If the player flings their hand on release, we can set a "launch" velocity.
+        /// </summary>
+        public void SetReleasedVelocity(Vector3 controllerVelocityCurrentSmoothedVelocity)
+        {
+            if (isClimbing)
+                return;
+
+            playerMovement.useGravity = false;
+            launchVelocity = controllerVelocityCurrentSmoothedVelocity * launchSpeedMultiplier;
+        }
+
+        #endregion
+
+        #region Internal Climb Logic
 
         private void ClimbingStarted()
         {
             launchVelocity = Vector3.zero;
             isClimbing = true;
+
+            // Turn off gravity from our MoveProvider while climbing
             playerMovement.useGravity = false;
-            //playerMovement.ShrinkColliderToHead();
+
+            // Request that the LocomotionProvider go from Idle -> Preparing
+            // (which under the hood calls mediator.TryPrepareLocomotion(this))
+            if (!isLocomotionActive)
+                TryPrepareLocomotion();
         }
 
         private void ClimbingEnded()
         {
+            // Re-enable gravity
             playerMovement.useGravity = true;
             isClimbing = false;
 
+            // Transition from Preparing/Moving -> Ended -> eventually Idle
+            // (which under the hood calls mediator.TryEndLocomotion(this))
+            if (isLocomotionActive)
+                TryEndLocomotion();
+
+            // If we have an “overPosition,” move the camera
             if (overPosition != Vector3.zero)
                 MoveToPositionWhenReleased();
-            EndLocomotion();
 
-            // playerMovement.ResumeColliderAdjustment();
+            overPosition = Vector3.zero;
         }
 
-     
+
+        /// <summary>
+        /// Move the player while climbing by reading the active climbing hand’s velocity.
+        /// </summary>
+        private void Climb()
+        {
+            // Identify which controller is climbing, gather velocity
+            var xrNode = GetClimbingHandNode();
+            InputDevices.GetDeviceAtXRNode(xrNode).TryGetFeatureValue(CommonUsages.deviceVelocity, out Vector3 velocity);
+
+            // Move in the opposite direction of the hand's velocity
+            if (!isReturningPlayer && characterController)
+                characterController.Move(transform.rotation * -velocity * (Time.fixedDeltaTime * climbSpeed));
+        }
 
         private XRNode GetClimbingHandNode()
         {
-            return climbingHand.GetComponentInParent<HandReference>().LeftRight == LeftRight.Left ? XRNode.LeftHand : XRNode.RightHand;
+            if (climbingHand == null)
+                return XRNode.LeftHand;
+
+            return climbingHand.GetComponentInParent<HandReference>().LeftRight == LeftRight.Left
+                ? XRNode.LeftHand
+                : XRNode.RightHand;
         }
 
-        private void Climb()
-        {
-            InputDevices.GetDeviceAtXRNode(GetClimbingHandNode()).TryGetFeatureValue(CommonUsages.deviceVelocity, out Vector3 velocity);
-            if (!isReturningPlayer)
-                characterController.Move(transform.rotation * -velocity * (Time.fixedDeltaTime * climbSpeed));
+        /// <summary>
+        /// 1 or 2 hands determines the climb speed.
+        /// </summary>
+        private void AdjustMoveSpeed() =>
+            climbSpeed = previousHand ? twoHandClimbSpeed : oneHandClimbSpeed;
 
-            //CheckIfOverGround();
-        }
-
+        /// <summary>
+        /// If the player is too far from the original position of the last hand, we return them.
+        /// </summary>
         private void CheckIfReturnToHand()
         {
             if (Vector3.Distance(xrOrigin.transform.position, prevLocation) >= returnDistance)
                 StartCoroutine(ReturnToPrevHandPosition());
         }
 
-        private bool isReturningPlayer = false;
-
         private IEnumerator ReturnToPrevHandPosition()
         {
-            float currentTimer = 0;
-            Vector3 startPosition = xrOrigin.transform.position;
-            Vector3 goalPosition = prevLocation;
-
             isReturningPlayer = true;
-            while (currentTimer <= returnAnimationLength + Time.deltaTime)
+
+            float currentTimer = 0f;
+            var startPosition = xrOrigin.transform.position;
+            var goalPosition = prevLocation;
+
+            while (currentTimer < returnAnimationLength)
             {
-                xrOrigin.transform.position = Vector3.Lerp(startPosition, goalPosition, returnToPlayerCurve.Evaluate(currentTimer / returnAnimationLength));
-                yield return null;
+                float t = currentTimer / returnAnimationLength;
+                xrOrigin.transform.position =
+                    Vector3.Lerp(startPosition, goalPosition, returnToPlayerCurve.Evaluate(t));
+
                 currentTimer += Time.deltaTime;
+                yield return null;
             }
 
             isReturningPlayer = false;
         }
 
-        private void OnDrawGizmos()
-        {
-            // Gizmos.DrawWireSphere(overPosition, .1f);
-            // Vector3 heightAdjustment = xrOrigin.transform.up * xrOrigin.CameraInOriginSpaceHeight;
-            // Vector3 cameraDestination = overPosition + heightAdjustment;
-            // Gizmos.DrawWireSphere(cameraDestination, .1f);
-        }
-
         private void MoveToPositionWhenReleased()
         {
-            Vector3 heightAdjustment = xrOrigin.transform.up * xrOrigin.CameraInOriginSpaceHeight;
-            Vector3 cameraDestination = overPosition + heightAdjustment;
+            // Move the camera to overPosition + camera height
+            var heightAdjustment = xrOrigin.transform.up * xrOrigin.CameraInOriginSpaceHeight;
+            var cameraDestination = overPosition + heightAdjustment;
             xrOrigin.MoveCameraToWorldLocation(cameraDestination);
-            overPosition = Vector3.zero;
         }
 
-        public void SetReleasedVelocity(Vector3 controllerVelocityCurrentSmoothedVelocity)
-        {
-            if (isClimbing) return;
-            playerMovement.useGravity = false;
-            launchVelocity = controllerVelocityCurrentSmoothedVelocity * launchSpeedMultiplier;
-        }
+        #endregion
     }
 }

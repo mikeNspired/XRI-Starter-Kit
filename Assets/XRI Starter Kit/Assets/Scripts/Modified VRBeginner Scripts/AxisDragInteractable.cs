@@ -1,75 +1,81 @@
 ﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
-    /// Custom interactable that can be dragged along an axis. Can either be continuous or snap to integer steps.
+    /// Custom interactable that can be dragged along an axis. 
+    /// Can either be continuous or snap to integer steps.
     /// </summary>
     public class AxisDragInteractable : XRBaseInteractable
     {
-        [Tooltip("The Rigidbody that will be moved. If null will try to grab one on that object or its children")]
+        [Header("Motion Settings")]
+        [Tooltip("The Rigidbody that will be moved. If null, the first Rigidbody in children will be used.")]
         public Rigidbody MovingRigidbody;
 
+        [Tooltip("Local axis along which the object can be dragged.")]
         public Vector3 LocalAxis;
+
+        [Tooltip("Maximum distance along the axis the object can travel.")]
         public float AxisLength;
 
-        [Tooltip("If 0, then this is a float [0,1] range slider, otherwise there is an integer slider")]
+        [Tooltip("Number of discrete steps. If zero, it behaves like a continuous slider.")]
         public int Steps = 0;
 
+        [Tooltip("If true, snapping to steps only happens when the grip is released.")]
         public bool SnapOnlyOnRelease = true;
 
+        [Header("Return Settings")]
+        [Tooltip("If true, the object will return to start when not being grabbed.")]
         public bool ReturnOnFree;
-        public float ReturnSpeed;
+        public float ReturnSpeed = 1f;
 
+        [Header("Audio & Events")]
         public AudioClip SnapAudioClip;
         public AudioSource AudioSource;
         public UnityEventFloat OnDragDistance;
         public UnityEventInt OnDragStep;
 
-        Vector3 m_EndPoint;
-        Vector3 m_StartPoint;
-        Vector3 m_GrabbedOffset;
-        float m_CurrentDistance;
-        int m_CurrentStep;
-        XRBaseInteractor m_GrabbingInteractor;
+        private Vector3 m_EndPoint;
+        private Vector3 m_StartPoint;
+        private Vector3 m_GrabbedOffset;
+        private float m_StepLength;
+        private int m_CurrentStep;
+        private XRBaseInteractor m_GrabbingInteractor;
 
-        float m_StepLength;
-
-        // Start is called before the first frame update
         void Start()
         {
+            // Normalize the specified local axis
             LocalAxis.Normalize();
 
-            //Length can't be negative, a negative length just mean an inverted axis, so fix that
+            // If AxisLength is negative, flip the axis direction & make length positive
             if (AxisLength < 0)
             {
                 LocalAxis *= -1;
                 AxisLength *= -1;
             }
 
-            if (Steps == 0)
-            {
-                m_StepLength = 0.0f;
-            }
-            else
-            {
-                m_StepLength = AxisLength / Steps;
-            }
+            // Calculate how far one "step" is
+            m_StepLength = Steps == 0 ? 0f : (AxisLength / Steps);
 
+            // Cache start & end points in world space
             m_StartPoint = transform.position;
             m_EndPoint = transform.position + transform.TransformDirection(LocalAxis) * AxisLength;
 
-            if (MovingRigidbody == null)
-            {
+            // If no rigidbody was specified, try to find one
+            if (!MovingRigidbody)
                 MovingRigidbody = GetComponentInChildren<Rigidbody>();
-            }
 
             m_CurrentStep = 0;
-            AudioSource.clip = SnapAudioClip;
+
+            // Setup audio source
+            if (AudioSource && SnapAudioClip)
+                AudioSource.clip = SnapAudioClip;
         }
 
-        private void OnValidate()
+        void OnValidate()
         {
             if (!AudioSource)
                 AudioSource = GetComponent<AudioSource>();
@@ -77,95 +83,97 @@ namespace MikeNspired.UnityXRHandPoser
 
         public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
+            // Only process if actively held
             if (isSelected)
             {
                 if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Fixed)
                 {
-                    Vector3 WorldAxis = transform.TransformDirection(LocalAxis);
+                    var worldAxis = transform.TransformDirection(LocalAxis);
+                    var distance = m_GrabbingInteractor.transform.position - transform.position - m_GrabbedOffset;
+                    var projected = Vector3.Dot(distance, worldAxis);
 
-                    Vector3 distance = m_GrabbingInteractor.transform.position - transform.position - m_GrabbedOffset;
-                    float projected = Vector3.Dot(distance, WorldAxis);
-
-                    //ajust projected to clamp it to steps if there is steps
+                    // If we have steps & snap is not only on release, snap continuously
                     if (Steps != 0 && !SnapOnlyOnRelease)
                     {
                         int steps = Mathf.RoundToInt(projected / m_StepLength);
                         projected = steps * m_StepLength;
                     }
 
+                    // Determine the final target point, clamped between start & end
                     Vector3 targetPoint;
                     if (projected > 0)
                         targetPoint = Vector3.MoveTowards(transform.position, m_EndPoint, projected);
                     else
                         targetPoint = Vector3.MoveTowards(transform.position, m_StartPoint, -projected);
 
+                    // If we have discrete steps, fire event when crossing a step boundary
                     if (Steps > 0)
                     {
-                        int posStep = Mathf.RoundToInt((targetPoint - m_StartPoint).magnitude / m_StepLength);
+                        var posStep = Mathf.RoundToInt((targetPoint - m_StartPoint).magnitude / m_StepLength);
                         if (posStep != m_CurrentStep)
                         {
-                            AudioSource.Play();
+                            AudioSource?.Play();
                             OnDragStep.Invoke(posStep);
                         }
-
                         m_CurrentStep = posStep;
                     }
 
+                    // Fire distance event
                     OnDragDistance.Invoke((targetPoint - m_StartPoint).magnitude);
 
-                    Vector3 move = targetPoint - transform.position;
-
-                    if (MovingRigidbody != null)
+                    // Move the object or its Rigidbody
+                    var move = targetPoint - transform.position;
+                    if (MovingRigidbody)
                         MovingRigidbody.MovePosition(MovingRigidbody.position + move);
                     else
-                        transform.position = transform.position + move;
+                        transform.position += move;
                 }
             }
             else
             {
+                // If not being grabbed & configured to return, move towards start
                 if (ReturnOnFree)
                 {
-                    Vector3 targetPoint = Vector3.MoveTowards(transform.position, m_StartPoint, ReturnSpeed * Time.deltaTime);
-                    Vector3 move = targetPoint - transform.position;
-
-                    if (MovingRigidbody != null)
+                    var targetPoint = Vector3.MoveTowards(transform.position, m_StartPoint, ReturnSpeed * Time.deltaTime);
+                    var move = targetPoint - transform.position;
+                    if (MovingRigidbody)
                         MovingRigidbody.MovePosition(MovingRigidbody.position + move);
                     else
-                        transform.position = transform.position + move;
+                        transform.position += move;
                 }
             }
         }
 
-        protected override void OnSelectEntered(XRBaseInteractor interactor)
+        protected override void OnSelectEntered(SelectEnterEventArgs args)
         {
-            m_GrabbedOffset = interactor.transform.position - transform.position;
-            m_GrabbingInteractor = interactor;
-            base.OnSelectEntered(interactor);
+            // Record offset between the object's position and the grab point
+            m_GrabbedOffset = args.interactorObject.transform.position - transform.position;
+            m_GrabbingInteractor = args.interactorObject as XRBaseInteractor;
+            base.OnSelectEntered(args);
         }
 
-        protected override void OnSelectExited(XRBaseInteractor interactor)
+        protected override void OnSelectExited(SelectExitEventArgs args)
         {
-            base.OnSelectExited(interactor);
+            base.OnSelectExited(args);
 
+            // If snapping only on release, then snap to the nearest step
             if (SnapOnlyOnRelease && Steps != 0)
             {
-                float dist = (transform.position - m_StartPoint).magnitude;
+                var dist = (transform.position - m_StartPoint).magnitude;
                 int step = Mathf.RoundToInt(dist / m_StepLength);
                 dist = step * m_StepLength;
 
                 transform.position = m_StartPoint + transform.TransformDirection(LocalAxis) * dist;
 
                 if (step != m_CurrentStep)
-                {
                     OnDragStep.Invoke(step);
-                }
             }
         }
 
         void OnDrawGizmosSelected()
         {
-            Vector3 end = transform.position + transform.TransformDirection(LocalAxis.normalized) * AxisLength;
-
+            // Draw a line & sphere to illustrate the drag axis in the Editor
+            var end = transform.position + transform.TransformDirection(LocalAxis.normalized) * AxisLength;
             Gizmos.DrawLine(transform.position, end);
             Gizmos.DrawSphere(end, 0.01f);
         }

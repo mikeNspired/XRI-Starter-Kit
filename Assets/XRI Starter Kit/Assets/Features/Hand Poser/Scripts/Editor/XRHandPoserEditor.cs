@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
-using UnityEngine.XR.Interaction.Toolkit;
+
 using Pose = UnityEngine.Pose;
 
 namespace MikeNspired.UnityXRHandPoser.Editor
@@ -99,7 +99,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
         {
             var labelToolTip = new GUIContent("XRBaseInteractable",
                 "XRBaseInteractable script, Can be located anywhere. If null, will grab if one is on the object");
-            interactable.objectReferenceValue = EditorGUILayout.ObjectField(labelToolTip, interactable.objectReferenceValue, typeof(XRBaseInteractable), true) as XRBaseInteractable;
+            interactable.objectReferenceValue = EditorGUILayout.ObjectField(labelToolTip, interactable.objectReferenceValue, typeof(UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable), true) as UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable;
 
             labelToolTip = new GUIContent("Animation Poses", "Adds second pose that animates to when trigger is pulled");
             hasAnimationPose.boolValue = EditorGUILayout.Toggle(labelToolTip, hasAnimationPose.boolValue);

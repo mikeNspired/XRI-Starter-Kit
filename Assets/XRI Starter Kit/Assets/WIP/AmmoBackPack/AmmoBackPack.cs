@@ -1,28 +1,25 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class AmmoBackPack : MonoBehaviour
     {
-        public XRDirectInteractor leftHand = null, rightHand = null;
+        public XRDirectInteractor leftHand, rightHand;
+        [SerializeField] private XRGrabInteractable magazine, magazine2;
+        [SerializeField] private GunType gunType1, gunType2;
 
-        [SerializeField] private XRGrabInteractable magazine = null;
-        [SerializeField] private XRGrabInteractable magazine2 = null;
-        [SerializeField] private GunType gunType1 = null;
-        [SerializeField] private GunType gunType2 = null;
         private XRInteractionManager interactionManager;
         private XRSimpleInteractable simpleInteractable;
-
 
         private void Start()
         {
             OnValidate();
-
-            simpleInteractable.onActivate.AddListener(CheckControllerGrip);
+            simpleInteractable.activated.AddListener(CheckControllerGrip);
         }
-
 
         private void OnValidate()
         {
@@ -30,46 +27,34 @@ namespace MikeNspired.UnityXRHandPoser
                 simpleInteractable = GetComponent<XRSimpleInteractable>();
         }
 
-        private void CheckControllerGrip(XRBaseInteractor controller)
+        private void CheckControllerGrip(ActivateEventArgs args)
         {
+            var controller = args.interactorObject as XRBaseInteractor;
+            if (controller == null) return;
+
             if (!IsControllerHoldingObject(controller))
-                TryGrabAmmo(controller.GetComponent<XRBaseInteractor>());
+                TryGrabAmmo(controller);
         }
 
         private bool IsControllerHoldingObject(XRBaseInteractor controller)
         {
-            return controller.GetComponent<XRDirectInteractor>().selectTarget;
+            var directInteractor = controller as XRDirectInteractor;
+            return directInteractor != null && directInteractor.interactablesSelected.Count > 0;
         }
 
         private void TryGrabAmmo(XRBaseInteractor interactor)
         {
-            XRBaseInteractor currentInteractor;
+            XRBaseInteractor currentInteractor = interactor == leftHand ? interactor : rightHand;
+            XRBaseInteractor handHoldingWeapon = interactor == leftHand ? rightHand : leftHand;
 
-            XRBaseInteractor handHoldingWeapon;
-            if (interactor == leftHand)
-            {
-                handHoldingWeapon = rightHand;
-                currentInteractor = interactor;
-            }
-            else
-            {
-                handHoldingWeapon = leftHand;
-                currentInteractor = interactor;
-            }
+            if (handHoldingWeapon == null || handHoldingWeapon.interactablesSelected.Count == 0) return;
+            if (currentInteractor.interactablesSelected.Count > 0) return;
 
-            //Check if hand not interacting with pack is holding weapon
-            if (!handHoldingWeapon || !handHoldingWeapon.selectTarget) return;
-            if (currentInteractor.selectTarget) return;
+            var gunType = handHoldingWeapon.interactablesSelected[0].transform.GetComponentInChildren<MagazineAttachPoint>()?.GunType;
+            if (gunType == null) return;
 
-            var gunType = handHoldingWeapon.selectTarget.GetComponentInChildren<MagazineAttachPoint>()?.GunType;
-            if (!gunType) return;
+            XRGrabInteractable newMagazine = gunType == gunType1 ? Instantiate(magazine) : Instantiate(magazine2);
 
-            XRGrabInteractable newMagazine;
-            if (gunType1 == gunType)
-                newMagazine = Instantiate(magazine);
-            else if (gunType2 == gunType)
-                newMagazine = Instantiate(magazine2);
-            else newMagazine = Instantiate(magazine2);
             newMagazine.transform.position = currentInteractor.transform.position;
             newMagazine.transform.forward = currentInteractor.transform.forward;
             StartCoroutine(GrabItem(currentInteractor, newMagazine));
@@ -78,8 +63,8 @@ namespace MikeNspired.UnityXRHandPoser
         private IEnumerator GrabItem(XRBaseInteractor currentInteractor, XRGrabInteractable newMagazine)
         {
             yield return new WaitForFixedUpdate();
-            if (currentInteractor.selectTarget) yield break;
-            interactionManager.SelectEnter(currentInteractor, newMagazine);
+            if (currentInteractor.interactablesSelected.Count > 0) yield break;
+            interactionManager.SelectEnter(currentInteractor, (IXRSelectInteractable) newMagazine);
         }
     }
 }

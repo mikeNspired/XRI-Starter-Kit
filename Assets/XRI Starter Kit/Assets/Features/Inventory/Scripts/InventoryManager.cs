@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -9,11 +10,11 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField]
         private InputActionReference openMenuInputLeftHand, openMenuInputRightHand;
         private InventorySlot[] inventorySlots;
-        public ActionBasedController leftController = null, rightController = null;
-        [SerializeField] private AudioSource enableAudio = null, disableAudio = null;
+        public ControllerInputActionManager leftController, rightController;
+        [SerializeField] private AudioSource enableAudio, disableAudio;
 
-        [SerializeField] private bool lookAtController = false;
-        private bool isActive = false;
+        [SerializeField] private bool lookAtController;
+        private bool isActive;
 
         private void Start()
         {
@@ -78,7 +79,7 @@ namespace MikeNspired.UnityXRHandPoser
                 {
                     if (itemSlot.gameObject.activeSelf)
                         itemSlot.EnableSlot();
-                    itemSlot.gameObject.SetActive(state);
+                    itemSlot.gameObject.SetActive(true);
                     SetPositionAndRotation(hand);
                 }
             }

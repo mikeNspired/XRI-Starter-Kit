@@ -9,8 +9,8 @@ namespace MikeNspired.UnityXRHandPoser
     /// </summary>
     public class GunCocking : MonoBehaviour
     {
-        [SerializeField] private XRBaseInteractable xrGrabInteractable = null;
-        [SerializeField] private XRGrabInteractable mainGrabInteractable = null;
+        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable xrGrabInteractable = null;
+        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable mainGrabInteractable = null;
         [SerializeField] private ProjectileWeapon projectileWeapon = null;
         [SerializeField] private Vector3 LocalAxis = -Vector3.forward;
         [SerializeField] private float AxisLength = .1f;
@@ -18,7 +18,7 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private AudioRandomize pullBackAudio = null;
         [SerializeField] private AudioRandomize releaseAudio = null;
 
-        private IXRSelectInteractor currentHand, grabbingInteractor;
+        private UnityEngine.XR.Interaction.Toolkit.Interactors.IXRSelectInteractor currentHand, grabbingInteractor;
         private XRInteractionManager interactionManager;
         private Transform originalParent;
         private Vector3 grabbedOffset, endPoint, startPoint;
@@ -54,9 +54,9 @@ namespace MikeNspired.UnityXRHandPoser
             if (!interactionManager)
                 interactionManager = FindObjectOfType<XRInteractionManager>();
             if (!xrGrabInteractable)
-                xrGrabInteractable = GetComponent<XRBaseInteractable>();
+                xrGrabInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
             if (!mainGrabInteractable)
-                mainGrabInteractable = transform.parent.GetComponentInParent<XRGrabInteractable>();
+                mainGrabInteractable = transform.parent.GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
             if (!projectileWeapon)
                 projectileWeapon = GetComponentInParent<ProjectileWeapon>();
         }
@@ -78,7 +78,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (currentHand?.transform && xrGrabInteractable)
                 interactionManager.SelectExit(currentHand,
-                    xrGrabInteractable.GetComponent<IXRSelectInteractable>());
+                    xrGrabInteractable.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.IXRSelectInteractable>());
         }
 
         private void SlideFromHandPosition()

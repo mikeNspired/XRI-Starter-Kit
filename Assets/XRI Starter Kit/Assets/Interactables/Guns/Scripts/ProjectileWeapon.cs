@@ -1,16 +1,21 @@
-﻿// Author MikeNspired. 
+﻿// Author MikeNspired.
 
 using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
-using static Unity.Mathematics.math;
+using UnityEngine.XR.Interaction.Toolkit.Inputs.Haptics;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
+using static Unity.Mathematics.math; // For "remap" or other math utility
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class ProjectileWeapon : MonoBehaviour
     {
+        [Header("Required Refs")]
         [SerializeField] private Transform firePoint;
         [SerializeField] private Rigidbody projectilePrefab;
         [SerializeField] private ParticleSystem cartridgeEjection;
@@ -19,20 +24,20 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private MatchTransform bulletFlash;
         [SerializeField] private GunCocking gunCocking;
 
-        //All public for in game changes
+        [Header("Settings")]
         public MagazineAttachPoint magazineAttach = null;
         public float recoilAmount = -0.03f;
         public float recoilRotation = 1;
-        public float recoilTime = .06f;
+        public float recoilTime = 0.06f;
         public int bulletsPerShot = 1;
         public float bulletSpreadAngle = 1;
         public float bulletSpeed = 150;
         public bool infiniteAmmo = false;
-        public float hapticDuration = .1f;
-        public float hapticStrength = .5f;
+        public float hapticDuration = 0.1f;
+        public float hapticStrength = 0.5f;
 
-        //AutoFire
-        public float fireSpeed = .25f;
+        [Header("Auto-Fire")]
+        public float fireSpeed = 0.25f;
         public bool automaticFiring = false;
 
         private XRGrabInteractable interactable;
@@ -41,57 +46,61 @@ namespace MikeNspired.UnityXRHandPoser
         private bool gunCocked, isFiring;
         private float fireTimer;
 
+        // Events
         public UnityEvent BulletFiredEvent, OutOfAmmoEvent, FiredLastBulletEvent;
 
-        private void Awake()
+        void Awake()
         {
             OnValidate();
-            interactable.activated.AddListener(x => TryFire(true));
-            interactable.deactivated.AddListener(x => TryFire(false));
-            interactable.onSelectEntered.AddListener(SetupRecoilVariables);
-            interactable.onSelectExited.AddListener(DestroyRecoilTracker);
+            // Use lambdas for simple listener callbacks
+            interactable.activated.AddListener(_ => TryFire(true));
+            interactable.deactivated.AddListener(_ => TryFire(false));
+            interactable.selectEntered.AddListener(SetupRecoilVariables);
+            interactable.selectExited.AddListener(DestroyRecoilTracker);
 
             if (gunCocking)
                 gunCocking.GunCockedEvent.AddListener(() => gunCocked = true);
         }
 
-        private void OnValidate()
+        void OnValidate()
         {
-            if (!gunCocking)
-                gunCocking = GetComponentInChildren<GunCocking>();
-            if (!interactable)
-                interactable = GetComponent<XRGrabInteractable>();
+            if (!gunCocking) gunCocking = GetComponentInChildren<GunCocking>();
+            if (!interactable) interactable = GetComponent<XRGrabInteractable>();
         }
 
-        private void OnEnable() => Application.onBeforeRender += RecoilUpdate;
+        // Expression-bodied for simple subscribe/unsubscribe
+        void OnEnable() => Application.onBeforeRender += RecoilUpdate;
+        void OnDisable() => Application.onBeforeRender -= RecoilUpdate;
 
-        private void OnDisable() => Application.onBeforeRender -= RecoilUpdate;
+        void Update()
+        {
+            if (!automaticFiring) return;
+
+            // Fire continuously if trigger is held
+            if (isFiring && fireTimer >= fireSpeed)
+            {
+                FireGun();
+                fireTimer = 0f;
+            }
+            fireTimer += Time.deltaTime;
+        }
 
         private void TryFire(bool state)
         {
             isFiring = state;
-            if (state && !automaticFiring)
-                FireGun();
-        }
-
-        private void Update()
-        {
-            if (!automaticFiring) return;
-
-            if (isFiring && fireTimer >= fireSpeed)
-            {
-                FireGun();
-                fireTimer = 0;
-            }
-
-            fireTimer += Time.deltaTime;
+            // If not automatic, fire immediately once
+            if (state && !automaticFiring) FireGun();
         }
 
         public void FireGun()
         {
+            // Prevent firing with no bullets per shot
             if (bulletsPerShot < 1) return;
 
-            if (magazineAttach && !infiniteAmmo && (CheckIfGunCocked() || !magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
+            // Check if we have ammo, or if the gun is cocked
+            if (magazineAttach && !infiniteAmmo && (CheckIfGunCocked() 
+                || !magazineAttach.Magazine 
+                || !magazineAttach.Magazine.UseAmmo()))
             {
                 OutOfAmmoEvent.Invoke();
                 outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
@@ -99,6 +108,7 @@ namespace MikeNspired.UnityXRHandPoser
                 return;
             }
 
+            // If there's a GunCocking script, ensure it’s cocked
             if (gunCocking && !gunCocked)
             {
                 OutOfAmmoEvent.Invoke();
@@ -106,37 +116,49 @@ namespace MikeNspired.UnityXRHandPoser
                 return;
             }
 
+            // Fire multiple projectiles if bulletsPerShot > 1
             for (int i = 0; i < bulletsPerShot; i++)
             {
-                Vector3 shotDirection = Vector3.Slerp(firePoint.forward, UnityEngine.Random.insideUnitSphere, bulletSpreadAngle / 180f);
+                Vector3 shotDirection = Vector3.Slerp(
+                    firePoint.forward,
+                    UnityEngine.Random.insideUnitSphere,
+                    bulletSpreadAngle / 180f
+                );
+
                 var bullet = Instantiate(projectilePrefab);
                 IgnoreColliders(bullet);
 
-                bullet.transform.SetPositionAndRotation(firePoint.position, Quaternion.LookRotation(shotDirection));
-                bullet.AddForce((bullet.transform.forward * bulletSpeed), ForceMode.VelocityChange);
+                // Set bullet position/rotation and launch
+                bullet.transform.SetPositionAndRotation(
+                    firePoint.position, Quaternion.LookRotation(shotDirection)
+                );
+                bullet.AddForce(bullet.transform.forward * bulletSpeed, ForceMode.VelocityChange);
 
-                controller.GetComponentInParent<ActionBasedController>().SendHapticImpulse(hapticStrength, hapticDuration);
+                // Simple haptic
+                controller.GetComponentInParent<HapticImpulsePlayer>().SendHapticImpulse(hapticStrength, hapticDuration);
 
                 BulletFiredEvent.Invoke();
+
+                // Stop recoil coroutines (if any) and start new recoil
                 StopAllCoroutines();
                 StartRecoil();
             }
 
+            // If we just fired the last bullet in the mag
             if (magazineAttach && magazineAttach.Magazine && magazineAttach.Magazine.CurrentAmmo == 0)
                 FiredLastBulletEvent.Invoke();
 
+            // Optional muzzle flash
             if (bulletFlash)
             {
                 var flash = Instantiate(bulletFlash);
                 flash.transform.position = firePoint.position;
-                flash.positionToMatch = firePoint; //Follow gun barrel on update  
+                flash.positionToMatch = firePoint; // Follow the barrel
             }
 
-            if (fireAudio)
-                fireAudio.PlayOneShot(fireAudio.clip);
-
-            if (cartridgeEjection)
-                cartridgeEjection.Play();
+            // Audio + Particle
+            fireAudio?.PlayOneShot(fireAudio.clip);
+            cartridgeEjection?.Play();
         }
 
         private void IgnoreColliders(Component bullet)
@@ -146,10 +168,8 @@ namespace MikeNspired.UnityXRHandPoser
             foreach (var c in gunColliders) Physics.IgnoreCollision(c, bulletCollider);
         }
 
-        private bool CheckIfGunCocked()
-        {
-            return gunCocking && !gunCocked;
-        }
+        // Single-line expression method
+        private bool CheckIfGunCocked() => gunCocking && !gunCocked;
 
         #region Recoil
 
@@ -157,45 +177,47 @@ namespace MikeNspired.UnityXRHandPoser
         private Quaternion startingRotation;
         private Vector3 endOfRecoilPosition;
         private Quaternion endOfRecoilRotation;
-        private float timer = 0;
+        private float timer;
         private bool isRecoiling;
         private Vector3 controllerToAttachDelta;
 
-        private void SetupRecoilVariables(XRBaseInteractor interactor)
+        private void SetupRecoilVariables(SelectEnterEventArgs args)
         {
-            controller = interactor;
+            controller = args.interactorObject as XRBaseInteractor;
             StartCoroutine(SetupRecoil(interactable.attachEaseInTime));
         }
 
-        private void DestroyRecoilTracker(XRBaseInteractor interactor)
+        private void DestroyRecoilTracker(SelectExitEventArgs args)
         {
             StopAllCoroutines();
-            if (recoilTracker)
-                Destroy(recoilTracker.gameObject);
+            if (recoilTracker) Destroy(recoilTracker.gameObject);
             isRecoiling = false;
         }
 
         private IEnumerator SetupRecoil(float interactableAttachEaseInTime)
         {
+            // Quick check for a HandReference script
             var handReference = controller.GetComponentInParent<HandReference>();
             if (!handReference) yield break;
 
-            recoilTracker = new GameObject().transform;
+            recoilTracker = new GameObject($"{name} Recoil Tracker").transform;
             recoilTracker.parent = controller.attachTransform;
-            recoilTracker.name = gameObject.name + " Recoil Tracker";
 
+            // Optionally wait for the attach time to finish
             yield return null;
         }
 
         private void StartRecoil()
         {
+            // If there's no recoil tracker yet, create it
             if (!recoilTracker) StartCoroutine(SetupRecoil(1));
+
             recoilTracker.localRotation = startingRotation;
             recoilTracker.localPosition = Vector3.zero;
             startingRotation = transform.localRotation;
 
-            timer = 0;
-            controllerToAttachDelta = transform.position - recoilTracker.transform.position;
+            timer = 0f;
+            controllerToAttachDelta = transform.position - recoilTracker.position;
             isRecoiling = true;
         }
 
@@ -204,34 +226,30 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (!isRecoiling) return;
 
-            if (timer < recoilTime / 2)
+            if (timer < recoilTime / 2f)
             {
-                if (Math.Abs(recoilAmount) > .001f)
+                // Move & rotate the gun backward for recoil
+                if (Math.Abs(recoilAmount) > 0.001f)
                 {
                     recoilTracker.position += transform.forward * recoilAmount * Time.deltaTime;
                     transform.position = recoilTracker.position + controllerToAttachDelta;
                 }
 
-                if (Math.Abs(recoilRotation) > .001f)
-                {
+                if (Math.Abs(recoilRotation) > 0.001f)
                     transform.Rotate(Vector3.right, -recoilRotation * Time.deltaTime, Space.Self);
-                    // transform.rotation = recoilTracker.rotation;
-                }
 
                 endOfRecoilPosition = recoilTracker.localPosition;
                 endOfRecoilRotation = transform.localRotation;
             }
             else
             {
-                var timerRemappedPercentage = remap(recoilTime / 2, recoilTime, 0, 1, timer);
-                var newPosition = Vector3.Lerp(endOfRecoilPosition, Vector3.zero, timerRemappedPercentage);
-                var newRotation = Quaternion.Lerp(endOfRecoilRotation, startingRotation, timerRemappedPercentage);
-                recoilTracker.localPosition = newPosition;
-                //recoilTracker.localRotation = newRotation;
+                // Return gun back to original position/rotation
+                float t = remap(recoilTime / 2f, recoilTime, 0f, 1f, timer);
+                recoilTracker.localPosition = Vector3.Lerp(endOfRecoilPosition, Vector3.zero, t);
+                var newRotation = Quaternion.Lerp(endOfRecoilRotation, startingRotation, t);
 
                 transform.position = recoilTracker.position + controllerToAttachDelta;
                 transform.localRotation = newRotation;
-                //Debug.Break();
             }
 
             timer += Time.deltaTime;

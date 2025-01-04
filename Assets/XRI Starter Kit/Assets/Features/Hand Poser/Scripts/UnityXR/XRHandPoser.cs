@@ -11,7 +11,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// </summary>
     public class XRHandPoser : HandPoser
     {
-        public XRBaseInteractable interactable;
+        public UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable interactable;
         public bool MaintainHandOnObject = true;
         public bool WaitTillEaseInTimeToMaintainPosition = true;
         public bool overrideEaseTime = false;
@@ -74,7 +74,7 @@ namespace MikeNspired.UnityXRHandPoser
         private float GetEaseInTime()
         {
             float time = 0;
-            interactable.TryGetComponent(out XRGrabInteractable xrGrabInteractable);
+            interactable.TryGetComponent(out UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable xrGrabInteractable);
             if (xrGrabInteractable)
                 time = xrGrabInteractable.attachEaseInTime;
             if (overrideEaseTime)
@@ -85,9 +85,9 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnValidate()
         {
             if (!interactable)
-                interactable = GetComponent<XRBaseInteractable>();
+                interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
             if (!interactable)
-                interactable = GetComponentInParent<XRBaseInteractable>();
+                interactable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
             if (!interactable)
                 Debug.LogWarning(gameObject + " XRGrabPoser does not have an XRGrabInteractable assigned." + "  (Parent name) " + transform.parent);
         }

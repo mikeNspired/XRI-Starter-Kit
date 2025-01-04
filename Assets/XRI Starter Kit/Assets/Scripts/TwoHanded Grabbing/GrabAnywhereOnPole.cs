@@ -5,7 +5,7 @@ namespace MikeNspired.UnityXRHandPoser
 {
     public class GrabAnywhereOnPole : MonoBehaviour
     {
-        [SerializeField] private XRGrabInteractable Interactable;
+        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable Interactable;
         [SerializeField] private Transform GrabbableHolder,LeftHandGrip, RightHandGrip;
         [SerializeField] private Vector2 length;
 
@@ -28,7 +28,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnValidate()
         {
             if (!Interactable)
-                Interactable = GetComponentInParent<XRGrabInteractable>();
+                Interactable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
         }
 
         private void Update()
@@ -48,7 +48,7 @@ namespace MikeNspired.UnityXRHandPoser
                 Mathf.Clamp(grip.localPosition.y, -length.x, length.y), grip.localPosition.z);
         }
 
-        private void EnableFollowOnHand(IXRSelectInteractor hand, bool state)
+        private void EnableFollowOnHand(UnityEngine.XR.Interaction.Toolkit.Interactors.IXRSelectInteractor hand, bool state)
         {
             currentHandGrabbing = hand.transform.GetComponentInParent<HandReference>();
 

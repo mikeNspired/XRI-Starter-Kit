@@ -1,13 +1,15 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// An interactable lever that snaps into an on or off position by a direct interactor
     /// </summary>
-    public class XRLever : XRBaseInteractable
+    public class XRLever : UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable
     {
         const float k_LeverDeadZone = 0.1f; // Prevents rapid switching between on and off states when right in the middle
         
@@ -50,7 +52,7 @@ namespace MikeNspired.UnityXRHandPoser
         UnityEventFloat m_OnValueChange = new UnityEventFloat();
         
         IXRSelectInteractor m_Interactor;
-        ActionBasedController m_Controller;
+        ControllerInputActionManager m_Controller;
         
         /// <summary>
         /// The object that is visually grabbed and manipulated
@@ -118,7 +120,7 @@ namespace MikeNspired.UnityXRHandPoser
         void StartGrab(SelectEnterEventArgs args)
         {
             m_Interactor = args.interactorObject;
-            m_Controller = m_Interactor.transform.GetComponentInParent<ActionBasedController>();
+            m_Controller = m_Interactor.transform.GetComponentInParent<ControllerInputActionManager>();
         }
 
         void EndGrab(SelectExitEventArgs args)

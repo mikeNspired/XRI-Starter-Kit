@@ -8,11 +8,11 @@ namespace MikeNspired.UnityXRHandPoser
     /// <summary>
     /// An interactable that can be pushed by a direct interactor's movement
     /// </summary>
-    public class XRPushButton : XRBaseInteractable
+    public class XRPushButton : UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable
     {
         class PressInfo
         {
-            internal IXRHoverInteractor m_Interactor;
+            internal UnityEngine.XR.Interaction.Toolkit.Interactors.IXRHoverInteractor m_Interactor;
             internal bool m_InPressRegion = false;
             internal bool m_WrongSide = false;
         }
@@ -58,7 +58,7 @@ namespace MikeNspired.UnityXRHandPoser
         float m_Value = 0f;
         Vector3 m_BaseButtonPosition = Vector3.zero;
 
-        Dictionary<IXRHoverInteractor, PressInfo> m_HoveringInteractors = new Dictionary<IXRHoverInteractor, PressInfo>();
+        Dictionary<UnityEngine.XR.Interaction.Toolkit.Interactors.IXRHoverInteractor, PressInfo> m_HoveringInteractors = new Dictionary<UnityEngine.XR.Interaction.Toolkit.Interactors.IXRHoverInteractor, PressInfo>();
 
         /// <summary>
         /// The object that is visually pressed down
@@ -109,9 +109,9 @@ namespace MikeNspired.UnityXRHandPoser
             }
         }
 
-        public override bool IsHoverableBy(IXRHoverInteractor interactor)
+        public override bool IsHoverableBy(UnityEngine.XR.Interaction.Toolkit.Interactors.IXRHoverInteractor interactor)
         {
-            if (interactor is XRRayInteractor)
+            if (interactor is UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor)
                 return false;
 
             return base.IsHoverableBy(interactor);

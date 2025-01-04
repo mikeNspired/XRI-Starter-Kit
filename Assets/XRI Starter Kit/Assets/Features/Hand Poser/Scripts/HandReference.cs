@@ -2,6 +2,8 @@
 
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -15,7 +17,7 @@ namespace MikeNspired.UnityXRHandPoser
         public HandAnimator Hand;
         public LeftRight LeftRight;
         public HandReference otherHand;
-        public XRDirectInteractor xrDirectInteractor;
+        public NearFarInteractor xrDirectInteractor;
 
         private Vector3 startPosition;
         private Quaternion startRotation;
@@ -27,15 +29,15 @@ namespace MikeNspired.UnityXRHandPoser
             if (!Hand)
                 Hand = GetComponentInChildren<HandAnimator>();
             if (!xrDirectInteractor)
-                xrDirectInteractor = GetComponent<XRDirectInteractor>();
+                xrDirectInteractor = GetComponent<NearFarInteractor>();
         }
 
         private void Start() => OnValidate();
 
         private void Awake()
         {
-            xrDirectInteractor.onSelectEntered.AddListener(OnGrab);
-            xrDirectInteractor.onSelectExited.AddListener(x => ResetAttachTransform());
+            xrDirectInteractor.selectEntered.AddListener(OnGrab);
+            xrDirectInteractor.selectExited.AddListener(x => ResetAttachTransform());
 
             startPosition = xrDirectInteractor.attachTransform.localPosition;
             startRotation = xrDirectInteractor.attachTransform.localRotation;
@@ -43,11 +45,11 @@ namespace MikeNspired.UnityXRHandPoser
         }
 
 
-        private void OnGrab(XRBaseInteractable x)
+        private void OnGrab(SelectEnterEventArgs arg0)
         {
-            currentHandPoser = x.GetComponent<XRHandPoser>();
+            currentHandPoser = arg0.interactableObject.transform.GetComponent<XRHandPoser>();
             if (!currentHandPoser)
-                currentHandPoser = x.GetComponentInChildren<XRHandPoser>();
+                currentHandPoser = arg0.interactableObject.transform.GetComponentInChildren<XRHandPoser>();
 
             if (currentHandPoser)
             {
@@ -72,12 +74,6 @@ namespace MikeNspired.UnityXRHandPoser
             attachTransform.parent = Hand.transform;
             attachTransform.localPosition = startPosition;
             attachTransform.localRotation = startRotation;
-        }
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.P))
-                Debug.Break();
         }
 
         public Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles)

@@ -1,11 +1,12 @@
 using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class AutoSpawnObjectInHandOnGrab : MonoBehaviour
 {
-    [SerializeField] private XRBaseInteractable _xrBaseInteractable;
-    [SerializeField] private XRBaseInteractable prefabToSpawn;
+    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable _xrBaseInteractable;
+    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable prefabToSpawn;
 
     private HandReference currentHand, otherHand;
 
@@ -34,11 +35,11 @@ public class AutoSpawnObjectInHandOnGrab : MonoBehaviour
         if (!currentHand || !otherHand) return;
         if (otherHand.xrDirectInteractor.hasSelection) return;
         var spawnedObject = Instantiate(prefabToSpawn);
-        otherHand.xrDirectInteractor.interactionManager.SelectEnter(otherHand.xrDirectInteractor, spawnedObject);
+        otherHand.xrDirectInteractor.interactionManager.SelectEnter(otherHand.xrDirectInteractor, (IXRSelectInteractable) spawnedObject);
     }
 
     private void OnValidate()
     {
-        if (!_xrBaseInteractable) _xrBaseInteractable = GetComponent<XRBaseInteractable>();
+        if (!_xrBaseInteractable) _xrBaseInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
     }
 }

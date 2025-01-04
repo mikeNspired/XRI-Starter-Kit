@@ -7,6 +7,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using CommonUsages = UnityEngine.XR.CommonUsages;
 
 namespace MikeNspired.UnityXRHandPoser
@@ -15,7 +17,7 @@ namespace MikeNspired.UnityXRHandPoser
     {
         [Header("Main")] [SerializeField] private InputActionReference activationInput;
 
-        [SerializeField] private XRDirectInteractor directInteractor = null;
+        [SerializeField] private NearFarInteractor nearFarInteractor = null;
         [SerializeField] private DistanceGrabberLineBender lineEffect = null;
         [SerializeField] private AudioRandomize launchAudio = null;
         [SerializeField] private SphereCollider mainHandCollider = null;
@@ -90,7 +92,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             OnValidate();
             WristRotationReset();
-            directInteractor.onSelectEntered.AddListener(Reset);
+            nearFarInteractor.selectEntered.AddListener( x => ResetAll(x.interactableObject));
             if (mainHandCollider)
                 mainHandColliderStartingSize = mainHandCollider.radius;
             EnableOnActive.SetActive(false);
@@ -106,8 +108,8 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (!lineEffect)
                 lineEffect = GetComponent<DistanceGrabberLineBender>();
-            if (!directInteractor)
-                directInteractor = GetComponentInParent<XRDirectInteractor>();
+            if (!nearFarInteractor)
+                nearFarInteractor = GetComponentInParent<NearFarInteractor>();
             if (!interactionManager)
                 interactionManager = FindObjectOfType<XRInteractionManager>();
 
@@ -121,11 +123,11 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void Update()
         {
-            if (directInteractor.selectTarget) return;
+            if (nearFarInteractor.interactablesSelected.Count > 0) return;
             if (isLaunching) return;
 
-            //Check if controller is holding an item already
-            if (directInteractor.selectTarget)
+            // Check if the controller is holding an item already
+            if (nearFarInteractor.interactablesSelected.Count > 0)
             {
                 CancelTarget(currentTarget);
                 return;
@@ -235,7 +237,7 @@ namespace MikeNspired.UnityXRHandPoser
 
                     var interactable = hit.transform.GetComponentInParent<XRGrabInteractable>();
                     //Check if interactable or if its being grabbed then ignore
-                    if (!interactable || interactable.selectingInteractor || !interactable.enabled) continue;
+                    if (!interactable || (interactable.interactorsSelecting.Count > 0) || !interactable.enabled) continue;
 
                     //Check if allowed to DistanceGrab
                     var itemData = interactable.GetComponent<InteractableItemData>();
@@ -297,16 +299,16 @@ namespace MikeNspired.UnityXRHandPoser
             }
         }
 
-        private void Reset(XRBaseInteractable x)
+        private void ResetAll(IXRSelectInteractable interactable)
         {
             CancelTarget(currentTarget);
             isLaunching = false;
             mainHandCollider.radius = mainHandColliderStartingSize;
 
-            if (!x.TryGetComponent(out Rigidbody rb) || rb.isKinematic) return;
-            rb.velocity = Vector3.zero;
+            // Get the interactable and check for a Rigidbody
+            if (interactable.transform.TryGetComponent(out Rigidbody rb) && !rb.isKinematic) 
+                rb.linearVelocity = Vector3.zero;
         }
-
 
         private void TryToLaunchItem(Transform target)
         {
@@ -427,7 +429,7 @@ namespace MikeNspired.UnityXRHandPoser
         private IEnumerator SimulateProjectile(Transform target)
         {
             var rigidBody = target.GetComponent<Rigidbody>();
-            startingDrag = rigidBody.drag;
+            startingDrag = rigidBody.linearDamping;
             Vector3 goalPosition = transform.position + Vector3.up * verticalGoalAddOn;
             Vector3 startPosition = target.position;
             Quaternion startRotation = target.rotation;
@@ -463,11 +465,11 @@ namespace MikeNspired.UnityXRHandPoser
             }
 
             StartCoroutine(ShrinkCollider());
-            rigidBody.drag = dragHoldAmount;
-            rigidBody.velocity = velocity * velocitySpeedWhenFinished;
+            rigidBody.linearDamping = dragHoldAmount;
+            rigidBody.linearVelocity = velocity * velocitySpeedWhenFinished;
             rigidBody.WakeUp();
             yield return new WaitForSeconds(dragTime);
-            rigidBody.drag = startingDrag;
+            rigidBody.linearDamping = startingDrag;
             isLaunching = false;
         }
 
@@ -562,23 +564,24 @@ namespace MikeNspired.UnityXRHandPoser
         private void TryToAutoGrab()
         {
             if (!autoGrabIfGripping) return;
-            if (directInteractor.selectTarget) return;
+            if (nearFarInteractor.interactablesSelected.Count > 0) return;
             if (Vector3.Distance(currentTarget.position, transform.position) >= distanceToAutoGrab) return;
 
             if (!isInputActivated) return;
 
             StopAllCoroutines();
-            currentTarget.transform.SetPositionAndRotation(directInteractor.transform.position, directInteractor.transform.rotation);
-            StartCoroutine(GrabItem(directInteractor, currentTarget.GetComponent<XRBaseInteractable>()));
+            currentTarget.transform.SetPositionAndRotation(nearFarInteractor.transform.position, nearFarInteractor.transform.rotation);
+            StartCoroutine(GrabItem(nearFarInteractor, currentTarget.GetComponent<XRBaseInteractable>()));
         }
 
         IEnumerator GrabItem(XRBaseInteractor currentInteractor, XRBaseInteractable interactable)
         {
             yield return new WaitForFixedUpdate();
-            Reset(interactable);
+            ResetAll(interactable);
             mainHandCollider.radius = mainHandColliderStartingSize;
-            if (currentInteractor.selectTarget || directInteractor.selectTarget) yield break;
-            interactionManager.SelectEnter(currentInteractor, interactable);
+            if (currentInteractor.interactablesSelected.Count > 0 || nearFarInteractor.interactablesSelected.Count > 0) yield break;
+
+            interactionManager.SelectEnter(currentInteractor, (IXRSelectInteractable)interactable);
         }
     }
 }

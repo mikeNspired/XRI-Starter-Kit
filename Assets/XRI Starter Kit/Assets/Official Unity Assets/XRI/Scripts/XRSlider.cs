@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 using static Unity.Mathematics.math;
 
 namespace MikeNspired.UnityXRHandPoser
@@ -9,7 +11,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// <summary>
     /// An interactable that follows the position of the interactor on a single axis
     /// </summary>
-    public class XRSlider : XRBaseInteractable
+    public class XRSlider : UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable
     {
         [SerializeField]
         [Tooltip("The object that is visually grabbed and manipulated")]
@@ -44,7 +46,7 @@ namespace MikeNspired.UnityXRHandPoser
         float m_RemapValueMax = 1f;
         
         IXRSelectInteractor m_Interactor;
-        ActionBasedController m_Controller;
+        ControllerInputActionManager m_Controller;
 
         /// <summary>
         /// The value of the slider
@@ -88,7 +90,7 @@ namespace MikeNspired.UnityXRHandPoser
         void StartGrab(SelectEnterEventArgs args)
         {
             m_Interactor = args.interactorObject;
-            m_Controller = m_Interactor.transform.GetComponentInParent<ActionBasedController>();
+            m_Controller = m_Interactor.transform.GetComponentInParent<ControllerInputActionManager>();
 
             UpdateSliderPosition();
         }

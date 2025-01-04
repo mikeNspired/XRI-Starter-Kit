@@ -64,7 +64,7 @@ namespace MikeNspired.UnityXRHandPoser
         }
 
         private void UpdateVehicleAudio() =>
-            vehicleAudio.AdjustAudio(movementInput, rootArticulationBody.velocity.magnitude);
+            vehicleAudio.AdjustAudio(movementInput, rootArticulationBody.linearVelocity.magnitude);
 
         private void UpdateAcceleration()
         {

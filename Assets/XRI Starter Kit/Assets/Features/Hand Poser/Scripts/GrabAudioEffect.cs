@@ -1,13 +1,13 @@
 ﻿// Author MikeNspired. 
 
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class GrabAudioEffect : AudioRandomize
     {
-        public XRBaseInteractable interactable;
+        public UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable interactable;
 
         private void Start()
         {
@@ -21,7 +21,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             base.OnValidate();
             if (!interactable)
-                interactable = GetComponentInParent<XRBaseInteractable>();
+                interactable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
         }
     }
 }

@@ -1,11 +1,11 @@
 ﻿using System.Collections;
 using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 public class Arrow : MonoBehaviour
 {
-    [SerializeField] private XRGrabInteractable xrGrabInteractable;
+    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable xrGrabInteractable;
     [SerializeField] private ArrowCollisionDamage arrowCollisionDamage;
     [SerializeField] private float speed = 1;
     [SerializeField] private Transform tip;
@@ -28,7 +28,7 @@ public class Arrow : MonoBehaviour
 
     private void OnValidate()
     {
-        if (!xrGrabInteractable) xrGrabInteractable = GetComponent<XRGrabInteractable>();
+        if (!xrGrabInteractable) xrGrabInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
         if (!arrowCollisionDamage) arrowCollisionDamage = GetComponent<ArrowCollisionDamage>();
         if (!rb) rb = GetComponent<Rigidbody>();
     }
@@ -48,7 +48,7 @@ public class Arrow : MonoBehaviour
         if (collision.transform.TryGetComponent(out Rigidbody body))
         {
             transform.parent = collision.transform;
-            body.AddForce(rb.velocity, ForceMode.Impulse);
+            body.AddForce(rb.linearVelocity, ForceMode.Impulse);
         }
 
         Stop();
@@ -98,7 +98,7 @@ public class Arrow : MonoBehaviour
         yield return new WaitForFixedUpdate();
         while (inAir)
         {
-            Quaternion newRotation = Quaternion.LookRotation(rb.velocity, transform.up);
+            Quaternion newRotation = Quaternion.LookRotation(rb.linearVelocity, transform.up);
             transform.rotation = newRotation;
             yield return null;
         }

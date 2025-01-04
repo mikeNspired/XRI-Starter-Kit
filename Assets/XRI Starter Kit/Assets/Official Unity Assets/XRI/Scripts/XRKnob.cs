@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 using static Unity.Mathematics.math;
 
 namespace MikeNspired.UnityXRHandPoser
@@ -8,7 +10,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// <summary>
     /// An interactable knob that follows the rotation of the interactor
     /// </summary>
-    public class XRKnob : XRBaseInteractable
+    public class XRKnob : UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable
     {
         const float k_ModeSwitchDeadZone = 0.1f; // Prevents rapid switching between the different rotation tracking modes
 
@@ -135,7 +137,7 @@ namespace MikeNspired.UnityXRHandPoser
         float m_RemapValueMax = 1f;
         
         IXRSelectInteractor m_Interactor;
-        ActionBasedController m_Controller;
+        ControllerInputActionManager m_Controller;
 
         bool m_PositionDriven = false;
         bool m_UpVectorDriven = false;
@@ -214,7 +216,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void StartGrab(SelectEnterEventArgs args)
         {
             m_Interactor = args.interactorObject;
-            m_Controller = m_Interactor.transform.GetComponentInParent<ActionBasedController>();
+            m_Controller = m_Interactor.transform.GetComponentInParent<ControllerInputActionManager>();
             m_PositionAngles.Reset();
             m_UpVectorAngles.Reset();
             m_ForwardVectorAngles.Reset();

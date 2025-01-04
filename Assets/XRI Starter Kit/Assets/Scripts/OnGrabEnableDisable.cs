@@ -2,13 +2,13 @@
 
 using System.Collections;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class OnGrabEnableDisable : MonoBehaviour, IReturnMovedColliders
     {
-        [SerializeField] private XRGrabInteractable grabInteractable;
+        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grabInteractable;
 
         [Tooltip("Transform gets disabled when the interactable is grabbed and enabled when released")] [SerializeField]
         private Transform disableOnGrab = null;
@@ -27,8 +27,8 @@ namespace MikeNspired.UnityXRHandPoser
         {
             OnValidate();
 
-            grabInteractable.onSelectEntered.AddListener(x => OnGrab());
-            grabInteractable.onSelectExited.AddListener(x => OnRelease());
+            grabInteractable.selectEntered.AddListener(x => OnGrab());
+            grabInteractable.selectExited.AddListener(x => OnRelease());
 
             if (disableOnGrab) disableOnGrabStartPosition = disableOnGrab.transform.localPosition;
             if (enableOnGrab) enableOnGrabStartPosition = enableOnGrab.transform.localPosition;
@@ -37,7 +37,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnValidate()
         {
             if (!grabInteractable)
-                grabInteractable = GetComponent<XRGrabInteractable>();
+                grabInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
         }
 
         private void Start()

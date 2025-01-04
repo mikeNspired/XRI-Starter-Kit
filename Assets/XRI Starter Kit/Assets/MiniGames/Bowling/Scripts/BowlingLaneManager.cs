@@ -81,7 +81,7 @@ namespace MikeNspired.UnityXRHandPoser
             yield return new WaitForSeconds(1);
             ball.transform.position = spawnRespawnPoint.transform.position;
             ball.transform.rotation = spawnRespawnPoint.transform.rotation;
-            ball.GetComponent<Rigidbody>().velocity = ball.transform.forward * ballSpawnSpeed;
+            ball.GetComponent<Rigidbody>().linearVelocity = ball.transform.forward * ballSpawnSpeed;
         }
 
         private void ResetPins()

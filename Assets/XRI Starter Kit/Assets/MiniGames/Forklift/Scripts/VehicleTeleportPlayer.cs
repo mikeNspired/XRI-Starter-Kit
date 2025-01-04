@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -8,13 +8,13 @@ namespace MikeNspired.UnityXRHandPoser
     {
         public UnityEvent VehicleExited;
         [SerializeField] Transform enterLocation, exitLocation, playerPositionConstraint;
-        private LocomotionProvider[] moveProviders;
+        private UnityEngine.XR.Interaction.Toolkit.Locomotion.LocomotionProvider[] moveProviders;
         private bool isActive;
 
         protected override void Awake()
         {
             base.Awake();
-            moveProviders = rig.GetComponentsInChildren<LocomotionProvider>();
+            moveProviders = rig.GetComponentsInChildren<UnityEngine.XR.Interaction.Toolkit.Locomotion.LocomotionProvider>();
         }
 
         public void EnterVehicle()

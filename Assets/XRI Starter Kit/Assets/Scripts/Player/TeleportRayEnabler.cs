@@ -2,15 +2,15 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class TeleportRayEnabler : MonoBehaviour
     {
-        [SerializeField] private XRRayInteractor teleportRayInteractor;
+        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactors.XRRayInteractor teleportRayInteractor;
         [SerializeField] private InputActionReference teleportActivate;
-        [SerializeField] private TeleportationProvider teleportationProvider;
+        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider teleportationProvider;
 
         private void Start()
         {
@@ -23,7 +23,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnValidate()
         {
-            if (!teleportationProvider) teleportationProvider = GetComponentInParent<TeleportationProvider>();
+            if (!teleportationProvider) teleportationProvider = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation.TeleportationProvider>();
         }
 
         private void EnableRay()

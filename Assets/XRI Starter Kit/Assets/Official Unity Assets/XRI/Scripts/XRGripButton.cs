@@ -7,7 +7,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// <summary>
     /// An interactable that can be pressed by a direct interactor
     /// </summary>
-    public class XRGripButton : XRBaseInteractable
+    public class XRGripButton : UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable
     {
         [SerializeField]
         [Tooltip("The object that is visually pressed down")]

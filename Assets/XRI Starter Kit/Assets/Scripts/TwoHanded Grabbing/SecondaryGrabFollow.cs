@@ -1,132 +1,175 @@
 ﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace MikeNspired.UnityXRHandPoser
 {
     public class SecondaryGrabFollow : MonoBehaviour
     {
-        [SerializeField] private XRGrabInteractable mainInteractable = null;
-        [SerializeField] protected XRBaseInteractable interactable = null;
+        [Header("Interactable References")]
+        [SerializeField] 
+        private XRGrabInteractable mainInteractable;
+
+        [SerializeField]
+        protected XRBaseInteractable interactable;
+
+        [Header("Rotation Options")]
+        [SerializeField]
+        private bool rotateOnY = false, rotateOnZ = false;
 
         private XRBaseInteractor currentHand, mainGripHand;
         private XRInteractionManager interactionManager;
-        private Quaternion mainInteractableHandAttachTransformStartingRotation;
-        private Vector3 mainHandAttachStartingRotation;
-        private TransformStruct interactableStartingTransformData;
-        private Vector3 mainHandStartingRotation;
-        private Transform interactableStartingParent, newHandAttachTransform;
-        [SerializeField] private bool rotateOnY = false, rotateOnZ = false;
 
-        private void Awake()
+        // Cached transforms and rotations
+        private Transform interactableStartingParent, newHandAttachTransform, startingParent;
+        private Quaternion mainInteractableHandAttachTransformStartingRotation;
+        private Vector3 mainHandAttachStartingRotation, mainHandStartingRotation;
+        private TransformStruct interactableStartingTransformData;
+
+        void Awake()
         {
             OnValidate();
-            interactable.onSelectEntered.AddListener(SetupHandHoldingThis);
-            interactable.onSelectExited.AddListener(DisableHandHoldingThis);
 
-            mainInteractable.onSelectEntered.AddListener(SetupMainInteractableHand);
-            mainInteractable.onSelectExited.AddListener(DisableMainInteractableHand);
+            // Subscribe to the XR Interaction events
+            interactable.selectEntered.AddListener(OnSecondarySelectEntered);
+            interactable.selectExited.AddListener(OnSecondarySelectExited);
 
-            //Set starting position, rotation, and parent of interactable to return to when released
-            interactableStartingTransformData.SetTransformStruct(interactable.transform.localPosition,
-                interactable.transform.localRotation, interactable.transform.localScale);
+            mainInteractable.selectEntered.AddListener(OnMainSelectEntered);
+            mainInteractable.selectExited.AddListener(OnMainSelectExited);
+
+            // Record original local transform (position, rotation, scale)
+            interactableStartingTransformData.SetTransformStruct(
+                interactable.transform.localPosition,
+                interactable.transform.localRotation,
+                interactable.transform.localScale
+            );
             interactableStartingParent = interactable.transform.parent;
 
-            //Setup a Transform to help with Quaternions. 
-            newHandAttachTransform = new GameObject().transform;
-            newHandAttachTransform.name = mainInteractable.gameObject.name + "Follow Hand Helper";
+            // Create a helper transform for rotation
+            newHandAttachTransform = new GameObject(mainInteractable.name + " Follow Hand Helper").transform;
             newHandAttachTransform.parent = transform;
         }
 
-        private void OnValidate()
+        void OnValidate()
         {
             if (!interactable)
                 interactable = GetComponent<XRGrabInteractable>();
+
             if (!interactionManager)
                 interactionManager = FindObjectOfType<XRInteractionManager>();
         }
 
-        private void SetupHandHoldingThis(XRBaseInteractor hand)
+        /// <summary>
+        /// Called when the secondary hand (this interactable) is grabbed.
+        /// </summary>
+        private void OnSecondarySelectEntered(SelectEnterEventArgs args)
         {
-            currentHand = hand;
-            SetStartingFromToRotation();
+            currentHand = args.interactorObject as XRBaseInteractor;
+            SetStartingFromToRotation(); // position the attach transform
             mainHandStartingRotation = mainGripHand.transform.parent.localEulerAngles;
             mainHandAttachStartingRotation = mainGripHand.attachTransform.localEulerAngles;
-
         }
 
-        private void DisableHandHoldingThis(XRBaseInteractor hand)
+        /// <summary>
+        /// Called when the secondary hand (this interactable) is released.
+        /// </summary>
+        private void OnSecondarySelectExited(SelectExitEventArgs args)
         {
-            //Return interactable to original position
-            var interactableTransform = interactable.transform;
-            interactableTransform.parent = interactableStartingParent;
-            interactableTransform.localPosition = interactableStartingTransformData.position;
-            interactableTransform.localRotation = interactableStartingTransformData.rotation;
-            interactableTransform.localScale = interactableStartingTransformData.scale;
+            // Restore original local transform
+            var t = interactable.transform;
+            t.parent = interactableStartingParent;
+            t.localPosition = interactableStartingTransformData.position;
+            t.localRotation = interactableStartingTransformData.rotation;
+            t.localScale = interactableStartingTransformData.scale;
 
             ResetMainHandAttachTransform();
             currentHand = null;
-
         }
 
-        private Transform startingParent;
-        private void SetupMainInteractableHand(XRBaseInteractor hand)
+        /// <summary>
+        /// Called when the main hand (mainInteractable) is grabbed.
+        /// </summary>
+        private void OnMainSelectEntered(SelectEnterEventArgs args)
         {
-            mainGripHand = hand;
+            mainGripHand = args.interactorObject as XRBaseInteractor;
+            if (mainGripHand == null) return;
             startingParent = mainGripHand.attachTransform.parent;
             mainInteractableHandAttachTransformStartingRotation = mainGripHand.attachTransform.localRotation;
         }
 
-        private void DisableMainInteractableHand(XRBaseInteractor hand)
+        /// <summary>
+        /// Called when the main hand (mainInteractable) is released.
+        /// </summary>
+        private void OnMainSelectExited(SelectExitEventArgs args)
         {
-            if (currentHand) //Release if main hand lets go{
-                interactionManager.SelectExit(currentHand, interactable);
-//            ResetMainHandAttachTransform();
-            mainGripHand.GetComponentInParent<HandReference>().ResetAttachTransform();
+            // If secondary hand is still holding, force release
+            if (currentHand)
+                interactionManager.SelectExit(currentHand, (IXRSelectInteractable) interactable);
+
+            // Reset main hand attach transform
+            mainGripHand.GetComponentInParent<HandReference>()?.ResetAttachTransform();
             mainGripHand = null;
         }
 
+        /// <summary>
+        /// Reset the main hand attach transform to its original parent/rotation.
+        /// </summary>
         private void ResetMainHandAttachTransform()
         {
+            // If there is no current secondary hand, nothing to do
             if (!currentHand) return;
-           // mainGripHand.GetComponentInParent<HandReference>().ResetAttachTransform();
             if (!mainGripHand) return;
+
+            // Restore the attach transform
             mainGripHand.attachTransform.parent = startingParent;
             mainGripHand.attachTransform.localRotation = mainInteractableHandAttachTransformStartingRotation;
             newHandAttachTransform.parent = transform;
         }
 
-        private void Update()
+        void Update()
         {
+            // If both hands are active, run the rotation logic
             if (currentHand && mainGripHand)
                 SetRotation();
         }
 
+        /// <summary>
+        /// Position the helper transform to face from the main hand attach to the secondary hand.
+        /// Then re-parent the main grip's attach transform under that helper.
+        /// </summary>
         private void SetStartingFromToRotation()
         {
             newHandAttachTransform.position = mainGripHand.attachTransform.position;
             newHandAttachTransform.LookAt(currentHand.transform);
             newHandAttachTransform.parent = mainGripHand.attachTransform.parent;
+
             mainGripHand.attachTransform.parent = newHandAttachTransform;
         }
 
+        /// <summary>
+        /// Handle rotation constraints (rotate on Y or Z).
+        /// </summary>
         private void SetRotation()
         {
-            newHandAttachTransform.LookAt(currentHand.transform.position);
+            // Orient the helper transform to look at the secondary hand
+            newHandAttachTransform.LookAt(currentHand.transform);
 
+            // Start with the original attach transform rotation
             var r = mainHandAttachStartingRotation;
+
             if (rotateOnZ)
             {
-                var rToAdd = mainGripHand.transform.parent.localEulerAngles.z - mainHandStartingRotation.z;
+                // Compare difference in localEulerAngles.z
+                float rToAdd = mainGripHand.transform.parent.localEulerAngles.z - mainHandStartingRotation.z;
                 mainGripHand.attachTransform.localEulerAngles = new Vector3(r.x, r.y, r.z + rToAdd);
-               // mainGripHand.attachTransform.localEulerAngles = r;
-               // mainGripHand.attachTransform.Rotate(mainGripHand.attachTransform.forward, rToAdd,Space.World);
             }
             else if (rotateOnY)
             {
-                var rToAdd = mainGripHand.transform.localEulerAngles.y - mainHandStartingRotation.y;
-                //mainGripHand.attachTransform.localEulerAngles = new Vector3(r.x, r.y + rToAdd, r.z);
+                // Compare difference in localEulerAngles.y
+                float rToAdd = mainGripHand.transform.localEulerAngles.y - mainHandStartingRotation.y;
                 mainGripHand.attachTransform.localEulerAngles = r;
-                mainGripHand.attachTransform.Rotate(mainGripHand.attachTransform.up, rToAdd,Space.World);
+                mainGripHand.attachTransform.Rotate(mainGripHand.attachTransform.up, rToAdd, Space.World);
             }
         }
     }

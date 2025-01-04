@@ -1,6 +1,10 @@
 ﻿using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Inputs.Haptics;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -8,7 +12,6 @@ namespace MikeNspired.UnityXRHandPoser
     {
         [SerializeField] private XRBaseInteractable xrGrabInteractable;
         [SerializeField] private PlayerClimbingXR playerClimbingXR;
-        private XRBaseController xRController;
         private XRDirectInteractor xRDirectInteractor;
         public float hapticDuration = .1f;
         public float hapticStrength = .5f;
@@ -17,50 +20,58 @@ namespace MikeNspired.UnityXRHandPoser
         {
             base.Start();
             OnValidate();
-            xrGrabInteractable.onSelectEntered.AddListener(OnSelect);
-            xrGrabInteractable.onSelectExited.AddListener(OnSelectExit);
+            xrGrabInteractable.selectEntered.AddListener(OnSelect);
+            xrGrabInteractable.selectExited.AddListener(OnSelectExit);
         }
 
         private void OnValidate()
         {
             if (!playerClimbingXR)
-                playerClimbingXR = FindObjectOfType<PlayerClimbingXR>();
+                playerClimbingXR = FindFirstObjectByType<PlayerClimbingXR>();
             if (!xrGrabInteractable)
                 xrGrabInteractable = GetComponent<XRBaseInteractable>();
         }
 
-        private void OnSelect(XRBaseInteractor interactor)
+        private void OnSelect(SelectEnterEventArgs args)
         {
-            xRController = interactor.GetComponentInParent<ActionBasedController>();
-            xRDirectInteractor = interactor.GetComponent<XRDirectInteractor>();
-            if (!xRDirectInteractor) return;
+            // Get the interactor and its associated components
+            var interactor = args.interactorObject as XRDirectInteractor;
+            if (interactor == null) return;
 
-            if (xRDirectInteractor)
-                SetClimberHand(xRController);
+            var interactorTransform = args.interactorObject.transform;
+            var controller = interactorTransform.GetComponentInParent<ControllerInputActionManager>();
+            var xrOrigin = interactorTransform.GetComponentInParent<XROrigin>();
+            var controllerHaptic = controller.GetComponent<HapticImpulsePlayer>();
 
+            if (controller != null)
+                SetClimberHand(controller);
 
-            //controllerVelocity.SetController(interactor.transform);
-            SetTrackedObject(interactor.GetComponentInParent<XROrigin>().transform);
+            if (xrOrigin != null)
+                SetTrackedObject(xrOrigin.transform);
+
             StartTracking();
 
-            interactor.GetComponentInParent<XRBaseController>().SendHapticImpulse(hapticStrength, hapticDuration);
+            if (controllerHaptic != null)
+                controllerHaptic.SendHapticImpulse(hapticStrength, hapticDuration);
         }
 
-        private void SetClimberHand(XRBaseController controller)
-        {
-            playerClimbingXR.SetClimbHand(controller);
-        }
+        private void SetClimberHand(ControllerInputActionManager controller) => playerClimbingXR.SetClimbHand(controller);
 
-        private void OnSelectExit(XRBaseInteractor interactor)
+        private void OnSelectExit(SelectExitEventArgs args)
         {
-            xRController = interactor.GetComponentInParent<XRBaseController>();
-            xRDirectInteractor = interactor.GetComponent<XRDirectInteractor>();
+            // Get the interactor and its associated components
+            var interactor = (XRDirectInteractor)args.interactorObject;
+            if (interactor == null) return;
 
-            if (xRDirectInteractor)
+            var controller = interactor.transform.GetComponentInParent<ControllerInputActionManager>();
+            if (controller != null)
             {
-                playerClimbingXR.RemoveClimbHand(xRController);
+                playerClimbingXR.RemoveClimbHand(controller);
 
+                // Set the released velocity
                 playerClimbingXR.SetReleasedVelocity(CurrentSmoothedVelocity);
+
+                // Stop tracking the interactor
                 StopTracking();
             }
         }

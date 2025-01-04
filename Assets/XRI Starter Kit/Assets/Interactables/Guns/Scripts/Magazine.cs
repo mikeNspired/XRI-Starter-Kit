@@ -1,11 +1,10 @@
 ﻿// Author MikeNspired. 
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.Serialization;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -17,32 +16,48 @@ namespace MikeNspired.UnityXRHandPoser
 
         [SerializeField] private GunType gunType = null;
         [SerializeField] private GameObject ammoModels = null;
-        [FormerlySerializedAs("collider")] [SerializeField] private Collider _ = null;
+        [FormerlySerializedAs("collider")] [SerializeField] private Collider magazineCollider = null;
         [SerializeField] private Rigidbody rigidBody = null;
-        public bool IsBeingGrabbed() => isBeingGrabbed;
-        public GunType GunType => gunType;
+
+        private XRGrabInteractable grabInteractable;
         private Vector3 startingColliderPosition;
 
-        private void Start()
+        public bool IsBeingGrabbed() => isBeingGrabbed;
+        public GunType GunType => gunType;
+
+        private void Awake()
         {
-            startingColliderPosition = _.transform.localPosition;
-            
-            OnValidate();
-            GetComponent<XRGrabInteractable>().onSelectEntered.AddListener(x => OnGrab());
-            GetComponent<XRGrabInteractable>().onSelectExited.AddListener(x => isBeingGrabbed = false);
-            GetComponent<XRGrabInteractable>().onSelectExited.AddListener(x => ResetToGrabbableObject());
+            grabInteractable = GetComponent<XRGrabInteractable>();
+            magazineCollider = magazineCollider ? magazineCollider : GetComponentInChildren<Collider>();
+            rigidBody = rigidBody ? rigidBody : GetComponentInChildren<Rigidbody>();
+
+            startingColliderPosition = magazineCollider.transform.localPosition;
+
+            RegisterEvents();
+        }
+
+        private void RegisterEvents()
+        {
+            grabInteractable.selectEntered.AddListener(_ => OnGrab());
+            grabInteractable.selectExited.AddListener(_ => OnRelease());
         }
 
         private void OnGrab()
         {
             isBeingGrabbed = true;
-            _.isTrigger = false;
+            magazineCollider.isTrigger = false;
             rigidBody.isKinematic = true;
+        }
+
+        private void OnRelease()
+        {
+            isBeingGrabbed = false;
+            ResetToGrabbableObject();
         }
 
         private void OnEnable()
         {
-            _.transform.localPosition = startingColliderPosition;
+            magazineCollider.transform.localPosition = startingColliderPosition;
         }
 
         public void DisableCollider()
@@ -53,41 +68,30 @@ namespace MikeNspired.UnityXRHandPoser
         public void EnableCollider()
         {
             ReturnMovedColliders();
-            _.enabled = true;
+            magazineCollider.enabled = true;
             EnableDistanceGrabbing(true);
         }
 
         public void ResetToGrabbableObject()
         {
             EnableCollider();
-            isBeingGrabbed = false;
-            _.isTrigger = false;
+            magazineCollider.isTrigger = false;
             rigidBody.isKinematic = false;
             transform.parent = null;
         }
+
         public void SetupForGunAttachment()
         {
-            _.isTrigger = true;
+            magazineCollider.isTrigger = true;
             rigidBody.isKinematic = true;
             rigidBody.useGravity = true;
-            
             EnableDistanceGrabbing(false);
         }
-        
-        
-        //TODO remove this method
+
         private void EnableDistanceGrabbing(bool state)
         {
-            GetComponent<InteractableItemData>().canDistanceGrab = state;
-        }
-        
-
-        private void OnValidate()
-        {
-            if (!_)
-                _ = GetComponentInChildren<Collider>();
-            if (!rigidBody)
-                rigidBody = GetComponentInChildren<Rigidbody>();
+            if (TryGetComponent(out InteractableItemData itemData))
+                itemData.canDistanceGrab = state;
         }
 
         public bool UseAmmo()
@@ -96,8 +100,8 @@ namespace MikeNspired.UnityXRHandPoser
                 return false;
 
             CurrentAmmo--;
-            
-            if (CurrentAmmo <= 0) 
+
+            if (CurrentAmmo <= 0 && ammoModels != null) 
                 ammoModels.SetActive(false);
 
             return true;
@@ -105,20 +109,18 @@ namespace MikeNspired.UnityXRHandPoser
 
         private IEnumerator MoveAndDisableCollider()
         {
-            //objectToMove.GetComponent<CollidersSetToTrigger>()?.SetAllToTrigger();
-            yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
+            yield return new WaitForFixedUpdate();
+            magazineCollider.transform.position += Vector3.one * 9999;
 
-            _.transform.position += Vector3.one * 9999;
-            //Lets physics respond to collider disappearing before disabling object physics update needs to run twice
-            yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
-            _.enabled = false;
-            _.transform.localPosition = startingColliderPosition;
+            yield return new WaitForFixedUpdate();
+            magazineCollider.enabled = false;
+            magazineCollider.transform.localPosition = startingColliderPosition;
         }
 
         public void ReturnMovedColliders()
         {
             StopAllCoroutines();
-            _.transform.localPosition = startingColliderPosition;
+            magazineCollider.transform.localPosition = startingColliderPosition;
         }
     }
 }

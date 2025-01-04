@@ -13,8 +13,8 @@ public class PullInteraction : MonoBehaviour
     [FormerlySerializedAs("_autoSpawnObjectInHand")] [SerializeField]
     private AutoSpawnObjectInHandOnGrab autoSpawnObjectInHandOnGrab;
 
-    private XRBaseInteractable xrBaseInteractable;
-    private XRBaseInteractor currentInteractor;
+    private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable xrBaseInteractable;
+    private UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInteractor currentInteractor;
     private float PullAmount;
     private bool isSelected, canPlayPullBackSound = true;
     private Arrow currentArrow;
@@ -26,14 +26,14 @@ public class PullInteraction : MonoBehaviour
 
         colliders = transform.parent.GetComponentsInChildren<Collider>(true);
 
-        xrBaseInteractable.selectEntered.AddListener(x => OnSelectedEntered(x.interactorObject as XRBaseInteractor));
-        xrBaseInteractable.selectExited.AddListener(x => OnSelectExited(x.interactorObject as XRBaseInteractor));
+        xrBaseInteractable.selectEntered.AddListener(x => OnSelectedEntered(x.interactorObject as UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInteractor));
+        xrBaseInteractable.selectExited.AddListener(x => OnSelectExited(x.interactorObject as UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInteractor));
     }
 
     private void OnValidate()
     {
         if (!xrBaseInteractable)
-            xrBaseInteractable = GetComponent<XRBaseInteractable>();
+            xrBaseInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -44,7 +44,7 @@ public class PullInteraction : MonoBehaviour
         {
             //Check if interactor has arrow
             if (currentArrow) return;
-            if (!other.TryGetComponent(out XRBaseInteractor interactor)) return;
+            if (!other.TryGetComponent(out UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInteractor interactor)) return;
             if (!interactor.hasSelection) return;
             if (!interactor.firstInteractableSelected.transform.TryGetComponent(out Arrow arrow)) return;
             currentArrow = arrow;
@@ -56,19 +56,19 @@ public class PullInteraction : MonoBehaviour
             currentArrow.transform.SetParent(transform);
             currentArrow.transform.SetLocalPositionAndRotation(start.localPosition, start.localRotation);
 
-            currentArrow.GetComponent<XRBaseInteractable>()
+            currentArrow.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>()
                 .ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase.Late);
             //Disable rigidbody
             currentArrow.GetComponent<Rigidbody>().isKinematic = true;
 
             //Disable grabbable on arrow so player can grab string
-            currentArrow.GetComponent<XRBaseInteractable>().enabled = false;
+            currentArrow.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>().enabled = false;
 
             arrowNotchedAudio.Play();
         }
     }
 
-    private void OnSelectedEntered(XRBaseInteractor interactor)
+    private void OnSelectedEntered(UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInteractor interactor)
     {
         isSelected = true;
         currentInteractor = interactor;
@@ -76,7 +76,7 @@ public class PullInteraction : MonoBehaviour
     }
 
 
-    private void OnSelectExited(XRBaseInteractor interactor)
+    private void OnSelectExited(UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInteractor interactor)
     {
         isSelected = false;
         currentInteractor = null;

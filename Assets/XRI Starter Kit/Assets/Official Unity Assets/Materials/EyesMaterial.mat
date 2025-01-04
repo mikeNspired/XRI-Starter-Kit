@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  version: 7
+  version: 9
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -36,7 +36,8 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap:
     RenderType: Opaque
-  disabledShaderPasses: []
+  disabledShaderPasses:
+  - MOTIONVECTORS
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -103,6 +104,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaTestRef: 0.5
     - _AlphaToMask: 0
@@ -150,3 +152,4 @@ Material:
     - _SpecColor: {r: 0.59607846, g: 0.59607846, b: 0.59607846, a: 1}
     - _SpecularColor: {r: 0.49264705, g: 0.49264705, b: 0.49264705, a: 1}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1

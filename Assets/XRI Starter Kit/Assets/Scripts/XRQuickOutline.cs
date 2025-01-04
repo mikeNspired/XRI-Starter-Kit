@@ -3,14 +3,14 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class XRQuickOutline : Outline
 {
-    [SerializeField] private XRBaseInteractable _baseInteractable;
+    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable _baseInteractable;
     [SerializeField] private bool onlyHighlightsWhenNotSelected;
     private Color _startingColor;
 
     private void OnValidate()
     {
         if (!_baseInteractable)
-            _baseInteractable = GetComponentInParent<XRBaseInteractable>();
+            _baseInteractable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
     }
 
     private void Start()
@@ -30,7 +30,7 @@ public class XRQuickOutline : Outline
     public void Highlight(HoverEnterEventArgs args)
     {
         if (onlyHighlightsWhenNotSelected && _baseInteractable.isSelected) return;
-        if (args != null && args.interactorObject.transform.GetComponent<XRBaseInteractor>().hasSelection) return;
+        if (args != null && args.interactorObject.transform.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInteractor>().hasSelection) return;
         OutlineColor = _startingColor;
         enabled = true;
     }

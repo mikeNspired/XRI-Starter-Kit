@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 public class SpawnPrefabInSocket : XRSocketInteractor
 {
@@ -7,9 +9,9 @@ public class SpawnPrefabInSocket : XRSocketInteractor
     [SerializeField] private Transform spawnPosition;
     public XRBaseInteractable currentObject;
 
-    protected override void Awake()
+    protected override void Start()
     {
-        base.Awake();
+        base.Start();
         SpawnPrefab();
     }
 
@@ -20,7 +22,7 @@ public class SpawnPrefabInSocket : XRSocketInteractor
         SpawnPrefab();
     }
 
-    void SpawnPrefab()
+    private void SpawnPrefab()
     {
         currentObject = Instantiate(prefab, spawnPosition.position, spawnPosition.rotation).GetComponent<XRBaseInteractable>();
         interactionManager.SelectEnter(this, (IXRSelectInteractable)currentObject);

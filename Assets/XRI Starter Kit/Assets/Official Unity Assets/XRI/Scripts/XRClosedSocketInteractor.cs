@@ -1,19 +1,19 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
     /// Socket interactor that only selects and hovers interactables with a keychain component containing specific keys
     /// </summary>
-    public class XRClosedSocketInteractor : XRSocketInteractor
+    public class XRClosedSocketInteractor : UnityEngine.XR.Interaction.Toolkit.Interactors.XRSocketInteractor
     {
         [SerializeField]
         [Tooltip("The required keys to interact with this socket")]
         Lock m_Lock;
 
         /// <inheritdoc />
-        public override bool CanHover(IXRHoverInteractable interactable)
+        public override bool CanHover(UnityEngine.XR.Interaction.Toolkit.Interactables.IXRHoverInteractable interactable)
         {
             if (!base.CanHover(interactable))
                 return false;
@@ -23,7 +23,7 @@ namespace MikeNspired.UnityXRHandPoser
         }
 
         /// <inheritdoc />
-        public override bool CanSelect(IXRSelectInteractable interactable)
+        public override bool CanSelect(UnityEngine.XR.Interaction.Toolkit.Interactables.IXRSelectInteractable interactable)
         {
             if (!base.CanSelect(interactable))
                 return false;

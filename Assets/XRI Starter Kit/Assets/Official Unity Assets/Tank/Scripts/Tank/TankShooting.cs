@@ -16,7 +16,7 @@ namespace MikeNspired.UnityXRHandPoser
             Rigidbody shellInstance =
                 Instantiate(m_Shell, m_FireTransform.position, m_FireTransform.rotation) as Rigidbody;
 
-            shellInstance.velocity = m_launchForce * m_FireTransform.forward;
+            shellInstance.linearVelocity = m_launchForce * m_FireTransform.forward;
 
             m_ShootingAudio.PlayOneShot(m_FireClip);
 

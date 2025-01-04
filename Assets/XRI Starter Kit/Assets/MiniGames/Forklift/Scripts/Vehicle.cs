@@ -83,7 +83,7 @@ namespace MikeNspired.UnityXRHandPoser
             currentTurnAngle = maxTurnAngle * turnInput;
         }
 
-        private void UpdateVehicleAudio() => vehicleAudio.AdjustAudio(movementInput, rb.velocity.magnitude);
+        private void UpdateVehicleAudio() => vehicleAudio.AdjustAudio(movementInput, rb.linearVelocity.magnitude);
 
         private void UpdateAcceleration()
         {

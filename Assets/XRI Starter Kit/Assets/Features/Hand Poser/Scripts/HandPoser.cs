@@ -1,7 +1,7 @@
 ﻿// Author MikeNspired. 
 using System.Linq;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -119,7 +119,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void CreateTransforms()
         {
-            if (transform.GetComponent<XRBaseInteractable>())
+            if (transform.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>())
                 CreateGrabTransform(ref grabAttachPoints, transform, nameof(grabAttachPoints));
             else
                 grabAttachPoints = transform;

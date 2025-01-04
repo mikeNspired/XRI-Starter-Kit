@@ -1,7 +1,9 @@
-﻿// Author MikeNspired. 
+﻿// Author MikeNspired.
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace MikeNspired.UnityXRHandPoser
 {
@@ -18,7 +20,10 @@ namespace MikeNspired.UnityXRHandPoser
             base.Awake();
             OnValidate();
 
-            mainInteractable.onSelectExited.AddListener((x) => ReleaseHand());
+            if (mainInteractable != null)
+            {
+                mainInteractable.selectExited.AddListener(OnSelectExited);
+            }
         }
 
         private void OnValidate()
@@ -30,30 +35,35 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnTriggerEnter(Collider other)
         {
             if (currentHand) return;
-            var hand = other.GetComponentInParent<HandReference>();
-            if (!hand) return;
-            if (hand.GetComponentInChildren<XRDirectInteractor>().selectTarget) return;
-            
-            currentHand = hand.Hand;
 
+            var handReference = other.GetComponentInParent<HandReference>();
+            if (handReference == null) return;
+
+            var interactor = handReference.GetComponentInChildren<XRDirectInteractor>();
+            if (interactor != null && interactor.interactablesSelected.Count > 0) return;
+
+            currentHand = handReference.Hand;
             BeginNewHandPoses(currentHand);
             OnActivate.Invoke();
             currentHand.NewPoseStarting += ReleaseHand;
         }
-        
+
         private void OnTriggerExit(Collider other)
         {
-            var hand = other.GetComponentInParent<HandReference>();
-            if (!hand) return;
-            if (hand.GetComponentInChildren<XRDirectInteractor>().selectTarget) return;
+            var handReference = other.GetComponentInParent<HandReference>();
+            if (handReference == null) return;
+
+            var interactor = handReference.GetComponentInChildren<XRDirectInteractor>();
+            if (interactor != null && interactor.interactablesSelected.Count > 0) return;
+
             ReleaseHand();
         }
 
+        private void OnSelectExited(SelectExitEventArgs args) => ReleaseHand();
+
         private void ReleaseHand(bool isGrabbingItem)
         {
-            if (!isGrabbingItem) return;
-
-            ReleaseHand();
+            if (isGrabbingItem) ReleaseHand();
         }
 
         private void ReleaseHand()
@@ -68,28 +78,20 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void MoveHandToPoseTransforms(HandAnimator hand)
         {
-            //Determines if the left or right hand is grabbed, and then sends over the proper attachment point to be assigned to the XRGrabInteractable.
             var attachPoint = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
             hand.MoveHandToTarget(attachPoint, 0, false);
         }
 
         protected override void BeginNewHandPoses(HandAnimator hand)
         {
-            if (!hand) return;
-            if (!CheckIfCorrectHand(hand)) return;
+            if (!hand || !CheckIfCorrectHand(hand)) return;
 
             base.BeginNewHandPoses(hand);
-
             MoveHandToPoseTransforms(hand);
         }
 
-        private bool CheckIfCorrectHand(HandAnimator hand)
-        {
-            if (leftHandPose && hand.handType == LeftRight.Left)
-                return true;
-            if (rightHandPose && hand.handType == LeftRight.Right)
-                return true;
-            return false;
-        }
+        private bool CheckIfCorrectHand(HandAnimator hand) =>
+            (leftHandPose && hand.handType == LeftRight.Left) ||
+            (rightHandPose && hand.handType == LeftRight.Right);
     }
 }
