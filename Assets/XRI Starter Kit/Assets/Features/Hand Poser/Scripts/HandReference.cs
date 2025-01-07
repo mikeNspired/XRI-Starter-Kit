@@ -1,84 +1,91 @@
-﻿// Author MikeNspired. 
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-
 namespace MikeNspired.UnityXRHandPoser
 {
-    /// <summary>
-    /// Required on controllers for handposer to work.
-    /// References the XRGrabinteractable because the hand will unparent it self when grabbed.
-    /// This allows the scripts to quickly reference the hand.
-    /// </summary>
     public class HandReference : MonoBehaviour
     {
-        public HandAnimator Hand;
-        public LeftRight LeftRight;
-        public HandReference otherHand;
-        public NearFarInteractor xrDirectInteractor;
+        [field: SerializeField] public HandAnimator Hand { get; private set; }
+        [field: SerializeField] public LeftRight LeftRight { get; private set; }
+        [field: SerializeField] public HandReference OtherHand { get; private set; }
+        [field: SerializeField] public NearFarInteractor NearFarInteractor { get; private set; }
 
-        private Vector3 startPosition;
-        private Quaternion startRotation;
+        
+        private Transform handModelAttach; // Extra transform match hand model attach transform
         private Transform attachTransform;
+        private Vector3 originalLocalPos;
+        private Quaternion originalLocalRot;
         private HandPoser currentHandPoser;
+
 
         private void OnValidate()
         {
             if (!Hand)
                 Hand = GetComponentInChildren<HandAnimator>();
-            if (!xrDirectInteractor)
-                xrDirectInteractor = GetComponent<NearFarInteractor>();
+            if (!NearFarInteractor)
+                NearFarInteractor = GetComponent<NearFarInteractor>();
         }
-
-        private void Start() => OnValidate();
 
         private void Awake()
         {
-            xrDirectInteractor.selectEntered.AddListener(OnGrab);
-            xrDirectInteractor.selectExited.AddListener(x => ResetAttachTransform());
+            NearFarInteractor.selectEntered.AddListener(OnGrab);
+            NearFarInteractor.selectExited.AddListener(_ => ResetAttachTransform());
 
-            startPosition = xrDirectInteractor.attachTransform.localPosition;
-            startRotation = xrDirectInteractor.attachTransform.localRotation;
-            attachTransform = xrDirectInteractor.attachTransform;
+            attachTransform = NearFarInteractor.attachTransform;
+            originalLocalPos = attachTransform.localPosition;
+            originalLocalRot = attachTransform.localRotation;
+
+            // Create the dummy transform parented under the hand model
+            handModelAttach = new GameObject("HandModelAttach" + name).transform;
+            handModelAttach.SetParent(Hand.transform, false);
+            handModelAttach.localPosition = Vector3.zero;
+            handModelAttach.localRotation = Quaternion.identity;
         }
 
-
-        private void OnGrab(SelectEnterEventArgs arg0)
+        private void OnGrab(SelectEnterEventArgs args)
         {
-            currentHandPoser = arg0.interactableObject.transform.GetComponent<XRHandPoser>();
+            // Skip if far interaction
+            if (NearFarInteractor.interactionAttachController.hasOffset)
+                return;
+
+            FindHandPoser(args);
             if (!currentHandPoser)
-                currentHandPoser = arg0.interactableObject.transform.GetComponentInChildren<XRHandPoser>();
+                return;
 
-            if (currentHandPoser)
-            {
-                var interactableAttach = LeftRight == LeftRight.Left
-                    ? currentHandPoser.leftHandAttach
-                    : currentHandPoser.rightHandAttach;
+            var interactableAttach = LeftRight == LeftRight.Left
+                ? currentHandPoser.leftHandAttach
+                : currentHandPoser.rightHandAttach;
 
-                Vector3 finalPosition = interactableAttach.localPosition * -1;
-                Quaternion finalRotation = Quaternion.Inverse(interactableAttach.localRotation);
+            Vector3 finalPosition = interactableAttach.localPosition * -1;
+            Quaternion finalRotation = Quaternion.Inverse(interactableAttach.localRotation);
 
-                finalPosition = RotatePointAroundPivot(finalPosition, Vector3.zero, finalRotation.eulerAngles);
+            finalPosition = RotatePointAroundPivot(finalPosition, Vector3.zero, finalRotation.eulerAngles);
 
-                attachTransform.localPosition = finalPosition;
-                attachTransform.localRotation = finalRotation;
-            }
+            handModelAttach.localPosition = finalPosition;
+            handModelAttach.localRotation = finalRotation;
 
-            attachTransform.parent = transform;
+            // We read out its *world* position/rotation, and apply that to the XR attach transform:
+            attachTransform.position = handModelAttach.position;
+            attachTransform.rotation = handModelAttach.rotation;
+        }
+
+        private void FindHandPoser(SelectEnterEventArgs args)
+        {
+            currentHandPoser =
+                args.interactableObject.transform.GetComponent<XRHandPoser>() ??
+                args.interactableObject.transform.GetComponentInChildren<XRHandPoser>();
         }
 
         public void ResetAttachTransform()
         {
-            attachTransform.parent = Hand.transform;
-            attachTransform.localPosition = startPosition;
-            attachTransform.localRotation = startRotation;
+            attachTransform.localPosition = originalLocalPos;
+            attachTransform.localRotation = originalLocalRot;
         }
 
-        public Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles)
+        private static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles)
         {
-            Vector3 direction = point - pivot;
+            var direction = point - pivot;
             direction = Quaternion.Euler(angles) * direction;
             return direction + pivot;
         }

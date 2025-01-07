@@ -5,8 +5,8 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class AutoSpawnObjectInHandOnGrab : MonoBehaviour
 {
-    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable _xrBaseInteractable;
-    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable prefabToSpawn;
+    [SerializeField] private XRBaseInteractable _xrBaseInteractable;
+    [SerializeField] private XRBaseInteractable prefabToSpawn;
 
     private HandReference currentHand, otherHand;
 
@@ -25,7 +25,7 @@ public class AutoSpawnObjectInHandOnGrab : MonoBehaviour
     private void OnGrab(SelectEnterEventArgs args)
     {
         currentHand = args.interactorObject.transform.GetComponentInParent<HandReference>();
-        otherHand = currentHand.otherHand;
+        otherHand = currentHand.OtherHand;
         TrySpawn();
     }
 
@@ -33,13 +33,13 @@ public class AutoSpawnObjectInHandOnGrab : MonoBehaviour
     {
         if (!enabled) return;
         if (!currentHand || !otherHand) return;
-        if (otherHand.xrDirectInteractor.hasSelection) return;
+        if (otherHand.NearFarInteractor.hasSelection) return;
         var spawnedObject = Instantiate(prefabToSpawn);
-        otherHand.xrDirectInteractor.interactionManager.SelectEnter(otherHand.xrDirectInteractor, (IXRSelectInteractable) spawnedObject);
+        otherHand.NearFarInteractor.interactionManager.SelectEnter(otherHand.NearFarInteractor, (IXRSelectInteractable) spawnedObject);
     }
 
     private void OnValidate()
     {
-        if (!_xrBaseInteractable) _xrBaseInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
+        if (!_xrBaseInteractable) _xrBaseInteractable = GetComponent<XRBaseInteractable>();
     }
 }

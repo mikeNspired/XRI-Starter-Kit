@@ -2,6 +2,9 @@
 
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+
 namespace MikeNspired.UnityXRHandPoser
 {
     /// <summary>
@@ -11,7 +14,7 @@ namespace MikeNspired.UnityXRHandPoser
     /// </summary>
     public class XRHandPoser : HandPoser
     {
-        public UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable interactable;
+        public XRBaseInteractable interactable;
         public bool MaintainHandOnObject = true;
         public bool WaitTillEaseInTimeToMaintainPosition = true;
         public bool overrideEaseTime = false;
@@ -36,8 +39,14 @@ namespace MikeNspired.UnityXRHandPoser
         {
             var hand = x.interactorObject.transform.GetComponentInParent<HandReference>();
             if (!hand) return;
-            BeginNewHandPoses(hand.Hand);
 
+            if (hand.NearFarInteractor != null && hand.NearFarInteractor.interactionAttachController.hasOffset)
+            {
+                Debug.Log("Hand poser skipped also");
+                return; // Skip hand posing for far interactions
+            }
+            
+            BeginNewHandPoses(hand.Hand);
         }
 
         private void TryReleaseHand(SelectExitEventArgs x)
@@ -74,7 +83,7 @@ namespace MikeNspired.UnityXRHandPoser
         private float GetEaseInTime()
         {
             float time = 0;
-            interactable.TryGetComponent(out UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable xrGrabInteractable);
+            interactable.TryGetComponent(out XRGrabInteractable xrGrabInteractable);
             if (xrGrabInteractable)
                 time = xrGrabInteractable.attachEaseInTime;
             if (overrideEaseTime)
@@ -85,9 +94,9 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnValidate()
         {
             if (!interactable)
-                interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
+                interactable = GetComponent<XRBaseInteractable>();
             if (!interactable)
-                interactable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
+                interactable = GetComponentInParent<XRBaseInteractable>();
             if (!interactable)
                 Debug.LogWarning(gameObject + " XRGrabPoser does not have an XRGrabInteractable assigned." + "  (Parent name) " + transform.parent);
         }
