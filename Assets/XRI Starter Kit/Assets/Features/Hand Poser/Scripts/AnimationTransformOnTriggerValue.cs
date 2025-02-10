@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// Matches a Transform to another transform by the trigger value from 0 to 1.

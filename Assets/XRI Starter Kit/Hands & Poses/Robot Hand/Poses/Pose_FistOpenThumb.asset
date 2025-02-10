@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 450586b6fe1e3c4409299dc6edd58dc4, type: 3}
+  m_Name: Pose_FistOpenThumb
+  m_EditorClassIdentifier: 
+  joints:
+  - jointName: Hand_R_Jnt
+    localPosition: {x: -0, y: 0, z: 0}
+    localRotation: {x: -0.44549292, y: -0.52332985, z: 0.46982884, w: -0.5540061}
+  - jointName: Index1_R_Jnt_aux
+    localPosition: {x: -0.067745626, y: 0.0033991602, z: -0.02539782}
+    localRotation: {x: -0.704291, y: -0.068573266, z: 0.10091728, w: 0.6993481}
+  - jointName: Index2_R_Jnt
+    localPosition: {x: -0.028008947, y: -0.0000000047683715, z: -0.000000019073486}
+    localRotation: {x: 0.00000002980231, y: 0.5868713, z: -0.000000029802322, w: -0.8096802}
+  - jointName: Index3_R_Jnt
+    localPosition: {x: -0.03290926, y: 0, z: 0.0000000035762786}
+    localRotation: {x: 0.0000000034199454, y: 0.62672096, z: 0.000000012463716, w: -0.7792438}
+  - jointName: Index4_R_Jnt
+    localPosition: {x: -0.021589432, y: 0.0000000035762786, z: -0.000000019073486}
+    localRotation: {x: 0, y: 0.5268073, z: 0, w: -0.84998477}
+  - jointName: Middle1_R_Jnt_aux
+    localPosition: {x: -0.07512863, y: 0.009641629, z: -0.0058642887}
+    localRotation: {x: -0.6946551, y: -0.09817448, z: 0.1288948, w: 0.70085824}
+  - jointName: Middle2_R_Jnt
+    localPosition: {x: -0.023896817, y: 0, z: 0.0000000047683715}
+    localRotation: {x: 0, y: 0.5543363, z: 0, w: -0.8322928}
+  - jointName: Middle3_R_Jnt
+    localPosition: {x: -0.036074314, y: 0, z: 0.000000007152557}
+    localRotation: {x: 0.000000045443137, y: 0.6164671, z: 0.00000004134827, w: -0.78738064}
+  - jointName: Middle4_R_Jnt
+    localPosition: {x: -0.023493031, y: 0, z: -0.000000009536743}
+    localRotation: {x: 0, y: 0.5268073, z: 0, w: -0.84998477}
+  - jointName: Pinky1_R_Jnt_aux
+    localPosition: {x: -0.06559814, y: 0.012067363, z: 0.029795442}
+    localRotation: {x: -0.6833307, y: -0.21483424, z: 0.23199065, w: 0.6580925}
+  - jointName: Pinky2_R_Jnt
+    localPosition: {x: -0.023896808, y: 0.000000011920928, z: 0.000000038146972}
+    localRotation: {x: -0.00000002980232, y: 0.48490566, z: 0.000000059604638, w: -0.87456644}
+  - jointName: Pinky3_R_Jnt
+    localPosition: {x: -0.02784339, y: 0, z: -0.000000009536743}
+    localRotation: {x: 0, y: 0.50453275, z: 0, w: -0.86339253}
+  - jointName: Pinky4_R_Jnt
+    localPosition: {x: -0.01817017, y: 0.000000007152557, z: 0}
+    localRotation: {x: 0, y: 0.5268073, z: 0, w: -0.84998477}
+  - jointName: Ring1_R_Jnt_aux
+    localPosition: {x: -0.073604345, y: 0.011179611, z: 0.011003823}
+    localRotation: {x: -0.6831212, y: -0.1604991, z: 0.19393921, w: 0.68554586}
+  - jointName: Ring2_R_Jnt
+    localPosition: {x: -0.023896808, y: 0, z: 0.000000023841856}
+    localRotation: {x: 0, y: 0.5543363, z: 0, w: -0.8322928}
+  - jointName: Ring3_R_Jnt
+    localPosition: {x: -0.032414027, y: -5.9604643e-10, z: -0.000000009536743}
+    localRotation: {x: -0.000000010366442, y: 0.5764337, z: 0.00000007851941, w: -0.8171439}
+  - jointName: Ring4_R_Jnt
+    localPosition: {x: -0.021078033, y: 0, z: -0.000000009536743}
+    localRotation: {x: 0, y: 0.5268073, z: 0, w: -0.84998477}
+  - jointName: Thumb1_R_Jnt
+    localPosition: {x: -0.039323375, y: -0.016548676, z: -0.030263234}
+    localRotation: {x: -0.79759693, y: -0.20485519, z: -0.45920157, w: 0.333178}
+  - jointName: Thumb2_R_Jnt
+    localPosition: {x: -0.033785556, y: 0.00013868883, z: -0.00006835908}
+    localRotation: {x: 0.00000019371495, y: 0.2639274, z: -0.00000019371495, w: -0.96454257}
+  - jointName: Thumb3_R_Jnt
+    localPosition: {x: -0.023958474, y: 0.00014472779, z: -0.000065182394}
+    localRotation: {x: -0.00000011051275, y: 0.05962542, z: -0.00000016213392, w: -0.99822086}

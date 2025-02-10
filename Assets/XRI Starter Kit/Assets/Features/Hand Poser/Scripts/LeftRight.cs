@@ -1,4 +1,4 @@
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public enum LeftRight
     {

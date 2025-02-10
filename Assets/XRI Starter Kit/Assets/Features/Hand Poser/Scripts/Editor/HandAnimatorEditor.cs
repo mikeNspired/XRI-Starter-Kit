@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
 
-namespace MikeNspired.UnityXRHandPoser.Editor
+namespace MikeNspired.XRIStarterKit.Editor
 {
     [CustomEditor(typeof(HandAnimator))]
     [CanEditMultipleObjects]
@@ -85,7 +85,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             GUILayout.EndHorizontal();
 
             labelToolTip = new GUIContent("Root Bone", "Root bone of skeleton on hand");
-            mainScript.RootBone = EditorGUILayout.ObjectField(labelToolTip, mainScript.RootBone, typeof(Pose), true) as Pose;
+            mainScript.RootBone = EditorGUILayout.ObjectField(labelToolTip, mainScript.RootBone, typeof(PoseScriptableObject), true) as Pose;
 
             labelToolTip = new GUIContent("Time To New Pose", "Time hand skeleton animates to next pose");
             mainScript.animationTimeToNewPose = EditorGUILayout.FloatField(labelToolTip, mainScript.animationTimeToNewPose);
@@ -110,19 +110,19 @@ namespace MikeNspired.UnityXRHandPoser.Editor
 
             GUILayout.BeginHorizontal();
             var labelToolTip = new GUIContent("Default Pose", "Pose the hand will be in when no buttons are being pressed");
-            mainScript.DefaultPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.DefaultPose, typeof(Pose), false) as Pose;
+            mainScript.DefaultPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.DefaultPose, typeof(PoseScriptableObject), false) as PoseScriptableObject;
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateToCurrent();
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             labelToolTip = new GUIContent("Animation Pose", "Animate to this pose  from Default Pose when pulling the trigger from values 0 to 1");
-            mainScript.AnimationPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.AnimationPose, typeof(Pose), false) as Pose;
+            mainScript.AnimationPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.AnimationPose, typeof(PoseScriptableObject), false) as PoseScriptableObject;
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.AnimationPose);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             labelToolTip = new GUIContent("Second Button Pose", "Animation used when not holding an item and pulling the grip button");
-            mainScript.SecondButtonPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.SecondButtonPose, typeof(Pose), false) as Pose;
+            mainScript.SecondButtonPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.SecondButtonPose, typeof(PoseScriptableObject), false) as PoseScriptableObject;
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.SecondButtonPose);
             GUILayout.EndHorizontal();
 
@@ -143,17 +143,17 @@ namespace MikeNspired.UnityXRHandPoser.Editor
                 if (GUILayout.Button("Set Default Pose", GUILayout.MinWidth(buttonWidth)))
                 {
                     if (handType.enumValueIndex == 0)
-                        handPoserScript.leftHandPose = mainScript.DefaultPose as Pose;
+                        handPoserScript.leftHandPose = mainScript.DefaultPose;
                     else
-                        handPoserScript.rightHandPose = mainScript.DefaultPose as Pose;
+                        handPoserScript.rightHandPose = mainScript.DefaultPose;
                 }
 
                 if (GUILayout.Button("Set Animation Pose", GUILayout.MinWidth(buttonWidth)))
                 {
                     if (handType.enumValueIndex == 0)
-                        handPoserScript.LeftHandAnimationPose = mainScript.AnimationPose as Pose;
+                        handPoserScript.LeftHandAnimationPose = mainScript.AnimationPose;
                     else
-                        handPoserScript.RightHandAnimationPose = mainScript.AnimationPose as Pose;
+                        handPoserScript.RightHandAnimationPose = mainScript.AnimationPose;
                 }
 
                 GUILayout.EndHorizontal();
@@ -169,7 +169,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             GUILayout.Label("Reference Poses", EditorStyles.boldLabel);
             DrawLine();
             GUILayout.Space(5f);
-            Pose[] referencePoses = HandPoserSettings.Instance.ReferencePoses.ToArray();
+            PoseScriptableObject[] referencePoses = HandPoserSettings.Instance.ReferencePoses.ToArray();
             var labelToolTip = new GUIContent("Show Reference Poses", "Use these as starting points for poses, you can add your own through Resourses/HandPoserSettings");
             showReferencePoses = EditorGUILayout.Toggle(labelToolTip, showReferencePoses);
             customizeValues.value = showReferencePoses;
@@ -180,7 +180,7 @@ namespace MikeNspired.UnityXRHandPoser.Editor
                     if (index == null) continue;
                     GUILayout.BeginHorizontal();
                     labelToolTip = new GUIContent(index.name.First().ToString().ToUpper() + index.name.Substring(1));
-                    EditorGUILayout.ObjectField(labelToolTip, index, typeof(Pose), false);
+                    EditorGUILayout.ObjectField(labelToolTip, index, typeof(PoseScriptableObject), false);
                     if (GUILayout.Button("Animate"))
                     {
                         mainScript.DefaultPose = index;
@@ -197,9 +197,12 @@ namespace MikeNspired.UnityXRHandPoser.Editor
         {
             GUILayout.Space(5f);
             GUILayout.BeginHorizontal();
-
+    
             customizeValues.value = handPoserScript != null;
-            if (EditorGUILayout.BeginFadeGroup(customizeValues.faded))
+
+            bool fadeValue = EditorGUILayout.BeginFadeGroup(customizeValues.faded);
+
+            if (fadeValue)
             {
                 if (GUILayout.Button("Return To Poser", GUILayout.MinWidth(buttonWidth)))
                 {
@@ -213,12 +216,11 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             var labelToolTip = new GUIContent("Save Pose", "Save current hand position as a new pose");
 
             if (GUILayout.Button(labelToolTip, GUILayout.MinWidth(buttonWidth)))
-            {
                 SavePose();
-            }
 
             GUILayout.EndHorizontal();
         }
+
 
         private void DrawMessages()
         {
@@ -229,52 +231,57 @@ namespace MikeNspired.UnityXRHandPoser.Editor
                 EditorGUILayout.HelpBox("Add 'Pose' script to root bone", MessageType.Warning);
             EditorGUILayout.EndFadeGroup();
         }
-
-        // In Progress : Need to check for Mirrored hand values
-        //  -- To disable save pose button when the pose is the same
-        // private bool CheckIfPoseHasBeenModified()
-        // {
-        //     List<Transform> currentJointPosition = new List<Transform>();
-        //     mainScript.SetJoints(mainScript.RootBone.transform, currentJointPosition);
-        //
-        //     List<Transform> currentPose = new List<Transform>();
-        //     mainScript.SetJoints(mainScript.CurrentPose.transform, currentPose);
-        //
-        //
-        //     for (int i = 0; i < currentJointPosition.Count; ++i)
-        //     {
-        //         Transform joint = currentJointPosition[i];
-        //
-        //         if (joint.localRotation != currentPose[i].localRotation)
-        //         {
-        //             Debug.Log(currentPose[i].transform + " " + joint.localPosition + "  " + currentPose[i].transform + " "  + currentPose[i].localPosition );
-        //             return true;
-        //         }
-        //
-        //     }
-        //
-        //     return false;
-        // }
-
+        
         private void SavePose()
         {
-            if (mainScript.RootBone == null) return;
-
-            GameObject newPrefab = Instantiate(mainScript.RootBone).gameObject;
-            string fullPath2 = EditorUtility.SaveFilePanelInProject(
-                "Save New Pose",
-                "NewPose",
-                "prefab",
-                "Save Pose");
-
-            if (string.IsNullOrEmpty(fullPath2) == false)
+            if (mainScript.RootBone == null)
             {
-                PrefabUtility.SaveAsPrefabAsset(newPrefab, fullPath2);
+                Debug.LogWarning("RootBone is not assigned. Cannot save pose.");
+                return;
             }
 
-            DestroyImmediate(newPrefab);
+            // Open a save file dialog to get the path for the new PoseScriptableObject
+            string path = EditorUtility.SaveFilePanelInProject(
+                "Save New Pose",
+                "NewPose",
+                "asset",
+                "Specify where to save the new PoseScriptableObject"
+            );
+
+            if (string.IsNullOrEmpty(path)) return; // Exit if user cancels the save dialog
+
+            // Create a new PoseScriptableObject
+            PoseScriptableObject newPose = CreateInstance<PoseScriptableObject>();
+
+            // Collect joint data from the RootBone hierarchy
+            List<PoseScriptableObject.JointData> jointDataList = new List<PoseScriptableObject.JointData>();
+            GatherJointData(mainScript.RootBone.transform, jointDataList);
+            
+
+            // Assign the joint data to the PoseScriptableObject
+            newPose.joints = jointDataList.ToArray();
+
+            // Save the PoseScriptableObject as an asset
+            AssetDatabase.CreateAsset(newPose, path);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log($"Pose saved successfully at: {path}");
         }
 
+        private void GatherJointData(Transform root, List<PoseScriptableObject.JointData> jointDataList)
+        {
+            foreach (Transform joint in root.GetComponentsInChildren<Transform>())
+            {
+                if(JointUtility.ShouldSkipTransform(joint)) continue;
+                jointDataList.Add(new PoseScriptableObject.JointData
+                {
+                    jointName = joint.name,
+                    localPosition = joint.localPosition,
+                    localRotation = joint.localRotation
+                });
+            }
+        }
         private void DrawLine()
         {
             Rect horizontalLine = EditorGUILayout.GetControlRect(GUILayout.Height(1f));
@@ -294,6 +301,9 @@ namespace MikeNspired.UnityXRHandPoser.Editor
             var labelToolTip = new GUIContent("Show Joint Sliders", "Use these sliders to help start a new pose");
             showFingerSliders = EditorGUILayout.Toggle(labelToolTip, showFingerSliders);
             customizeValues.value = showFingerSliders;
+           
+            EditorGUI.BeginChangeCheck();
+            
             if (EditorGUILayout.BeginFadeGroup(customizeValues.faded))
             {
                 if (mainScript.defaultPose && mainScript.goalPose)
@@ -340,12 +350,12 @@ namespace MikeNspired.UnityXRHandPoser.Editor
 
                 GUILayout.BeginHorizontal();
                 labelToolTip = new GUIContent("Default Pose", "Pose the hand will be in when no buttons are being pressed");
-                mainScript.defaultPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.defaultPose, typeof(Pose), true) as Pose;
+                mainScript.defaultPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.defaultPose, typeof(PoseScriptableObject), true) as PoseScriptableObject;
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 labelToolTip = new GUIContent("Goal Pose", "Pose the hand will be in when no buttons are being pressed");
-                mainScript.goalPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.goalPose, typeof(Pose), true) as Pose;
+                mainScript.goalPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.goalPose, typeof(PoseScriptableObject), true) as PoseScriptableObject;
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();

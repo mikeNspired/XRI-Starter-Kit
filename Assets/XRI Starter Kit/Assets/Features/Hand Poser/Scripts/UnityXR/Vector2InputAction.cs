@@ -3,7 +3,7 @@ using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using static Unity.Mathematics.math;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class Vector2InputAction : MonoBehaviour
     {
@@ -12,45 +12,64 @@ namespace MikeNspired.UnityXRHandPoser
         public Vector2 value;
 
         public UnityEvent OnActivate, OnCancel;
-        public UnityEventFloat XAxis, YAxis;
-        public UnityEventVector2 Axis;
+        public UnityEventFloat XAxis; // expects a float parameter
+        public UnityEventFloat YAxis; // expects a float parameter
+        public UnityEventVector2 Axis; // expects a Vector2 parameter
 
         private bool isActive;
 
-        private void Start()
+        private void OnEnable()
         {
-            if (!inputAction || inputAction.action == null)
+            if (inputAction == null || inputAction.action == null)
             {
                 Debug.LogWarning("Missing InputActionReference on gameObject: " + gameObject);
                 enabled = false;
                 return;
             }
 
+            // Enable the action and subscribe to its events.
             inputAction.action.Enable();
-            inputAction.action.performed += x => Activate();
-            inputAction.action.canceled += x => Cancel();
+            inputAction.action.performed += OnActionPerformed;
+            inputAction.action.canceled += OnActionCanceled;
         }
 
-        private void Activate()
+        private void OnDisable()
         {
+            if (inputAction != null && inputAction.action != null)
+            {
+                inputAction.action.performed -= OnActionPerformed;
+                inputAction.action.canceled -= OnActionCanceled;
+                inputAction.action.Disable();
+            }
+        }
+
+        // Called when the input action is performed.
+        private void OnActionPerformed(InputAction.CallbackContext context)
+        {
+            // Depending on your desired behavior, you might choose to set isActive here.
+            // For continuous input, you may not need to gate reading the value.
             isActive = true;
             OnActivate.Invoke();
         }
 
-        private void Cancel()
+        // Called when the input action is canceled.
+        private void OnActionCanceled(InputAction.CallbackContext context)
         {
             isActive = false;
             OnCancel.Invoke();
-
             value = Vector2.zero;
-
             InvokeValueEvents();
         }
 
         private void Update()
         {
-            if (!isActive) return;
+            if (!isActive)
+            {
+                value = Vector2.zero;
+                return;
+            }
 
+            // Read the current value from the input action.
             value = inputAction.action.ReadValue<Vector2>();
 
             if (inverseX)

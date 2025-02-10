@@ -5,7 +5,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// The main script to setup the hand for animations.

@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 450586b6fe1e3c4409299dc6edd58dc4, type: 3}
+  m_Name: Pose_SphereGrab
+  m_EditorClassIdentifier: 
+  joints:
+  - jointName: Hand_R_Jnt
+    localPosition: {x: -0, y: 0, z: 0}
+    localRotation: {x: -0.44549292, y: -0.52332985, z: 0.46982884, w: -0.5540061}
+  - jointName: Index1_R_Jnt_aux
+    localPosition: {x: -0.067745626, y: 0.0033991602, z: -0.02539782}
+    localRotation: {x: -0.704291, y: -0.068573266, z: 0.10091728, w: 0.6993481}
+  - jointName: Index2_R_Jnt
+    localPosition: {x: -0.028008947, y: -0.0000000047683715, z: -0.000000019073486}
+    localRotation: {x: 0.000000029802312, y: -0.2903584, z: 0.000000014901156, w: 0.956918}
+  - jointName: Index3_R_Jnt
+    localPosition: {x: -0.03290926, y: 0, z: 0.0000000035762786}
+    localRotation: {x: 0.0005322153, y: 0.41797024, z: 0.050020948, w: -0.90708244}
+  - jointName: Index4_R_Jnt
+    localPosition: {x: -0.021589432, y: 0.0000000035762786, z: -0.000000019073486}
+    localRotation: {x: 0.00000001012813, y: -0.20717557, z: 0.000000022322633, w: 0.97830385}
+  - jointName: Middle1_R_Jnt_aux
+    localPosition: {x: -0.07512863, y: 0.009641629, z: -0.0058642887}
+    localRotation: {x: -0.65146714, y: -0.2447011, z: 0.27340475, w: 0.66404957}
+  - jointName: Middle2_R_Jnt
+    localPosition: {x: -0.023896817, y: 0, z: 0.0000000047683715}
+    localRotation: {x: 0, y: 0, z: 0, w: 1}
+  - jointName: Middle3_R_Jnt
+    localPosition: {x: -0.036074314, y: 0, z: 0.000000007152557}
+    localRotation: {x: -0.000000029802315, y: 0.36306164, z: -0, w: -0.9317651}
+  - jointName: Middle4_R_Jnt
+    localPosition: {x: -0.023493031, y: 0, z: -0.000000009536743}
+    localRotation: {x: 0.000000064854135, y: -0.31521368, z: 0.00000001532425, w: 0.9490208}
+  - jointName: Pinky1_R_Jnt_aux
+    localPosition: {x: -0.06559814, y: 0.012067363, z: 0.029795442}
+    localRotation: {x: -0.6833307, y: -0.21483424, z: 0.23199065, w: 0.6580925}
+  - jointName: Pinky2_R_Jnt
+    localPosition: {x: -0.023896808, y: 0.000000011920928, z: 0.000000038146972}
+    localRotation: {x: 0.06383288, y: -0.1602673, z: -0.03271556, w: 0.98446405}
+  - jointName: Pinky3_R_Jnt
+    localPosition: {x: -0.02784339, y: 0, z: -0.000000009536743}
+    localRotation: {x: 8.098122e-17, y: 0.25057936, z: 1.0517987e-16, w: -0.9680961}
+  - jointName: Pinky4_R_Jnt
+    localPosition: {x: -0.01817017, y: 0.000000007152557, z: 0}
+    localRotation: {x: -0.000000033814974, y: -0.1347521, z: 0.000000062625396, w: 0.9908794}
+  - jointName: Ring1_R_Jnt_aux
+    localPosition: {x: -0.073604345, y: 0.011179611, z: 0.011003823}
+    localRotation: {x: -0.6831212, y: -0.1604991, z: 0.19393921, w: 0.68554586}
+  - jointName: Ring2_R_Jnt
+    localPosition: {x: -0.023896808, y: 0, z: 0.000000023841856}
+    localRotation: {x: -0.000000029802326, y: -0.2502891, z: -0, w: 0.9681712}
+  - jointName: Ring3_R_Jnt
+    localPosition: {x: -0.032414027, y: -5.9604643e-10, z: -0.000000009536743}
+    localRotation: {x: -2.9786555e-17, y: 0.22660807, z: 9.767243e-18, w: -0.973986}
+  - jointName: Ring4_R_Jnt
+    localPosition: {x: -0.021078033, y: 0, z: -0.000000009536743}
+    localRotation: {x: 0.00000012710433, y: -0.16577376, z: 0.000000055136844, w: 0.98616385}
+  - jointName: Thumb1_R_Jnt
+    localPosition: {x: -0.03935596, y: -0.016383162, z: -0.030200781}
+    localRotation: {x: -0.84587276, y: -0.45383787, z: -0.25298056, w: 0.12054616}
+  - jointName: Thumb2_R_Jnt
+    localPosition: {x: -0.03368904, y: 0.00000000834465, z: 0.0000000047683715}
+    localRotation: {x: 0.000000037252903, y: 0.2988804, z: 0.000000059604645, w: -0.9542906}
+  - jointName: Thumb3_R_Jnt
+    localPosition: {x: -0.023863167, y: -0.0000000011920929, z: 0}
+    localRotation: {x: 0.0000000066480084, y: -0.16043516, z: -0.000000009154155, w: 0.98704636}

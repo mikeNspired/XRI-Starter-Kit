@@ -1,36 +1,27 @@
-﻿// Author MikeNspired. 
-
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// The main script that animates the hands. Located on the hand model, and as a child of the controller.
-    /// Uses poses made from the rootbone of the skeleton. (Although any hierarchy of Transforms without skeletons can be animated with this class.)
-    /// This class is setup/changed by the XRHandPoser/HandPoser when an object is grabbed.
-    /// The animations are currently driven by 'triggerAnimationValue' called from a UnityEvent from 'XRControllerTriggerValueEvent' located on the hands
+    /// Uses poses stored in PoseScriptableObjects, which contain joint data.
     /// </summary>
     public class HandAnimator : MonoBehaviour
     {
-        [Tooltip("Draws spheres to see joints")] [SerializeField]
-        private bool drawHelperSpheres = false;
+        [Tooltip("Draws spheres to see joints")]
+        [SerializeField] bool drawHelperSpheres;
 
         [Tooltip("Left or Right hand, used for determining which attachpoint needed")]
         public LeftRight handType;
 
-        [Tooltip("Root bone of skeleton on hand")]
         public Pose RootBone;
-
-        public Pose DefaultPose;
-
-        [Tooltip("Animate to this pose  from Default Pose when pulling the trigger from values 0 to 1.")]
-        public Pose AnimationPose;
-
-        [Tooltip("Animation used when not holding an item and pulling the grip button")]
-        public Pose SecondButtonPose;
+        public PoseScriptableObject DefaultPose;
+        public PoseScriptableObject AnimationPose;
+        public PoseScriptableObject SecondButtonPose;
 
         [Tooltip("Time hand skeleton animates to next pose")]
         public float animationTimeToNewPose = .1f;
@@ -39,54 +30,49 @@ namespace MikeNspired.UnityXRHandPoser
         public float handMoveToTargetAnimationTime = .1f;
 
         public float triggerAnimationValue, gripAnimationValue;
-
         public bool isGrabbingObject;
 
-        //The joints of the rootBone. These are the joints that are being animated.
         public List<Transform> currentJoints = new List<Transform>();
+        List<Transform> goalPoseJoints = new List<Transform>();
 
-        //The joints of the pose being animated to. 
-        private List<Transform> goalPoseJoints = new List<Transform>();
+        Vector3 originalPosition;
+        Quaternion originalRotation;
+        Transform originalParent;
 
-        private Vector3 originalPosition;
-        private Quaternion originalRotation;
-        private Transform originalParent;
+        IEnumerator AnimateToPoseAnimation;
+        IEnumerator AnimateByTriggerValue;
 
-        private IEnumerator AnimateToPoseAnimation;
-        private IEnumerator AnimateByTriggerValue;
+        // Store the original default & animation poses to restore later
+        PoseScriptableObject originalPose;
+        PoseScriptableObject originalAnimationPose;
 
-        private Pose originalPose;
-        private Pose originalAnimationPose;
+        public UnityAction<bool> NewPoseStarting = delegate {};
 
-        public UnityAction<bool> NewPoseStarting = delegate { };
+        // Fields for finger slider logic
+        public PoseScriptableObject defaultPose, goalPose;
+        public Transform thumbTopTransform, indexTopTransform, middleTopTransform, ringTopTransform, pinkyTopTransform;
 
-        //Not used during gameplay. Used by editor script from button clicks in the inspector.
         public void AnimateToCurrent() => AnimateInstantly(DefaultPose);
 
-        private void Awake()
+        void Awake()
         {
             originalPosition = transform.localPosition;
             originalRotation = transform.localRotation;
             originalParent = transform.parent;
+
             originalPose = DefaultPose;
             originalAnimationPose = AnimationPose;
 
-            if (DefaultPose == null)
+            if (!DefaultPose && HandPoserSettings.Instance)
                 DefaultPose = HandPoserSettings.Instance.DefaultPose;
 
-            //Ensures the hand has the joints for posing setup.
             SetBones();
-
-            //Start the default poses that are set in the inspector
             AnimateInstantly(DefaultPose);
         }
 
-        private void OnEnable() => Application.onBeforeRender += OnBeforeRender;
+        void OnEnable() => Application.onBeforeRender += OnBeforeRender;
+        void OnDisable() => Application.onBeforeRender -= OnBeforeRender;
 
-        private void OnDisable() => Application.onBeforeRender -= OnBeforeRender;
-
-
-        //The main method used to control the animation value that animates to the AnimationPose.
         public void SetAnimationValue(float val) => triggerAnimationValue = val;
         public void StartAnimationPosing() => StartAnimationByButtonValue(ControllerButtons.Trigger);
         public void StartSecondaryPosing() => StartAnimationByButtonValue(ControllerButtons.Grip);
@@ -95,155 +81,143 @@ namespace MikeNspired.UnityXRHandPoser
         public void ReturnToDefaultPosing()
         {
             isGrabbingObject = false;
-            BeginNewPoses(DefaultPose, AnimationPose,false);
+            BeginNewPoses(DefaultPose, AnimationPose, false);
         }
 
-        public void SetBones() => SetJointPositions(RootBone, currentJoints);
+        public void SetBones()
+        {
+            currentJoints.Clear();
+            JointUtility.GatherTransformsForPose(RootBone.transform, currentJoints);
+        }
 
-        public void SetPoses(Pose primaryPose, Pose animationPose)
+        public void SetPoses(PoseScriptableObject primaryPose, PoseScriptableObject animationPose)
         {
             DefaultPose = primaryPose;
             AnimationPose = animationPose;
         }
 
-        public void BeginNewPoses(Pose primaryPose, Pose animationPose, bool isGrabbingObject)
+        public void BeginNewPoses(PoseScriptableObject primaryPose, PoseScriptableObject animationPose, bool isGrabbing)
         {
-            this.isGrabbingObject = isGrabbingObject;
-            NewPoseStarting.Invoke(this.isGrabbingObject);
+            isGrabbingObject = isGrabbing;
+            NewPoseStarting.Invoke(isGrabbingObject);
 
-            //Set old pose to the original pose before starting this
             SetJointPositions(DefaultPose, goalPoseJoints);
             TransformStruct[] oldPose = CopyTransformData(goalPoseJoints);
-
 
             AnimationPose = animationPose;
             DefaultPose = primaryPose;
 
             SetJointPositions(primaryPose, goalPoseJoints);
-            var newPose = CopyTransformData(goalPoseJoints);
+            TransformStruct[] newPose = CopyTransformData(goalPoseJoints);
 
-            //Start animation
             if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
             if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);
+
             AnimateToPoseAnimation = AnimateToPoseOverTime(oldPose, newPose);
             StartCoroutine(AnimateToPoseAnimation);
         }
 
-        private void StartAnimationByButtonValue(ControllerButtons button)
+        void StartAnimationByButtonValue(ControllerButtons button)
         {
             if (button == ControllerButtons.Grip && isGrabbingObject) return;
-            var newPose = button switch
-            {
-                ControllerButtons.Trigger => AnimationPose,
-                ControllerButtons.Grip => SecondButtonPose,
-                _ => null
-            };
+            var newPose = (button == ControllerButtons.Trigger) ? AnimationPose :
+                          (button == ControllerButtons.Grip) ? SecondButtonPose : null;
 
-            if (newPose == null) return;
-            //Start animation
+            if (!newPose) return;
             if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
+
             AnimateByTriggerValue = AnimateToPoseByValue2(newPose, button);
             StartCoroutine(AnimateByTriggerValue);
         }
 
-        private IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose)
+        IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose)
         {
             float timer = 0;
             while (timer <= animationTimeToNewPose + Time.deltaTime)
             {
-                for (int i = 0; i < currentJoints.Count; ++i)
+                for (int i = 0; i < currentJoints.Count; i++)
                 {
-                    Transform joint = currentJoints[i];
+                    var joint = currentJoints[i];
+                    if (!joint) continue;
 
-                    if (joint.position == newPose[i].position && joint.rotation == newPose[i].rotation) continue;
-
-                    var newPosition = Vector3.Lerp(originalPose[i].position, newPose[i].position, timer / animationTimeToNewPose);
-                    var newRotation = Quaternion.Lerp(originalPose[i].rotation, newPose[i].rotation, timer / animationTimeToNewPose);
-
-                    SetNewJoint(ref joint, newPosition, newRotation);
+                    var pos = Vector3.Lerp(originalPose[i].position, newPose[i].position, timer / animationTimeToNewPose);
+                    var rot = Quaternion.Lerp(originalPose[i].rotation, newPose[i].rotation, timer / animationTimeToNewPose);
+                    SetNewJoint(ref joint, pos, rot);
                 }
-
                 timer += Time.deltaTime;
                 yield return new WaitForSeconds(Time.deltaTime);
             }
         }
 
-        private IEnumerator AnimateToPoseByValue2(Pose newPose, ControllerButtons button)
+        IEnumerator AnimateToPoseByValue2(PoseScriptableObject newPose, ControllerButtons button)
         {
-            //Set starting Pose joints
             SetJointPositions(DefaultPose, goalPoseJoints);
             TransformStruct[] startingPose = CopyTransformData(goalPoseJoints);
 
             SetJointPositions(newPose, goalPoseJoints);
-            
-            yield return new WaitForSeconds(Time.deltaTime);
+            yield return null;
 
             while (true)
             {
-                var value = button switch
+                float value = (button == ControllerButtons.Trigger) ? triggerAnimationValue :
+                              (button == ControllerButtons.Grip) ? gripAnimationValue : 0;
+
+                for (int i = 0; i < currentJoints.Count; i++)
                 {
-                    ControllerButtons.Trigger => triggerAnimationValue,
-                    ControllerButtons.Grip => gripAnimationValue,
-                    _ => 0
-                };
+                    var joint = currentJoints[i];
+                    if (!joint) continue;
 
-                for (int i = 0; i < currentJoints.Count; ++i)
-                {
-                    Transform joint = currentJoints[i];
+                    var goalPos = goalPoseJoints[i].localPosition;
+                    var goalRot = goalPoseJoints[i].localRotation;
 
-                    if (joint.position == goalPoseJoints[i].position && joint.rotation == goalPoseJoints[i].rotation) continue;
+                    var pos = Vector3.Lerp(startingPose[i].position, goalPos, value);
+                    var rot = Quaternion.Lerp(startingPose[i].rotation, goalRot, value);
 
-                    var newPosition = Vector3.Lerp(startingPose[i].position, goalPoseJoints[i].localPosition, value);
-                    var newRotation = Quaternion.Lerp(startingPose[i].rotation, goalPoseJoints[i].localRotation, value);
-                    SetNewJoint(ref joint, newPosition, newRotation);
+                    SetNewJoint(ref joint, pos, rot);
                 }
-
-                yield return new WaitForSeconds(Time.deltaTime);
+                yield return null;
             }
         }
 
-        public void AnimateInstantly(Pose animation)
+        public void AnimateInstantly(PoseScriptableObject pose)
         {
-            if (currentJoints.Count == 0 || currentJoints[0] == null)
+            if (currentJoints.Count == 0 || !currentJoints[0])
                 SetBones();
 
             if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);
             if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
-            SetJointPositions(animation, goalPoseJoints);
+
+            SetJointPositions(pose, goalPoseJoints);
             AnimateInstant(goalPoseJoints);
         }
 
-        private void AnimateInstant(List<Transform> goalPose)
+        void AnimateInstant(List<Transform> goalPose)
         {
-            for (int i = 0; i < currentJoints.Count; ++i)
+            for (int i = 0; i < currentJoints.Count; i++)
             {
-                Transform joint = currentJoints[i];
-                if (joint.position == goalPose[i].position && joint.rotation == goalPose[i].rotation) continue;
+                var joint = currentJoints[i];
+                if (!joint || i >= goalPose.Count || !goalPose[i]) continue;
                 SetNewJoint(ref joint, goalPose[i].localPosition, goalPose[i].localRotation);
             }
         }
 
-        #region MoveHandToObject
+        IEnumerator AnimateHandToPosition;
+        IEnumerator WaitForObjectToBeClose;
 
-        private IEnumerator AnimateHandToPosition;
-        private IEnumerator WaitForObjectToBeClose;
+        public void MoveHandToTarget(Transform attachPoint, float interactableAttachEaseInTime, bool waitForHandToAnimateToPosition)
+        => StartCoroutine(MoveHandToTargetIE(attachPoint, interactableAttachEaseInTime, waitForHandToAnimateToPosition));
 
-        public void MoveHandToTarget(Transform attachPoint, float interactableAttachEaseInTime, bool waitForHandToAnimateToPosition) =>
-            StartCoroutine(MoveHandToTargetIE(attachPoint, interactableAttachEaseInTime, waitForHandToAnimateToPosition));
-
-        private IEnumerator MoveHandToTargetIE(Transform attachPoint, float interactableAttachEaseInTime, bool waitForHandToAnimateToPosition)
+        IEnumerator MoveHandToTargetIE(Transform attachPoint, float interactableAttachEaseInTime, bool waitForHandToAnimateToPosition)
         {
             if (waitForHandToAnimateToPosition)
                 yield return new WaitForSeconds(interactableAttachEaseInTime);
 
-            //Set hand parent to null to stop player movement from moving hand
             transform.parent = null;
 
             if (AnimateHandToPosition != null) StopCoroutine(AnimateHandToPosition);
             AnimateHandToPosition = AnimateHandToTransform(handMoveToTargetAnimationTime, attachPoint);
             yield return StartCoroutine(AnimateHandToPosition);
 
-            //Maintain hand position to target if target moves
             StartHandPositionTracking(attachPoint);
         }
 
@@ -261,17 +235,15 @@ namespace MikeNspired.UnityXRHandPoser
             StopHandPositionTracking();
             if (AnimateHandToPosition != null) StopCoroutine(AnimateHandToPosition);
 
-             transform.localPosition = originalPosition;
-             transform.localRotation = originalRotation;
-            // AnimateHandToPosition = AnimateHandTransformLocal(handMoveToTargetAnimationTime, new TransformStruct(originalPosition, originalRotation, Vector3.zero));
-            // StartCoroutine(AnimateHandToPosition);
+            transform.localPosition = originalPosition;
+            transform.localRotation = originalRotation;
         }
 
-        private IEnumerator AnimateHandToTransform(float animationLength, Transform newTransform)
+        IEnumerator AnimateHandToTransform(float animationLength, Transform newTransform)
         {
             float timer = 0;
-            Vector3 startPos = transform.position;
-            Quaternion startRot = transform.rotation;
+            var startPos = transform.position;
+            var startRot = transform.rotation;
 
             while (timer < animationLength + Time.deltaTime)
             {
@@ -283,15 +255,14 @@ namespace MikeNspired.UnityXRHandPoser
                 yield return new WaitForSeconds(Time.deltaTime);
                 timer += Time.deltaTime;
             }
-
             transform.SetPositionAndRotation(newTransform.position, newTransform.rotation);
         }
 
-        private IEnumerator AnimateHandTransformLocal(float animationLength, TransformStruct newTransform)
+        IEnumerator AnimateHandTransformLocal(float animationLength, TransformStruct newTransform)
         {
             float timer = 0;
-            Vector3 startPos = transform.localPosition;
-            Quaternion startRot = transform.localRotation;
+            var startPos = transform.localPosition;
+            var startRot = transform.localRotation;
 
             while (timer < animationLength + Time.deltaTime)
             {
@@ -304,70 +275,145 @@ namespace MikeNspired.UnityXRHandPoser
                 yield return new WaitForSeconds(Time.deltaTime);
                 timer += Time.deltaTime;
             }
-
             transform.localPosition = newTransform.position;
             transform.localRotation = newTransform.rotation;
         }
 
-        private void StartHandPositionTracking(Transform target)
+        void StartHandPositionTracking(Transform target)
         {
             setPosition = true;
             handPositionTarget = target;
         }
 
-        private void StopHandPositionTracking()
+        void StopHandPositionTracking()
         {
             setPosition = false;
             handPositionTarget = null;
         }
 
-        private Transform handPositionTarget;
-        private bool setPosition;
+        Transform handPositionTarget;
+        bool setPosition;
 
         [BeforeRenderOrder(102)]
-        private void OnBeforeRender()
+        void OnBeforeRender()
         {
-            if (setPosition) transform.SetPositionAndRotation(handPositionTarget.position, handPositionTarget.rotation);
+            if (setPosition && handPositionTarget)
+                transform.SetPositionAndRotation(handPositionTarget.position, handPositionTarget.rotation);
         }
 
-        #endregion
-
-        private void SetNewJoint(ref Transform joint, Vector3 newPosition, Quaternion newRotation)
+        void SetNewJoint(ref Transform joint, Vector3 newPosition, Quaternion newRotation)
         {
             joint.localPosition = newPosition;
             joint.localEulerAngles = newRotation.eulerAngles;
         }
 
-        private TransformStruct[] CopyTransformData(List<Transform> joints)
+        TransformStruct[] CopyTransformData(List<Transform> joints)
         {
-            TransformStruct[] transforms = new TransformStruct[joints.Count];
-            for (int i = 0; i < joints.Count; ++i)
-                transforms[i].SetTransformStruct(joints[i].localPosition, joints[i].localRotation, Vector3.one);
+            var transforms = new TransformStruct[joints.Count];
+            for (int i = 0; i < joints.Count; i++)
+            {
+                var j = joints[i];
+                transforms[i].SetTransformStruct(j.localPosition, j.localRotation, Vector3.one);
+            }
             return transforms;
         }
 
-        private void SetJointPositions(Pose pose, List<Transform> jointList)
+        void SetJointPositions(PoseScriptableObject poseAsset, List<Transform> jointList)
         {
-            if (pose == null || jointList == null)
+            if (!poseAsset)
             {
-                Debug.LogError("Error: Please set a pose for hand to animate to :: Pose is Null");
+                Debug.LogError("No PoseScriptableObject assigned. Cannot set joint positions.");
+                return;
+            }
+
+            if (!RootBone)
+            {
+                Debug.LogError("RootBone is not assigned. Cannot set joint positions.");
                 return;
             }
 
             jointList.Clear();
-            SetJoints(pose.transform, jointList);
-        }
 
-        private void SetJoints(Transform curTransform, List<Transform> joints)
-        {
-            if (!curTransform.name.EndsWith("Ignore"))
-                joints.Add(curTransform);
-            for (int i = 0; i < curTransform.childCount; ++i)
+            // Gather all child joints under RootBone
+            List<Transform> allJoints = new List<Transform>();
+            GatherAllChildJoints(RootBone.transform, allJoints);
+
+            // Match joints from PoseScriptableObject to actual transforms
+            foreach (var poseAssetJoint in poseAsset.joints)
             {
-                Transform child = curTransform.GetChild(i);
-                SetJoints(child, joints);
+                var match = allJoints.Find(joint => joint.name == poseAssetJoint.jointName);
+                if (match)
+                {
+                    match.localPosition = poseAssetJoint.localPosition;
+                    match.localRotation = poseAssetJoint.localRotation;
+                    jointList.Add(match);
+                }
+                else
+                {
+                    Debug.LogWarning($"Transform not found in hierarchy: {poseAssetJoint.jointName}");
+                }
             }
         }
+        
+        void GatherAllChildJoints(Transform parent, List<Transform> jointList)
+        {
+            if (parent == null || jointList == null) return;
+
+            // Add the current transform to the list
+            jointList.Add(parent);
+
+            // Recurse into children
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                GatherAllChildJoints(parent.GetChild(i), jointList);
+            }
+        }
+
+        public void SetPoseByValue(Transform currentJoint, PoseScriptableObject startPose, PoseScriptableObject endPose,
+            float value)
+        {
+            if (!startPose || !endPose)
+            {
+                Debug.LogWarning("Missing PoseScriptableObject. Skipping SetPoseByValue.");
+                return;
+            }
+
+            // Find the corresponding joints in the start and end poses
+            var startJoint = startPose.joints.FirstOrDefault(j => j.jointName == currentJoint.name);
+            var endJoint = endPose.joints.FirstOrDefault(j => j.jointName == currentJoint.name);
+
+            if (startJoint.jointName == null || endJoint.jointName == null)
+            {
+                Debug.LogWarning($"Joint {currentJoint.name} not found in one of the poses. Skipping.");
+                return;
+            }
+
+            // Interpolate the root joint's position and rotation
+            var newPosition = Vector3.Lerp(startJoint.localPosition, endJoint.localPosition, value);
+            var newRotation = Quaternion.Lerp(startJoint.localRotation, endJoint.localRotation, value);
+            SetNewJoint(ref currentJoint, newPosition, newRotation);
+
+            // Recursively process child joints using JointUtility
+            var jointsInHand = new List<Transform>();
+            JointUtility.GatherTransformsForPose(currentJoint, jointsInHand);
+
+            for (int i = 0; i < jointsInHand.Count; i++)
+            {
+                var joint = jointsInHand[i];
+
+                var matchingStartJoint = startPose.joints.FirstOrDefault(j => j.jointName == joint.name);
+                var matchingEndJoint = endPose.joints.FirstOrDefault(j => j.jointName == joint.name);
+
+                if (matchingStartJoint.jointName == null || matchingEndJoint.jointName == null) continue;
+
+                var childNewPosition = Vector3.Lerp(matchingStartJoint.localPosition, matchingEndJoint.localPosition, value);
+                var childNewRotation = Quaternion.Lerp(matchingStartJoint.localRotation, matchingEndJoint.localRotation, value);
+                SetNewJoint(ref joint, childNewPosition, childNewRotation);
+            }
+        }
+
+
+       
 
         private void OnDrawGizmosSelected()
         {
@@ -376,42 +422,6 @@ namespace MikeNspired.UnityXRHandPoser
                 RootBone.DrawJoints(RootBone.transform);
             else
                 RootBone.debugSpheresEnabled = false;
-        }
-
-        public Pose defaultPose, goalPose;
-        public Transform thumbTopTransform, indexTopTransform, middleTopTransform, ringTopTransform, pinkyTopTransform;
-
-        public void SetPoseByValue(Transform currentJoint, Pose defaultPose, Pose goalPose, float value)
-        {
-            SetJointPositions(defaultPose, goalPoseJoints);
-            SetJointPositions(goalPose, goalPoseJoints);
-
-            var jointInOriginal = defaultPose.transform.Find(currentJoint.name);
-            var jointInGoalPose = goalPose.transform.Find(currentJoint.name);
-
-            if (!jointInGoalPose)
-            {
-                Debug.LogWarning(currentJoint + " Not found in goal pose");
-                return;
-            }
-
-            if (!jointInOriginal)
-            {
-                Debug.LogWarning(currentJoint + " Not found in original pose");
-                return;
-            }
-
-            var jointsInGoalPose = jointInGoalPose.GetComponentsInChildren<Transform>();
-            var jointsInOriginalPose = jointInOriginal.GetComponentsInChildren<Transform>();
-            var jointsInHand = currentJoint.GetComponentsInChildren<Transform>();
-
-            for (int i = 0; i < jointsInOriginalPose.Length; ++i)
-            {
-                Transform joint = jointsInHand[i];
-                var newPosition = Vector3.Lerp(jointsInOriginalPose[i].localPosition, jointsInGoalPose[i].localPosition, value);
-                var newRotation = Quaternion.Lerp(jointsInOriginalPose[i].localRotation, jointsInGoalPose[i].localRotation, value);
-                SetNewJoint(ref joint, newPosition, newRotation);
-            }
         }
     }
 }

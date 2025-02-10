@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class HandPoserSettings : ScriptableObject
     {
@@ -37,15 +37,15 @@ namespace MikeNspired.UnityXRHandPoser
 
         public HandAnimator LeftHand;
         public HandAnimator RightHand;
-        public Pose DefaultPose;
-        public List<Pose> ReferencePoses;
+        public PoseScriptableObject DefaultPose;
+        public List<PoseScriptableObject> ReferencePoses;
         public bool sortReferencePoses;
 
         private void OnValidate()
         {
             if (sortReferencePoses)
                 ReferencePoses = ReferencePoses.OrderBy(x => x).ToList();
-         }
+        }
 
         public static void ShowNotSetupWarning()
         {

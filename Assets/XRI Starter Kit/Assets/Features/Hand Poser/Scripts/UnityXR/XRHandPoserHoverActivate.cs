@@ -5,7 +5,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class XRHandPoserHoverActivate : HandPoser
     {
@@ -39,8 +39,8 @@ namespace MikeNspired.UnityXRHandPoser
             var handReference = other.GetComponentInParent<HandReference>();
             if (handReference == null) return;
 
-            var interactor = handReference.GetComponentInChildren<XRDirectInteractor>();
-            if (interactor != null && interactor.interactablesSelected.Count > 0) return;
+            var interactor = handReference.GetComponentInChildren<NearFarInteractor>();
+            if (interactor != null && interactor.firstInteractableSelected != null) return;
 
             currentHand = handReference.Hand;
             BeginNewHandPoses(currentHand);
@@ -53,9 +53,8 @@ namespace MikeNspired.UnityXRHandPoser
             var handReference = other.GetComponentInParent<HandReference>();
             if (handReference == null) return;
 
-            var interactor = handReference.GetComponentInChildren<XRDirectInteractor>();
-            if (interactor != null && interactor.interactablesSelected.Count > 0) return;
-
+            var interactor = handReference.GetComponentInChildren<NearFarInteractor>();
+            if (interactor != null && interactor.firstInteractableSelected != null) return;
             ReleaseHand();
         }
 

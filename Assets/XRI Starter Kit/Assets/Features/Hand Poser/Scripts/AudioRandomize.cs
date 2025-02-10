@@ -3,7 +3,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 using static Unity.Mathematics.math;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class AudioRandomize : MonoBehaviour
     {
@@ -70,6 +70,11 @@ namespace MikeNspired.UnityXRHandPoser
             audioSource.Play();
             if (destroyAfterPlaying)
                 Destroy(gameObject, currentClipPlayed.length);
+        }
+
+        public void Stop()
+        {
+            audioSource.Stop();
         }
     }
 }

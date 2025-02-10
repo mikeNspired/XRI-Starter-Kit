@@ -5,7 +5,7 @@ using UnityEditor.AnimatedValues;
 
 using Pose = UnityEngine.Pose;
 
-namespace MikeNspired.UnityXRHandPoser.Editor
+namespace MikeNspired.XRIStarterKit.Editor
 {
     [CustomEditor(typeof(XRHandPoser))]
     public class XRHandPoserEditor : UnityEditor.Editor
@@ -165,14 +165,14 @@ namespace MikeNspired.UnityXRHandPoser.Editor
 
             var labelToolTip = new GUIContent("Default Pose", "Hand will be animated to this pose when item is grabbed");
             GUILayout.Label(labelToolTip);
-            leftHandPose.objectReferenceValue = EditorGUILayout.ObjectField(leftHandPose.objectReferenceValue, typeof(Pose), false);
+            leftHandPose.objectReferenceValue = EditorGUILayout.ObjectField(leftHandPose.objectReferenceValue, typeof(PoseScriptableObject), false);
             GUILayout.Space(2);
 
             if (hasAnimationPose.boolValue)
             {
                 labelToolTip = new GUIContent("Animation Pose", "Hand animates to this based on trigger value");
                 GUILayout.Label(labelToolTip);
-                LeftHandAnimationPose.objectReferenceValue = EditorGUILayout.ObjectField(LeftHandAnimationPose.objectReferenceValue, typeof(Pose), false);
+                LeftHandAnimationPose.objectReferenceValue = EditorGUILayout.ObjectField(LeftHandAnimationPose.objectReferenceValue, typeof(PoseScriptableObject), false);
                 GUILayout.Space(2);
             }
             
@@ -245,13 +245,13 @@ namespace MikeNspired.UnityXRHandPoser.Editor
 
             var labelToolTip = new GUIContent("Default Pose", "Hand will be animated to this pose when item is grabbed");
             GUILayout.Label(labelToolTip);
-            rightHandPose.objectReferenceValue = EditorGUILayout.ObjectField(rightHandPose.objectReferenceValue, typeof(Pose), false);
+            rightHandPose.objectReferenceValue = EditorGUILayout.ObjectField(rightHandPose.objectReferenceValue, typeof(PoseScriptableObject), false);
             GUILayout.Space(2);
 
             if (hasAnimationPose.boolValue)
             {
                 GUILayout.Label(new GUIContent("Animation Pose", "Hand animates to this based on trigger value"));
-                RightHandAnimationPose.objectReferenceValue = EditorGUILayout.ObjectField(RightHandAnimationPose.objectReferenceValue, typeof(Pose), false);
+                RightHandAnimationPose.objectReferenceValue = EditorGUILayout.ObjectField(RightHandAnimationPose.objectReferenceValue, typeof(PoseScriptableObject), false);
                 GUILayout.Space(2);
             }
             

@@ -1,7 +1,7 @@
 // Author MikeNspired. 
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// Stores transform data without instantiating a transform to store the data in.Transforms can only exist as a gameObject in a scene.

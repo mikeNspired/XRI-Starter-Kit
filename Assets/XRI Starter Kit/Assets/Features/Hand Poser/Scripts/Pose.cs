@@ -3,24 +3,21 @@ using UnityEngine;
 using System;
 using System.Linq;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// Script located on the rootBone.
     /// Draw spheres and lines to show the relationship between joints and join location
     /// </summary>
     [Serializable]
-    public class Pose : MonoBehaviour, IComparable<Pose>
+    public class Pose : MonoBehaviour
     {
         public bool debugSpheresEnabled;
         [SerializeField] private float jointDebugSphereSize = .0045f;
 
         void OnDrawGizmosSelected()
         {
-            if (debugSpheresEnabled)
-            {
-                DrawJoints(transform);
-            }
+            if (debugSpheresEnabled) DrawJoints(transform);
         }
 
         public void DrawJoints(Transform joint)
@@ -34,27 +31,6 @@ namespace MikeNspired.UnityXRHandPoser
                 Gizmos.DrawLine(joint.position, child.position);
                 DrawJoints(child);
             }
-        }
-
-        public void AddAux()
-        {       
-            for (int i = 0; i < transform.childCount; ++i)
-            {
-                if (transform.GetChild(i).name.Contains("1_"))
-                {
-                    if (transform.GetChild(i).name.Contains("aux"))
-                        continue;
-                    if (transform.GetChild(i).name.Contains("Thumb"))
-                        continue;
-                    transform.GetChild(i).name += "_aux";
-                }
-            }
-
-        }
-
-        public int CompareTo(Pose other)
-        {
-            return !other ? 1 : this.name.CompareTo(other.name);
         }
     }
 }

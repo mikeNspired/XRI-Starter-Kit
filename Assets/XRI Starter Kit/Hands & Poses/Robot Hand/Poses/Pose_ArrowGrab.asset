@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 450586b6fe1e3c4409299dc6edd58dc4, type: 3}
+  m_Name: Pose_ArrowGrab
+  m_EditorClassIdentifier: 
+  joints:
+  - jointName: Hand_R_Jnt
+    localPosition: {x: -0, y: 0, z: 0}
+    localRotation: {x: -0.4454936, y: -0.5233297, z: 0.46982938, w: -0.5540053}
+  - jointName: Index1_R_Jnt_aux
+    localPosition: {x: -0.067745626, y: 0.0033991602, z: -0.02539782}
+    localRotation: {x: -0.704291, y: -0.068573445, z: 0.10091737, w: 0.699348}
+  - jointName: Index2_R_Jnt
+    localPosition: {x: -0.028008955, y: -0.000000038184226, z: -0.000000016763806}
+    localRotation: {x: -0.0008422727, y: -0.055902258, z: 0.015041588, w: 0.9983226}
+  - jointName: Index3_R_Jnt
+    localPosition: {x: -0.03290926, y: 0, z: 0.0000000035762786}
+    localRotation: {x: 0, y: -0.38098964, z: 0, w: 0.9245793}
+  - jointName: Index4_R_Jnt
+    localPosition: {x: -0.021591015, y: -0.00000038410144, z: 0.000002399087}
+    localRotation: {x: 0.000000025754307, y: -0.5781148, z: 0.000000053753386, w: 0.81595534}
+  - jointName: Middle1_R_Jnt_aux
+    localPosition: {x: -0.07512863, y: 0.009641629, z: -0.0058642887}
+    localRotation: {x: -0.6946551, y: -0.09817422, z: 0.1288947, w: 0.7008583}
+  - jointName: Middle2_R_Jnt
+    localPosition: {x: -0.023897154, y: -0.000000045634806, z: 0.00000012200326}
+    localRotation: {x: -0, y: -0.04281181, z: 0.000000007450578, w: 0.99908316}
+  - jointName: Middle3_R_Jnt
+    localPosition: {x: -0.036074296, y: 0.00000006717164, z: 0.00000000410364}
+    localRotation: {x: 0.000000033453922, y: -0.49965698, z: 0.000000015629537, w: 0.8662234}
+  - jointName: Middle4_R_Jnt
+    localPosition: {x: -0.023493126, y: -0.000000031439413, z: 0.00000012200326}
+    localRotation: {x: -0.00000002833267, y: -0.5083977, z: -0.00000001931277, w: 0.8611225}
+  - jointName: Pinky1_R_Jnt_aux
+    localPosition: {x: -0.06559814, y: 0.012067363, z: 0.029795442}
+    localRotation: {x: -0.6833307, y: -0.21483424, z: 0.23199065, w: 0.6580925}
+  - jointName: Pinky2_R_Jnt
+    localPosition: {x: -0.023896817, y: 0.000000049360096, z: 0.00000007916242}
+    localRotation: {x: -0.05419482, y: 0.12357338, z: 0.10152703, w: -0.9856393}
+  - jointName: Pinky3_R_Jnt
+    localPosition: {x: -0.02784339, y: 0, z: -0.000000009536743}
+    localRotation: {x: 0, y: 0.50453275, z: 0, w: -0.86339253}
+  - jointName: Pinky4_R_Jnt
+    localPosition: {x: -0.01817017, y: 0.000000007152557, z: 0}
+    localRotation: {x: 0, y: 0.5268073, z: 0, w: -0.84998477}
+  - jointName: Ring1_R_Jnt_aux
+    localPosition: {x: -0.073604345, y: 0.011179611, z: 0.011003823}
+    localRotation: {x: -0.6831212, y: -0.16049907, z: 0.19393925, w: 0.68554586}
+  - jointName: Ring2_R_Jnt
+    localPosition: {x: -0.023897149, y: -0.000000023283064, z: 0.00000021606684}
+    localRotation: {x: 0.014467024, y: -0.010268944, z: 0.023668814, w: -0.99956244}
+  - jointName: Ring3_R_Jnt
+    localPosition: {x: -0.032414164, y: 0.00000007937456, z: 0.00000009289943}
+    localRotation: {x: -0.000000116415265, y: 0.34837106, z: 0.000000031664953, w: -0.93735677}
+  - jointName: Ring4_R_Jnt
+    localPosition: {x: -0.021078955, y: 0.00000004655635, z: 0.0000004565809}
+    localRotation: {x: -0.020217406, y: 0.6511102, z: 0.052627422, w: -0.75688636}
+  - jointName: Thumb1_R_Jnt
+    localPosition: {x: -0.039356083, y: -0.016383158, z: -0.030200806}
+    localRotation: {x: -0.96963835, y: -0.22444883, z: -0.08555664, w: 0.045873404}
+  - jointName: Thumb2_R_Jnt
+    localPosition: {x: -0.03368904, y: 0.00000000834465, z: 0.0000000047683715}
+    localRotation: {x: -0.000000058139875, y: 0.35593367, z: 0.000000025504196, w: -0.93451124}
+  - jointName: Thumb3_R_Jnt
+    localPosition: {x: -0.023863167, y: -0.0000000011920929, z: 0}
+    localRotation: {x: -0.00000007472603, y: 0.1229729, z: 0.000000043500734, w: -0.99241}
