@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion;
 
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class VehicleTeleportPlayer : MoveToLocation
     {
@@ -14,7 +15,7 @@ namespace MikeNspired.UnityXRHandPoser
         protected override void Awake()
         {
             base.Awake();
-            moveProviders = rig.GetComponentsInChildren<UnityEngine.XR.Interaction.Toolkit.Locomotion.LocomotionProvider>();
+            moveProviders = rig.GetComponentsInChildren<LocomotionProvider>();
         }
 
         public void EnterVehicle()

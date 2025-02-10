@@ -1,4 +1,4 @@
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// Interface to implement for objects that hold a set of <c>Key</c>s

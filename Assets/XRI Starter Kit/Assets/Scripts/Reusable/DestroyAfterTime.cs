@@ -2,7 +2,7 @@
 
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class DestroyAfterTime : MonoBehaviour
     {

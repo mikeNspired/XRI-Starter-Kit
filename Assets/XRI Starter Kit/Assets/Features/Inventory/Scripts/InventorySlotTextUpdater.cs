@@ -1,7 +1,8 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class InventorySlotTextUpdater : MonoBehaviour
     {
@@ -10,27 +11,22 @@ namespace MikeNspired.UnityXRHandPoser
 
         private InventorySlot inventorySlot;
 
-        void Start()
+        void Awake()
         {
-            OnValidate();
-            inventorySlot.inventorySlotUpdated.AddListener(CheckTypes);
-            CheckTypes();
+            if (!inventorySlot)
+                inventorySlot = GetComponent<InventorySlot>();
+            inventorySlot.onSlotUpdated += CheckTypes;
         }
 
-        private void CheckTypes()
+        private void CheckTypes(XRBaseInteractable currentSlotItem)
         {
-            if (!inventorySlot.CurrentSlotItem) return;
+            if (!currentSlotItem) return;
 
-            var projectile = inventorySlot.CurrentSlotItem.GetComponent<ProjectileWeapon>();
+            var projectile = currentSlotItem.GetComponent<ProjectileWeapon>();
             if (projectile)
-            {
                 CheckAmmo(projectile);
-                return;
-            }
             else
-            {
                 HideText();
-            }
         }
 
         private void CheckAmmo(ProjectileWeapon projectile)
@@ -63,13 +59,6 @@ namespace MikeNspired.UnityXRHandPoser
         {
             currentCount.text = "";
             maxCount.text = "∞";
-        }
-
-
-        private void OnValidate()
-        {
-            if (!inventorySlot)
-                inventorySlot = GetComponent<InventorySlot>();
         }
     }
 }

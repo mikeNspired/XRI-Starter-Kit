@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public interface IDamageable
     {
@@ -10,6 +10,7 @@ namespace MikeNspired.UnityXRHandPoser
     public interface IImpactType
     {
         ImpactType GetImpactType();
+        bool ShouldReparent { get; }
     }
 
     public enum ImpactType

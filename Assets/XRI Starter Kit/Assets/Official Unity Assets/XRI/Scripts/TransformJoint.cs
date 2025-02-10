@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// Joins a rigidbody and transform together in a way that optimizes for transform and rigidbody-based motion automatically when appropriate.

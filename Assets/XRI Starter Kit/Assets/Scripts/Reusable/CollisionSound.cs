@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// Will trigger SFX through the SFXPlayer when the object on which this is added trigger a collision enter event
@@ -34,10 +34,8 @@ namespace MikeNspired.UnityXRHandPoser
                 audioSource = GetComponent<AudioSource>();
         }
 
-        public bool blah = false;
         private void OnCollisionEnter(Collision other)
         {
-            if(blah)
             //avoid playing hit sound when all physic object settle at the load of the level.
             if (Time.timeSinceLevelLoad < 1.0f)
                 return;

@@ -1,6 +1,6 @@
 ﻿using UnityEngine.InputSystem;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public static class InputActionReferenceExtensions
     {

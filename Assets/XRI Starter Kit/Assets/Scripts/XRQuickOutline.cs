@@ -1,46 +1,72 @@
+using MikeNspired.XRIStarterKit.ChrisNolet;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-public class XRQuickOutline : Outline
+namespace MikeNspired.XRIStarterKit
 {
-    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable _baseInteractable;
-    [SerializeField] private bool onlyHighlightsWhenNotSelected;
-    private Color _startingColor;
-
-    private void OnValidate()
+    public class XRQuickOutline : Outline
     {
-        if (!_baseInteractable)
-            _baseInteractable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
-    }
+        [SerializeField] private XRBaseInteractable _baseInteractable;
+        [SerializeField] private bool onlyHighlightsWhenNotSelected;
+        private Color startingColor;
 
-    private void Start()
-    {
-        OnValidate();
-        _startingColor = OutlineColor;
-        _baseInteractable.hoverEntered.AddListener(  Highlight);
-        _baseInteractable.hoverExited.AddListener(x => enabled = false);
-        _baseInteractable.selectEntered.AddListener(x => enabled = false);
-        _baseInteractable.selectExited.AddListener(x =>
+        private void OnValidate()
         {
-            if (_baseInteractable.isHovered) Highlight(null);
-        });
-        enabled = false;
-    }
+            if (!_baseInteractable)
+                _baseInteractable = GetComponentInParent<XRBaseInteractable>();
+        }
 
-    public void Highlight(HoverEnterEventArgs args)
-    {
-        if (onlyHighlightsWhenNotSelected && _baseInteractable.isSelected) return;
-        if (args != null && args.interactorObject.transform.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactors.XRBaseInteractor>().hasSelection) return;
-        OutlineColor = _startingColor;
-        enabled = true;
-    }
+        private void Start()
+        {
+            OnValidate();
+            startingColor = OutlineColor;
 
-    public void HighlightWithColor(Color color)
-    {
-        if (onlyHighlightsWhenNotSelected && _baseInteractable.isSelected) return;
-        OutlineColor = color;
-        enabled = true;
-    }
+            _baseInteractable.hoverEntered.AddListener(OnHoverEnter);
+            _baseInteractable.hoverExited.AddListener(OnHoverExit);
+            _baseInteractable.selectEntered.AddListener(OnSelectEnter);
+            _baseInteractable.selectExited.AddListener(OnSelectExit);
 
-    public void StopHighlight() => enabled = false;
+            enabled = false;
+        }
+
+        private void OnDestroy()
+        {
+            if (_baseInteractable != null)
+            {
+                _baseInteractable.hoverEntered.RemoveListener(OnHoverEnter);
+                _baseInteractable.hoverExited.RemoveListener(OnHoverExit);
+                _baseInteractable.selectEntered.RemoveListener(OnSelectEnter);
+                _baseInteractable.selectExited.RemoveListener(OnSelectExit);
+            }
+        }
+
+        private void OnHoverEnter(HoverEnterEventArgs args) => Highlight(args);
+        private void OnHoverExit(HoverExitEventArgs args) => StopHighlight();
+        private void OnSelectEnter(SelectEnterEventArgs args) => StopHighlight();
+
+        private void OnSelectExit(SelectExitEventArgs args)
+        {
+            if (_baseInteractable.isHovered)
+                Highlight(null);
+        }
+
+        public void Highlight(HoverEnterEventArgs args)
+        {
+            if (onlyHighlightsWhenNotSelected && _baseInteractable.isSelected) return;
+            if (args != null && args.interactorObject.transform.GetComponent<XRBaseInteractor>().hasSelection) return;
+            OutlineColor = startingColor;
+            enabled = true;
+        }
+
+        public void HighlightWithColor(Color color)
+        {
+            if (onlyHighlightsWhenNotSelected && _baseInteractable.isSelected) return;
+            OutlineColor = color;
+            enabled = true;
+        }
+
+        public void StopHighlight() => enabled = false;
+    }
 }

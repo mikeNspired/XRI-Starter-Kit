@@ -1,7 +1,7 @@
 using UnityEngine;
 
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// Socket interactor that only selects and hovers interactables with a keychain component containing specific keys

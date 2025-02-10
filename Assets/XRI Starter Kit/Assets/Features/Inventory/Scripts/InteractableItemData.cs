@@ -2,13 +2,12 @@
 
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class InteractableItemData : MonoBehaviour
     {
         public bool canInventory = true;
 
         public bool canDistanceGrab = true;
-
     }
 }

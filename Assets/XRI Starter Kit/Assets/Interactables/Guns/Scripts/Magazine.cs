@@ -2,11 +2,10 @@
 
 using System.Collections;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.Serialization;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class Magazine : MonoBehaviour, IReturnMovedColliders
     {
@@ -21,7 +20,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         private XRGrabInteractable grabInteractable;
         private Vector3 startingColliderPosition;
-
+        private Rigidbody rb;
+        
         public bool IsBeingGrabbed() => isBeingGrabbed;
         public GunType GunType => gunType;
 
@@ -35,7 +35,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             RegisterEvents();
         }
-
+        
         private void RegisterEvents()
         {
             grabInteractable.selectEntered.AddListener(_ => OnGrab());
@@ -45,7 +45,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnGrab()
         {
             isBeingGrabbed = true;
-            magazineCollider.isTrigger = false;
+           // magazineCollider.isTrigger = false;
             rigidBody.isKinematic = true;
         }
 
@@ -62,7 +62,8 @@ namespace MikeNspired.UnityXRHandPoser
 
         public void DisableCollider()
         {
-            StartCoroutine(MoveAndDisableCollider());
+            if (!gameObject.activeInHierarchy) return;
+            StartCoroutine(PhysicsHelper.MoveAndDisableCollider(magazineCollider,startingColliderPosition));
         }
 
         public void EnableCollider()
@@ -75,14 +76,14 @@ namespace MikeNspired.UnityXRHandPoser
         public void ResetToGrabbableObject()
         {
             EnableCollider();
-            magazineCollider.isTrigger = false;
+            //magazineCollider.isTrigger = false;
             rigidBody.isKinematic = false;
             transform.parent = null;
         }
 
         public void SetupForGunAttachment()
         {
-            magazineCollider.isTrigger = true;
+          //  magazineCollider.isTrigger = true;
             rigidBody.isKinematic = true;
             rigidBody.useGravity = true;
             EnableDistanceGrabbing(false);
@@ -106,17 +107,7 @@ namespace MikeNspired.UnityXRHandPoser
 
             return true;
         }
-
-        private IEnumerator MoveAndDisableCollider()
-        {
-            yield return new WaitForFixedUpdate();
-            magazineCollider.transform.position += Vector3.one * 9999;
-
-            yield return new WaitForFixedUpdate();
-            magazineCollider.enabled = false;
-            magazineCollider.transform.localPosition = startingColliderPosition;
-        }
-
+        
         public void ReturnMovedColliders()
         {
             StopAllCoroutines();

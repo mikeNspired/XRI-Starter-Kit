@@ -3,7 +3,7 @@
 using System;
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class SimpleCollisionDamage : MonoBehaviour
     {
@@ -26,7 +26,7 @@ namespace MikeNspired.UnityXRHandPoser
             if (destroyOnCollision)
                 Destroy(gameObject);
         }
-
+        
         private void OnTriggerEnter(Collider other)
         {
             if (!triggerDamage) return;
@@ -48,34 +48,38 @@ namespace MikeNspired.UnityXRHandPoser
             if (impact != null)
             {
                 var impactType = impact.GetImpactType();
+                var shouldReparent = impact.ShouldReparent;
                 switch (impactType)
                 {
                     case ImpactType.Flesh:
-                        SpawnDecal(collision, fleshDecal);
+                        SpawnDecal(collision, fleshDecal,shouldReparent);
                         break;
                     case ImpactType.Metal:
-                        SpawnDecal(collision, metalDecal);
+                        SpawnDecal(collision, metalDecal,shouldReparent);
                         break;
                     case ImpactType.Wood:
-                        SpawnDecal(collision, woodDecal);
+                        SpawnDecal(collision, woodDecal,shouldReparent);
                         break;
                     case ImpactType.Neutral:
-                        SpawnDecal(collision, null);
+                        SpawnDecal(collision, null,shouldReparent);
                         break;
                     default:
-                        SpawnDecal(collision, metalDecal);
+                        SpawnDecal(collision, metalDecal,shouldReparent);
                         break;
                 }
             }
             else
-                SpawnDecal(collision, metalDecal);
+                SpawnDecal(collision, metalDecal, false);
         }
 
-        private static void SpawnDecal(Collision hit, GameObject decalPrefab)
+        private static void SpawnDecal(Collision hit, GameObject decalPrefab, bool shouldReparent)
         {
             if (!decalPrefab) return;
             
             var spawnedDecal = Instantiate(decalPrefab, null, true);
+            
+            if(shouldReparent)
+                spawnedDecal.transform.SetParent(hit.transform);
             
             var contact = hit.contacts[0];
             spawnedDecal.transform.position = contact.point;

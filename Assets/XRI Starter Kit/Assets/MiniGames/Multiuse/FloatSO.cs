@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     [CreateAssetMenu(fileName = "Float SO", menuName = "ScriptableObject/float")]
     public class FloatSO : ScriptableObject<float>

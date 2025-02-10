@@ -1,7 +1,7 @@
 ﻿// Author MikeNspired. 
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class ColliderDisableMoveReturn : MonoBehaviour
     {

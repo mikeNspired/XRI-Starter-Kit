@@ -1,32 +1,32 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class Grenade : MonoBehaviour, IDamageable
     {
-        [SerializeField] private XRGrabInteractable interactable = null;
-        [SerializeField] private GameObject explosionPrefab = null;
-        [SerializeField] private AudioSource activationSound = null;
-        [SerializeField] private GameObject meshLightActivation = null;
+        [SerializeField] private XRGrabInteractable interactable;
+        [SerializeField] private GameObject explosionPrefab;
+        [SerializeField] private AudioSource activationSound;
+        [SerializeField] private GameObject meshLightActivation;
         [SerializeField] private float detonationTime = 3f;
-        [SerializeField] private bool startTimerAfterActivation = false;
+        [SerializeField] private bool startTimerAfterActivation;
 
         private bool canActivate;
         private XRInteractionManager interactionManager;
 
         private void Awake()
         {
+            if (meshLightActivation)
+                meshLightActivation.SetActive(false);
+            
             interactable = GetComponent<XRGrabInteractable>();
             interactionManager = FindFirstObjectByType<XRInteractionManager>();
 
+            if (!interactable) return;
             interactable.activated.AddListener(TurnOnGrenade);
             interactable.selectExited.AddListener(Activate);
-
-            if (meshLightActivation)
-                meshLightActivation.SetActive(false);
         }
 
         private void TurnOnGrenade(ActivateEventArgs args)
@@ -54,22 +54,12 @@ namespace MikeNspired.UnityXRHandPoser
                 explosionPrefab.transform.localEulerAngles = Vector3.zero;
             }
 
-            if (interactable.firstInteractorSelecting != null)
+            if (interactable?.firstInteractorSelecting != null)
                 interactionManager.SelectExit(interactable.firstInteractorSelecting, interactable);
-
-            StartCoroutine(MoveAndDisable());
-        }
-
-        private IEnumerator MoveAndDisable()
-        {
-            transform.position += Vector3.one * 9999;
-            yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
+            
             Destroy(gameObject);
         }
 
-        public void TakeDamage(float damage, GameObject damager)
-        {
-            TriggerGrenade();
-        }
+        public void TakeDamage(float damage, GameObject damager) => TriggerGrenade();
     }
 }

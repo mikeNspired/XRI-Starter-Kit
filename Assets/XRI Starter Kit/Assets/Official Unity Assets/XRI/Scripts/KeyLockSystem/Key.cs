@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// An asset that represents a key. Used to check if an object can perform some action
