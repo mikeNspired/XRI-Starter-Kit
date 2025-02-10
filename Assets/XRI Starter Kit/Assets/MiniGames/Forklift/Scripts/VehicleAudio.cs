@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using static Unity.Mathematics.math;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class VehicleAudio : MonoBehaviour
     {

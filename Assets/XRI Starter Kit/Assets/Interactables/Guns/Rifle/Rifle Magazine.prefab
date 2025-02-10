@@ -152,7 +152,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
-  m_Colliders: []
+  m_Colliders:
+  - {fileID: 8252189506900701473}
   m_InteractionLayers:
     m_Bits: 1
   m_DistanceCalculationMode: 1
@@ -273,10 +274,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18ad55086cb948e4da109d5c7dd7daca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftHandPose: {fileID: 1264427375658492769, guid: 1b870a3e35ea8294a9e346476e30c101, type: 3}
-  rightHandPose: {fileID: 1264427375658492769, guid: 1b870a3e35ea8294a9e346476e30c101, type: 3}
-  LeftHandAnimationPose: {fileID: 6161992844006716103, guid: 66e2f49132027654d9e3776a710838cd, type: 3}
-  RightHandAnimationPose: {fileID: 6161992844006716103, guid: 66e2f49132027654d9e3776a710838cd, type: 3}
+  leftHandPose: {fileID: 11400000, guid: 063472508e8c36944984110fc3094a7c, type: 2}
+  rightHandPose: {fileID: 11400000, guid: 063472508e8c36944984110fc3094a7c, type: 2}
+  LeftHandAnimationPose: {fileID: 11400000, guid: 75e5ac1451d9efb46b147dba2d683191, type: 2}
+  RightHandAnimationPose: {fileID: 11400000, guid: 75e5ac1451d9efb46b147dba2d683191, type: 2}
   leftHandAttach: {fileID: 2496062819863947156}
   rightHandAttach: {fileID: 1917701225012887450}
   hasAnimationPose: 0
@@ -353,7 +354,6 @@ MonoBehaviour:
   maxVolume: 0.4
   timeTillCanPlayAgain: 0.1
   maxVelocity: 15
-  blah: 0
 --- !u!54 &3217367507161224165
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -703,7 +703,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   outlineMode: 1
-  outlineColor: {r: 0.7764706, g: 0.8980392, b: 1, a: 1}
+  outlineColor: {r: 0.7773585, g: 0.8998114, b: 1, a: 1}
   outlineWidth: 2
   precomputeOutline: 1
   bakeKeys: []

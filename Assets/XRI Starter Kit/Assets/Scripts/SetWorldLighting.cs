@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class SetWorldLighting : MonoBehaviour
     {
@@ -35,6 +35,12 @@ namespace MikeNspired.UnityXRHandPoser
             RenderSettings.ambientLight = Color.black;
             LightmapSettings.lightmaps = new LightmapData[] { };
             mixedLight.intensity = .1f;
+        }
+        public void DarkenWorld()
+        {
+            RenderSettings.ambientLight = new Color(.2f,.2f,.35f);
+            LightmapSettings.lightmaps = new LightmapData[] { };
+            mixedLight.intensity = .2f;
         }
 
         public void ReturnToStartingColor()

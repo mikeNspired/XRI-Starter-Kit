@@ -2,16 +2,16 @@
 
 using System;
 using System.Collections;
+
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Haptics;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
-using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 using static Unity.Mathematics.math; // For "remap" or other math utility
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class ProjectileWeapon : MonoBehaviour
     {
@@ -52,7 +52,7 @@ namespace MikeNspired.UnityXRHandPoser
         void Awake()
         {
             OnValidate();
-            // Use lambdas for simple listener callbacks
+
             interactable.activated.AddListener(_ => TryFire(true));
             interactable.deactivated.AddListener(_ => TryFire(false));
             interactable.selectEntered.AddListener(SetupRecoilVariables);
@@ -92,15 +92,14 @@ namespace MikeNspired.UnityXRHandPoser
             if (state && !automaticFiring) FireGun();
         }
 
+        
         public void FireGun()
         {
             // Prevent firing with no bullets per shot
             if (bulletsPerShot < 1) return;
 
             // Check if we have ammo, or if the gun is cocked
-            if (magazineAttach && !infiniteAmmo && (CheckIfGunCocked() 
-                || !magazineAttach.Magazine 
-                || !magazineAttach.Magazine.UseAmmo()))
+            if (magazineAttach && !infiniteAmmo && (CheckIfGunCocked() || !magazineAttach.Magazine || !magazineAttach.Magazine.UseAmmo()))
             {
                 OutOfAmmoEvent.Invoke();
                 outOfAmmoAudio.PlayOneShot(outOfAmmoAudio.clip);
@@ -158,7 +157,8 @@ namespace MikeNspired.UnityXRHandPoser
 
             // Audio + Particle
             fireAudio?.PlayOneShot(fireAudio.clip);
-            cartridgeEjection?.Play();
+            if(cartridgeEjection)
+                cartridgeEjection.Play();
         }
 
         private void IgnoreColliders(Component bullet)

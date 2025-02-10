@@ -1,10 +1,13 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion.Comfort;
 
-
-public class VignetteEditor : MonoBehaviour
+namespace MikeNspired.XRIStarterKit
 {
-    private UnityEngine.XR.Interaction.Toolkit.Locomotion.Comfort.TunnelingVignetteController vignetteController;
-    private void Awake() => vignetteController = GetComponent<UnityEngine.XR.Interaction.Toolkit.Locomotion.Comfort.TunnelingVignetteController>();
-    public void SetApertureSize (float value) => vignetteController.defaultParameters.apertureSize = value;
-    public void SetFeatheringSize (float value) => vignetteController.defaultParameters.featheringEffect = value;
+    public class VignetteEditor : MonoBehaviour
+    {
+        private TunnelingVignetteController vignetteController;
+        private void Awake() => vignetteController = GetComponent<TunnelingVignetteController>();
+        public void SetApertureSize(float value) => vignetteController.defaultParameters.apertureSize = value;
+        public void SetFeatheringSize(float value) => vignetteController.defaultParameters.featheringEffect = value;
+    }
 }

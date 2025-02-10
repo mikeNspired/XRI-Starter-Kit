@@ -1,30 +1,35 @@
-using MikeNspired.UnityXRHandPoser;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class TargetPoints : MonoBehaviour, IDamageable
+namespace MikeNspired.XRIStarterKit
 {
-    public UnityEventFloat onHit;
-    [FormerlySerializedAs("damageMultiplier")] public float points = 1;
-    public AudioRandomize hitSoundEffect;
-    public bool canTakeDamage;
-
-    public void TakeDamage(float damage, GameObject damager)
+    public class TargetPoints : MonoBehaviour, IDamageable
     {
-        if (!canTakeDamage) return;
-        if (hitSoundEffect)
-            hitSoundEffect.Play();
-        onHit.Invoke(points);
-    }
-    
-    public void Hit()
-    {
-        if (!canTakeDamage) return;
-        if (hitSoundEffect)
-            hitSoundEffect.Play();
-        onHit.Invoke(points);
-    }
+        public UnityEventFloat onHit;
 
-    public void Activate() => canTakeDamage = true;
-    public void Deactivate() => canTakeDamage = false;
+        [FormerlySerializedAs("damageMultiplier")]
+        public float points = 1;
+
+        public AudioRandomize hitSoundEffect;
+        public bool canTakeDamage;
+
+        public void TakeDamage(float damage, GameObject damager)
+        {
+            if (!canTakeDamage) return;
+            if (hitSoundEffect)
+                hitSoundEffect.Play();
+            onHit.Invoke(points);
+        }
+
+        public void Hit()
+        {
+            if (!canTakeDamage) return;
+            if (hitSoundEffect)
+                hitSoundEffect.Play();
+            onHit.Invoke(points);
+        }
+
+        public void Activate() => canTakeDamage = true;
+        public void Deactivate() => canTakeDamage = false;
+    }
 }

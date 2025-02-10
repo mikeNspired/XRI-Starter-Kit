@@ -147,7 +147,7 @@ MonoBehaviour:
     m_Value: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.117
+    m_Value: 0.246
   response:
     m_OverrideState: 1
     m_Value: 0.8
@@ -184,13 +184,13 @@ MonoBehaviour:
     m_Value: 0
   focusDistance:
     m_OverrideState: 1
-    m_Value: 4.11
+    m_Value: 0.57
   aperture:
     m_OverrideState: 1
-    m_Value: 2.3
+    m_Value: 9
   focalLength:
     m_OverrideState: 1
-    m_Value: 50
+    m_Value: 35
   bladeCount:
     m_OverrideState: 1
     m_Value: 5
@@ -216,6 +216,30 @@ MonoBehaviour:
   mode:
     m_OverrideState: 1
     m_Value: 2
+  neutralHDRRangeReductionMode:
+    m_OverrideState: 0
+    m_Value: 2
+  acesPreset:
+    m_OverrideState: 0
+    m_Value: 3
+  hueShiftAmount:
+    m_OverrideState: 0
+    m_Value: 0
+  detectPaperWhite:
+    m_OverrideState: 0
+    m_Value: 0
+  paperWhite:
+    m_OverrideState: 0
+    m_Value: 300
+  detectBrightnessLimits:
+    m_OverrideState: 0
+    m_Value: 1
+  minNits:
+    m_OverrideState: 0
+    m_Value: 0.005
+  maxNits:
+    m_OverrideState: 0
+    m_Value: 1000
 --- !u!114 &5088608183628217940
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -234,7 +258,7 @@ MonoBehaviour:
     m_Value: 1
   contrast:
     m_OverrideState: 1
-    m_Value: 14.1
+    m_Value: 10.8
   colorFilter:
     m_OverrideState: 1
     m_Value: {r: 0.97547174, g: 0.9883251, b: 1, a: 1}
@@ -243,4 +267,4 @@ MonoBehaviour:
     m_Value: 0
   saturation:
     m_OverrideState: 1
-    m_Value: 16.9
+    m_Value: 10

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class FireHand : MonoBehaviour
     {
@@ -13,13 +13,14 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private Material newMaterial = null;
         [SerializeField] private ParticleSystem powerParticleSystem = null;
         [SerializeField] private Collider meshCollider = null;
+        [SerializeField] private ParticleCollisionEvents particleCollisionEvents = null;
+        [SerializeField] private float damageAmount = 5;
         private Material originalMaterial;
         private SkinnedMeshRenderer playerHandModel;
         private XRGrabInteractable grabInteractable = null;
-        private TransformStruct startingParticleOrigin; // Still need to set
         private AudioSource audioSource;
         private Vector3 startingPosition;
-
+        
         public float animationTime;
 
         private void Awake()
@@ -27,8 +28,7 @@ namespace MikeNspired.UnityXRHandPoser
             startingPosition = transform.position;
             audioSource = GetComponent<AudioSource>();
 
-            startingParticleOrigin.position = powerParticleSystem.transform.localPosition;
-            startingParticleOrigin.rotation = powerParticleSystem.transform.localRotation;
+  
 
             grabInteractable = GetComponent<XRGrabInteractable>();
 
@@ -36,6 +36,18 @@ namespace MikeNspired.UnityXRHandPoser
             grabInteractable.selectExited.AddListener(OnRelease);
             grabInteractable.activated.AddListener(StartPower);
             grabInteractable.deactivated.AddListener(StopPower);
+
+            particleCollisionEvents.OnParticleCollisionEvent += ParticleCollided;
+        }
+
+        private void ParticleCollided(GameObject arg1, Vector3 arg2)
+        {
+            // Check if the object itself implements IDamageable
+            if (arg1.TryGetComponent<IDamageable>(out var damageable))
+                damageable.TakeDamage(damageAmount, gameObject);
+            // If the object itself doesn't implement IDamageable, check its parent
+            else if (arg1.GetComponentInParent<IDamageable>() is { } parentDamageable) 
+                parentDamageable.TakeDamage(damageAmount,gameObject);
         }
 
         private void StartPower(ActivateEventArgs args)
@@ -57,8 +69,6 @@ namespace MikeNspired.UnityXRHandPoser
                 playerHandModel.material = originalMaterial;
 
             meshCollider.enabled = true;
-            startingParticleOrigin.position = powerParticleSystem.transform.localPosition;
-            startingParticleOrigin.rotation = powerParticleSystem.transform.localRotation;
             powerParticleSystem.Stop();
             audioSource.Stop();
 
@@ -103,4 +113,6 @@ namespace MikeNspired.UnityXRHandPoser
             }
         }
     }
+    
+    
 }

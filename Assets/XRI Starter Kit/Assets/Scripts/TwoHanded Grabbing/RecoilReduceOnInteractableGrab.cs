@@ -1,12 +1,13 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class RecoilReduceOnInteractableGrab : MonoBehaviour
     {
         [SerializeField] private ProjectileWeapon projectileWeapon = null;
-        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable interactable = null;
+        [SerializeField] private XRGrabInteractable interactable = null;
         [SerializeField] private float recoilReduction = .6f;
         [SerializeField] private float recoilRotationReduction = .8f;
         private float startingRecoil, startingRotationRecoil;
@@ -25,7 +26,7 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnValidate()
         {
             if (!interactable)
-                interactable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+                interactable = GetComponent<XRGrabInteractable>();
         }
 
         public void ReduceProjectileWeaponRecoil()

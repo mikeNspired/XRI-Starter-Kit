@@ -1,67 +1,100 @@
-﻿// Author MikeNspired. 
+﻿// Author: MikeNspired
 
 using System.Collections;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
-
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
+    /// <summary>
+    /// This component toggles certain child Transforms when an XRGrabInteractable is grabbed or released.
+    /// 
+    /// - <see cref="disableOnGrab"/> is disabled when grabbed and enabled when released.
+    /// - <see cref="enableOnGrab"/> is enabled when grabbed and disabled when released.
+    /// 
+    /// Additionally, if <see cref="moveAndDisableAfterFrameOnGrabColliders"/> is true, colliders on the 
+    /// target object are moved far away and then disabled, letting physics update before the object is hidden.
+    /// 
+    /// Implements <see cref="IReturnMovedColliders"/> so it can reset transforms if they’ve been moved.
+    /// </summary>
+    [RequireComponent(typeof(XRGrabInteractable))]
     public class OnGrabEnableDisable : MonoBehaviour, IReturnMovedColliders
     {
-        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grabInteractable;
+        [Header("Main References")]
+        [SerializeField] 
+        private XRGrabInteractable grabInteractable;
 
-        [Tooltip("Transform gets disabled when the interactable is grabbed and enabled when released")] [SerializeField]
-        private Transform disableOnGrab = null;
+        [Tooltip("Transform is disabled when grabbed, enabled when released.")]
+        [SerializeField] 
+        private Transform disableOnGrab;
 
-        [Tooltip("Transform is disabled at start, and enabled when the interactable is grabbed, and disabled when released")] [SerializeField]
-        private Transform enableOnGrab = null;
+        [Tooltip("Transform is enabled when grabbed, disabled when released.")]
+        [SerializeField] 
+        private Transform enableOnGrab;
 
-        [SerializeField] private bool moveAndDisableAfterFrameOnGrabColliders = true;
+        [Header("Settings")]
+        [Tooltip("If true, moves the transform offscreen and disables colliders after a short delay.")]
+        [SerializeField] 
+        private bool moveAndDisableAfterFrameOnGrabColliders = true;
 
-
-        private bool PreventDisableOfCollidersForObjectDisable;
-        private Vector3 enableOnGrabStartPosition;
         private Vector3 disableOnGrabStartPosition;
+        private Vector3 enableOnGrabStartPosition;
 
         private void Awake()
         {
             OnValidate();
 
-            grabInteractable.selectEntered.AddListener(x => OnGrab());
-            grabInteractable.selectExited.AddListener(x => OnRelease());
+            if (disableOnGrab)
+                disableOnGrabStartPosition = disableOnGrab.localPosition;
+            if (enableOnGrab)
+                enableOnGrabStartPosition = enableOnGrab.localPosition;
 
-            if (disableOnGrab) disableOnGrabStartPosition = disableOnGrab.transform.localPosition;
-            if (enableOnGrab) enableOnGrabStartPosition = enableOnGrab.transform.localPosition;
+            grabInteractable.selectEntered.AddListener(_ => OnGrab());
+            grabInteractable.selectExited.AddListener(_ => OnRelease());
         }
 
+ 
         private void OnValidate()
         {
             if (!grabInteractable)
-                grabInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+                grabInteractable = GetComponent<XRGrabInteractable>();
         }
 
         private void Start()
         {
-            if (disableOnGrab) disableOnGrab.gameObject.SetActive(true);
-            if (enableOnGrab) enableOnGrab.gameObject.SetActive(false);
+            // Initialize GameObjects to their default active states
+            if (disableOnGrab) 
+                disableOnGrab.gameObject.SetActive(true);
+            if (enableOnGrab) 
+                enableOnGrab.gameObject.SetActive(false);
         }
 
-        public void EnableAll()
+        private void OnGrab()
         {
-            StopAllCoroutines();
-
-            if (disableOnGrab)
+            // If we should move away & disable, use the coroutine approach
+            if (moveAndDisableAfterFrameOnGrabColliders)
             {
-                disableOnGrab.gameObject.SetActive(true);
-                disableOnGrab.transform.localPosition = disableOnGrabStartPosition;
-                disableOnGrab.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
+                StopAllCoroutines();
+
+                // Immediately enable the "enableOnGrab" object
+                EnableTransform(enableOnGrab, enableOnGrabStartPosition);
+
+                // Schedule the disabling of the "disableOnGrab" object
+                if(disableOnGrab)
+                {
+                    // Reset colliders on the one about to be moved
+                    var collidersTrigger = disableOnGrab.GetComponent<CollidersSetToTrigger>();
+                    collidersTrigger?.ReturnToDefaultState();
+
+                    StartCoroutine(MoveDisableAndReturn(disableOnGrab, disableOnGrabStartPosition));
+                }
             }
-
-            if (enableOnGrab)
+            else
             {
-                enableOnGrab.gameObject.SetActive(true);
-                enableOnGrab.transform.localPosition = enableOnGrabStartPosition;
-                enableOnGrab.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
+                // No coroutine approach => immediate toggling
+                if (disableOnGrab)
+                    disableOnGrab.gameObject.SetActive(false);
+                EnableTransform(enableOnGrab, enableOnGrabStartPosition);
             }
         }
 
@@ -71,51 +104,56 @@ namespace MikeNspired.UnityXRHandPoser
             if (moveAndDisableAfterFrameOnGrabColliders)
             {
                 StopAllCoroutines();
-                if (disableOnGrab)
-                    disableOnGrab.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
-                StartCoroutine(MoveDisableAndReturn(enableOnGrab));
-            }
-            else if (enableOnGrab)
-                enableOnGrab.gameObject.SetActive(false);
 
-            if (disableOnGrab)
-                disableOnGrab.gameObject.SetActive(true);
+                // Immediately enable the "disableOnGrab" object
+                EnableTransform(disableOnGrab, disableOnGrabStartPosition);
+
+                // Schedule the disabling of the "enableOnGrab" object
+                if (enableOnGrab)
+                {
+                    var collidersTrigger = enableOnGrab.GetComponent<CollidersSetToTrigger>();
+                    collidersTrigger?.ReturnToDefaultState();
+
+                    StartCoroutine(MoveDisableAndReturn(enableOnGrab, enableOnGrabStartPosition));
+                }
+            }
+            else
+            {
+                // No coroutine approach => immediate toggling
+                if (enableOnGrab)
+                    enableOnGrab.gameObject.SetActive(false);
+                if (disableOnGrab)
+                    disableOnGrab.gameObject.SetActive(true);
+            }
         }
 
-        private void OnGrab()
+        /// <summary>
+        /// Sets all tracked objects to their enabled states and resets positions/colliders.
+        /// </summary>
+        public void EnableAll()
         {
-            if (moveAndDisableAfterFrameOnGrabColliders)
-            {
-                StopAllCoroutines();
-                if (enableOnGrab)
-                    enableOnGrab.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
-                StartCoroutine(MoveDisableAndReturn(disableOnGrab));
-            }
-            else if (disableOnGrab)
-                disableOnGrab.gameObject.SetActive(false);
+            StopAllCoroutines();
 
+            // Bring back disableOnGrab if assigned
+            if (disableOnGrab)
+            {
+                disableOnGrab.gameObject.SetActive(true);
+                ResetTransformLocal(disableOnGrab, disableOnGrabStartPosition);
+                ResetCollidersToDefault(disableOnGrab);
+            }
+
+            // Bring back enableOnGrab if assigned
             if (enableOnGrab)
             {
                 enableOnGrab.gameObject.SetActive(true);
-                enableOnGrab.transform.localPosition = enableOnGrabStartPosition;
+                ResetTransformLocal(enableOnGrab, enableOnGrabStartPosition);
+                ResetCollidersToDefault(enableOnGrab);
             }
         }
 
-        private IEnumerator MoveDisableAndReturn(Transform objectToMove)
-        {
-            if (!objectToMove) yield break;
-            objectToMove.GetComponent<CollidersSetToTrigger>()?.SetAllToTrigger();
-            yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
-
-            objectToMove.position += Vector3.one * 9999;
-            //Lets physics respond to collider disappearing before disabling object physics update needs to run twice
-            yield return new WaitForSeconds(Time.fixedDeltaTime * 2);
-            objectToMove.gameObject.SetActive(false);
-            objectToMove.localPosition = objectToMove == enableOnGrab ? enableOnGrabStartPosition : disableOnGrabStartPosition;
-
-            objectToMove.GetComponent<CollidersSetToTrigger>()?.ReturnToDefaultState();
-        }
-
+        /// <summary>
+        /// Resets the transforms if they’ve been moved away.
+        /// </summary>
         public void ReturnMovedColliders()
         {
             StopAllCoroutines();
@@ -124,5 +162,54 @@ namespace MikeNspired.UnityXRHandPoser
             if (disableOnGrab)
                 disableOnGrab.localPosition = disableOnGrabStartPosition;
         }
+
+        /// <summary>
+        /// Coroutine that moves the object far away, waits for physics updates, and disables it.
+        /// </summary>
+        private IEnumerator MoveDisableAndReturn(Transform objectToMove, Vector3 originalLocalPosition)
+        {
+            if (!objectToMove) yield break;
+            
+            // Temporarily set colliders to trigger
+            var collidersTrigger = objectToMove.GetComponent<CollidersSetToTrigger>();
+            collidersTrigger?.SetAllToTrigger();
+
+            yield return PhysicsHelper.MoveAndDisable(objectToMove.gameObject);
+
+            // Reset local position and colliders
+            ResetTransformLocal(objectToMove, originalLocalPosition);
+            collidersTrigger?.ReturnToDefaultState();
+        }
+
+        #region Helper Methods
+
+        private void ResetTransformLocal(Transform target, Vector3 localPos)
+        {
+            if (!target) return;
+            target.localPosition = localPos;
+        }
+
+        private void EnableTransform(Transform target, Vector3 startPos)
+        {
+            if (!target) return;
+
+            // Enable object
+            target.gameObject.SetActive(true);
+
+            // Reset position
+            target.localPosition = startPos;
+
+            // Reset any colliders
+            ResetCollidersToDefault(target);
+        }
+
+        private void ResetCollidersToDefault(Transform target)
+        {
+            if (!target) return;
+            var collidersTrigger = target.GetComponent<CollidersSetToTrigger>();
+            collidersTrigger?.ReturnToDefaultState();
+        }
+
+        #endregion
     }
 }

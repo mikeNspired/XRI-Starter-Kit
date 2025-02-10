@@ -6,20 +6,24 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class ClimbGrabPoint : VelocityTracker
     {
         [SerializeField] private XRBaseInteractable xrGrabInteractable;
         [SerializeField] private PlayerClimbingXR playerClimbingXR;
-        private XRDirectInteractor xRDirectInteractor;
+
+        // Haptic settings
         public float hapticDuration = .1f;
         public float hapticStrength = .5f;
+
+        public XRBaseInteractable GrabInteractable => xrGrabInteractable;
 
         protected new void Start()
         {
             base.Start();
             OnValidate();
+
             xrGrabInteractable.selectEntered.AddListener(OnSelect);
             xrGrabInteractable.selectExited.AddListener(OnSelectExit);
         }
@@ -34,44 +38,46 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void OnSelect(SelectEnterEventArgs args)
         {
-            // Get the interactor and its associated components
-            var interactor = args.interactorObject as XRDirectInteractor;
+            var interactor = args.interactorObject as XRBaseInteractor;
             if (interactor == null) return;
 
-            var interactorTransform = args.interactorObject.transform;
+            var interactorTransform = interactor.transform;
             var controller = interactorTransform.GetComponentInParent<ControllerInputActionManager>();
             var xrOrigin = interactorTransform.GetComponentInParent<XROrigin>();
             var controllerHaptic = controller.GetComponent<HapticImpulsePlayer>();
 
+            // **Pass the grabbed object's transform so we can track it**
             if (controller != null)
-                SetClimberHand(controller);
+            {
+                playerClimbingXR.SetClimbHand(controller, xrGrabInteractable.transform);
+            }
 
+            // Begin velocity tracking for fling logic
             if (xrOrigin != null)
                 SetTrackedObject(xrOrigin.transform);
 
             StartTracking();
 
+            // Fire haptic
             if (controllerHaptic != null)
                 controllerHaptic.SendHapticImpulse(hapticStrength, hapticDuration);
         }
 
-        private void SetClimberHand(ControllerInputActionManager controller) => playerClimbingXR.SetClimbHand(controller);
-
         private void OnSelectExit(SelectExitEventArgs args)
         {
-            // Get the interactor and its associated components
-            var interactor = (XRDirectInteractor)args.interactorObject;
+            var interactor = args.interactorObject as XRBaseInteractor;
             if (interactor == null) return;
 
             var controller = interactor.transform.GetComponentInParent<ControllerInputActionManager>();
             if (controller != null)
             {
+                // Tell the climbing script that this hand is releasing
                 playerClimbingXR.RemoveClimbHand(controller);
 
-                // Set the released velocity
+                // Provide fling velocity on release
                 playerClimbingXR.SetReleasedVelocity(CurrentSmoothedVelocity);
 
-                // Stop tracking the interactor
+                // Stop our velocity tracker
                 StopTracking();
             }
         }

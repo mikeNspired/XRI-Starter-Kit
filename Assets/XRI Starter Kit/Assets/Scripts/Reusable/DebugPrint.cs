@@ -1,8 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class DebugPrint : MonoBehaviour
+namespace MikeNspired.XRIStarterKit
 {
-    public void Print(string text) => Debug.Log(text);
+    public class DebugPrint : MonoBehaviour
+    {
+        public void Print(string text) => Debug.Log(text);
+    }
 }

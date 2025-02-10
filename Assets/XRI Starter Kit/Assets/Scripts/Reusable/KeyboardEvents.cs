@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class KeyboardEvents : MonoBehaviour
     {

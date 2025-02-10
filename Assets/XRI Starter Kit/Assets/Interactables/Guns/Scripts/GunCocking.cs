@@ -1,16 +1,18 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// Custom interactable that can be dragged along an axis. Can either be continuous or snap to integer steps.
     /// </summary>
     public class GunCocking : MonoBehaviour
     {
-        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable xrGrabInteractable = null;
-        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable mainGrabInteractable = null;
+        [SerializeField] private XRBaseInteractable xrGrabInteractable = null;
+        [SerializeField] private XRGrabInteractable mainGrabInteractable = null;
         [SerializeField] private ProjectileWeapon projectileWeapon = null;
         [SerializeField] private Vector3 LocalAxis = -Vector3.forward;
         [SerializeField] private float AxisLength = .1f;
@@ -18,19 +20,18 @@ namespace MikeNspired.UnityXRHandPoser
         [SerializeField] private AudioRandomize pullBackAudio = null;
         [SerializeField] private AudioRandomize releaseAudio = null;
 
-        private UnityEngine.XR.Interaction.Toolkit.Interactors.IXRSelectInteractor currentHand, grabbingInteractor;
+        private IXRSelectInteractor currentHand, grabbingInteractor;
         private XRInteractionManager interactionManager;
         private Transform originalParent;
         private Vector3 grabbedOffset, endPoint, startPoint;
         private float currentDistance;
         private bool hasReachedEnd, isSelected;
+        private Rigidbody rb;
         public UnityEvent GunCockedEvent;
-
+        
 
         private void Start()
         {
-            OnValidate();
-
             xrGrabInteractable.selectEntered.AddListener(OnGrabbed);
             xrGrabInteractable.selectExited.AddListener(OnRelease);
             mainGrabInteractable.selectExited.AddListener(ReleaseIfMainHandReleased);
@@ -49,14 +50,22 @@ namespace MikeNspired.UnityXRHandPoser
             endPoint = transform.localPosition + LocalAxis * AxisLength;
         }
 
+        private void OnEnable()
+        {
+            OnValidate();
+
+            interactionManager.UnregisterInteractable(xrGrabInteractable as IXRInteractable);
+            interactionManager.RegisterInteractable(xrGrabInteractable as IXRInteractable);
+        }
+ 
         private void OnValidate()
         {
             if (!interactionManager)
-                interactionManager = FindObjectOfType<XRInteractionManager>();
+                interactionManager = FindFirstObjectByType<XRInteractionManager>();
             if (!xrGrabInteractable)
-                xrGrabInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
+                xrGrabInteractable = GetComponent<XRBaseInteractable>();
             if (!mainGrabInteractable)
-                mainGrabInteractable = transform.parent.GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+                mainGrabInteractable = transform.parent.GetComponentInParent<XRGrabInteractable>();
             if (!projectileWeapon)
                 projectileWeapon = GetComponentInParent<ProjectileWeapon>();
         }
@@ -78,7 +87,7 @@ namespace MikeNspired.UnityXRHandPoser
         {
             if (currentHand?.transform && xrGrabInteractable)
                 interactionManager.SelectExit(currentHand,
-                    xrGrabInteractable.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.IXRSelectInteractable>());
+                    xrGrabInteractable.GetComponent<IXRSelectInteractable>());
         }
 
         private void SlideFromHandPosition()

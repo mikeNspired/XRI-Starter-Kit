@@ -1,23 +1,25 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
-namespace MikeNspired.UnityXRHandPoser
+namespace MikeNspired.XRIStarterKit
 {
     public class ReleaseHandAtDistance : MonoBehaviour
     {
-        [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable baseInteractable;
-        [SerializeField] private float distance = .2f;
+        [SerializeField] private XRBaseInteractable baseInteractable;
+        [SerializeField] private float distance = .6f;
         [SerializeField] public bool debugSpheresEnabled;
 
-        private UnityEngine.XR.Interaction.Toolkit.Interactors.IXRSelectInteractor interactor;
-        private UnityEngine.XR.Interaction.Toolkit.Interactables.IXRSelectInteractable interactable;
+        private IXRSelectInteractor interactor;
+        private IXRSelectInteractable interactable;
         private XRInteractionManager interactionManager;
 
         private void Start()
         {
             OnValidate();
             LogMessages();
-            interactable = baseInteractable.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.IXRSelectInteractable>();
+            interactable = baseInteractable.GetComponent<IXRSelectInteractable>();
             interactable.selectEntered.AddListener(x => interactor = x.interactorObject);
             interactable.selectExited.AddListener(x => interactor = null);
         }
@@ -25,9 +27,9 @@ namespace MikeNspired.UnityXRHandPoser
         private void OnValidate()
         {
             if (!baseInteractable)
-                baseInteractable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRBaseInteractable>();
+                baseInteractable = GetComponentInParent<XRBaseInteractable>();
             if (!interactionManager)
-                interactionManager = FindObjectOfType<XRInteractionManager>();
+                interactionManager = FindFirstObjectByType<XRInteractionManager>();
         }
 
         private void Update()
@@ -45,7 +47,7 @@ namespace MikeNspired.UnityXRHandPoser
 
         private void LogMessages()
         {
-            if (interactable == null)
+            if (baseInteractable == null)
             {
                 Debug.LogWarning(this + " missing interactable on : " + gameObject);
                 enabled = false;
