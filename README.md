@@ -10,7 +10,9 @@ XR Starter Kit Is a playground for me to create new VR Interactions such as Alyx
 
 XR Hand Poser is a simple hand posing solution asset built for the UnityXR Interaction Toolkit. This asset only relies on UnityXR and requires no third-party tools or assets. You can easily add or create hand poses and animations without having to rely on Animator controllers and keeping track of unity animations and string-based names. The Hand Posing system is built abstracted from UnityXR and can be modified to work with other interaction systems.
 
-This is made with Unity 2022.2.6f1 
+This is made with Unity 2022.2.6f1
+
+**Last Updated:** February 9, 2025
 
 Make sure to check out the youtube channel for tutorials.
 
