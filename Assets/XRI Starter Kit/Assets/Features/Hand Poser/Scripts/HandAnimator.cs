@@ -413,7 +413,78 @@ namespace MikeNspired.XRIStarterKit
         }
 
 
-       
+        /// <summary>
+        /// Animates the hand to an arbitrary pose defined by raw JointData, without requiring a PoseScriptableObject.
+        /// Blends from the current live joint state to the target over animationTime seconds.
+        /// Joints not present in jointData remain at their current positions.
+        /// </summary>
+        public void SetJointsDirect(PoseScriptableObject.JointData[] jointData, float animationTime)
+        {
+            if (jointData == null || jointData.Length == 0)
+            {
+                Debug.LogWarning("SetJointsDirect: jointData is null or empty.");
+                return;
+            }
+
+            if (currentJoints.Count == 0 || !currentJoints[0])
+                SetBones();
+
+            // Snapshot live state as the starting pose (indexed 1:1 with currentJoints)
+            TransformStruct[] oldPose = CopyTransformData(currentJoints);
+
+            // Build target pose: begin from current positions, then override matched joints by name
+            TransformStruct[] newPose = CopyTransformData(currentJoints);
+            for (int i = 0; i < currentJoints.Count; i++)
+            {
+                var joint = currentJoints[i];
+                if (!joint) continue;
+                foreach (var data in jointData)
+                {
+                    if (data.jointName == joint.name)
+                    {
+                        newPose[i].SetTransformStruct(data.localPosition, data.localRotation, Vector3.one);
+                        break;
+                    }
+                }
+            }
+
+            if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
+            if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);
+
+            AnimateToPoseAnimation = AnimateToPoseOverTime(oldPose, newPose, animationTime);
+            StartCoroutine(AnimateToPoseAnimation);
+        }
+
+        // Overload that accepts an explicit duration, used by SetJointsDirect
+        IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose, float duration)
+        {
+            if (duration <= 0f)
+            {
+                // Snap immediately
+                for (int i = 0; i < currentJoints.Count; i++)
+                {
+                    var joint = currentJoints[i];
+                    if (!joint) continue;
+                    SetNewJoint(ref joint, newPose[i].position, newPose[i].rotation);
+                }
+                yield break;
+            }
+
+            float timer = 0;
+            while (timer <= duration + Time.deltaTime)
+            {
+                for (int i = 0; i < currentJoints.Count; i++)
+                {
+                    var joint = currentJoints[i];
+                    if (!joint) continue;
+                    var pos = Vector3.Lerp(originalPose[i].position, newPose[i].position, timer / duration);
+                    var rot = Quaternion.Lerp(originalPose[i].rotation, newPose[i].rotation, timer / duration);
+                    SetNewJoint(ref joint, pos, rot);
+                }
+                timer += Time.deltaTime;
+                yield return new WaitForSeconds(Time.deltaTime);
+            }
+        }
 
         private void OnDrawGizmosSelected()
         {
