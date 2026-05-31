@@ -11,7 +11,11 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private LayerMask interactLayers = ~0;
 
         private HandAnimator handAnimator;
-        private readonly List<Collider> fingerColliders = new();
+
+        // Serialized so colliders built in edit mode are tracked across domain reloads /
+        // play-mode entry. Without this, the list would be empty after a reload and a
+        // rebuild would stack a duplicate set of colliders on top of the existing ones.
+        [SerializeField, HideInInspector] private List<Collider> fingerColliders = new();
         private bool isGrabbing;
 
         void Awake()
@@ -32,7 +36,10 @@ namespace MikeNspired.XRIStarterKit
                 handRef.NearFarInteractor.selectExited.AddListener(_ => SetCollidersEnabled(true));
             }
 
-            BuildColliders();
+            // Colliders built (and persisted) in edit mode act as prebuilt geometry — only
+            // build at runtime as a fallback when none exist yet.
+            if (fingerColliders == null || fingerColliders.Count == 0)
+                BuildColliders();
         }
 
         // Called from editor and at Start
@@ -63,7 +70,7 @@ namespace MikeNspired.XRIStarterKit
 
                 if (jointChildren.Count > 1)
                 {
-                    // Palm/branching joint — add sphere collider
+                    // Palm/branching joint — add palm collider (sphere or box)
                     AddPalmCollider(joint);
                 }
                 else if (jointChildren.Count == 1)
@@ -82,11 +89,22 @@ namespace MikeNspired.XRIStarterKit
         {
             if (config == null || !config.addPalmCollider) return;
 
-            var col = joint.gameObject.AddComponent<SphereCollider>();
-            col.radius = config.palmRadius;
-            col.center = config.palmOffset;
-            col.enabled = !isGrabbing;
-            fingerColliders.Add(col);
+            if (config.palmShape == PalmColliderShape.Box)
+            {
+                var box = joint.gameObject.AddComponent<BoxCollider>();
+                box.size = config.palmBoxSize;
+                box.center = config.palmOffset;
+                box.enabled = !isGrabbing;
+                fingerColliders.Add(box);
+            }
+            else
+            {
+                var sphere = joint.gameObject.AddComponent<SphereCollider>();
+                sphere.radius = config.palmRadius;
+                sphere.center = config.palmOffset;
+                sphere.enabled = !isGrabbing;
+                fingerColliders.Add(sphere);
+            }
         }
 
         private void AddCapsuleCollider(Transform joint, Transform childJoint)
@@ -102,7 +120,7 @@ namespace MikeNspired.XRIStarterKit
             var overrideCfg = config?.GetJointOverride(joint.name);
 
             float radMult = (config?.globalRadiusMultiplier ?? 0.35f) * (fingerCfg?.radiusMultiplier ?? 1f);
-            float hMult = config?.globalHeightMultiplier ?? 1f;
+            float hMult = (config?.globalHeightMultiplier ?? 1f) * (fingerCfg?.heightMultiplier ?? 1f);
 
             float height = overrideCfg is { overrideHeight: true }
                 ? overrideCfg.height
@@ -174,6 +192,15 @@ namespace MikeNspired.XRIStarterKit
                 if (col is SphereCollider sphere)
                 {
                     Gizmos.DrawWireSphere(col.transform.TransformPoint(sphere.center), sphere.radius);
+                    continue;
+                }
+
+                if (col is BoxCollider box)
+                {
+                    var prev = Gizmos.matrix;
+                    Gizmos.matrix = Matrix4x4.TRS(box.transform.position, box.transform.rotation, box.transform.lossyScale);
+                    Gizmos.DrawWireCube(box.center, box.size);
+                    Gizmos.matrix = prev;
                     continue;
                 }
 

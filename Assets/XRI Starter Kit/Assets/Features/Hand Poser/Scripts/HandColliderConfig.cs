@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace MikeNspired.XRIStarterKit
 {
+    public enum PalmColliderShape { Sphere, Box }
+
     [Serializable]
     public class FingerColliderConfig
     {
@@ -31,8 +33,10 @@ namespace MikeNspired.XRIStarterKit
 
         [Header("Palm")]
         public bool addPalmCollider = true;
-        [Range(0.01f, 0.1f)] public float palmRadius = 0.035f;
-        public Vector3 palmOffset = Vector3.zero;
+        public PalmColliderShape palmShape = PalmColliderShape.Box;
+        [Range(0.01f, 0.1f)] public float palmRadius = 0.035f;          // used when palmShape == Sphere
+        public Vector3 palmBoxSize = new Vector3(0.08f, 0.025f, 0.07f); // used when palmShape == Box
+        public Vector3 palmOffset = Vector3.zero;                       // collider center, both shapes
 
         [Header("Per-Finger Multipliers")]
         public FingerColliderConfig[] fingerConfigs = new FingerColliderConfig[]

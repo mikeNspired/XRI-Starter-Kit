@@ -7,7 +7,7 @@ namespace MikeNspired.XRIStarterKit
     public class HandColliderConfigEditor : UnityEditor.Editor
     {
         private SerializedProperty globalRadius, globalHeight;
-        private SerializedProperty addPalm, palmRadius, palmOffset;
+        private SerializedProperty addPalm, palmShape, palmRadius, palmBoxSize, palmOffset;
         private SerializedProperty fingerConfigs, jointOverrides;
 
         private bool fingerFoldout = true;
@@ -18,7 +18,9 @@ namespace MikeNspired.XRIStarterKit
             globalRadius  = serializedObject.FindProperty("globalRadiusMultiplier");
             globalHeight  = serializedObject.FindProperty("globalHeightMultiplier");
             addPalm       = serializedObject.FindProperty("addPalmCollider");
+            palmShape     = serializedObject.FindProperty("palmShape");
             palmRadius    = serializedObject.FindProperty("palmRadius");
+            palmBoxSize   = serializedObject.FindProperty("palmBoxSize");
             palmOffset    = serializedObject.FindProperty("palmOffset");
             fingerConfigs = serializedObject.FindProperty("fingerConfigs");
             jointOverrides = serializedObject.FindProperty("jointOverrides");
@@ -38,7 +40,11 @@ namespace MikeNspired.XRIStarterKit
             if (addPalm.boolValue)
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(palmRadius, new GUIContent("Radius"));
+                EditorGUILayout.PropertyField(palmShape, new GUIContent("Shape"));
+                if (palmShape.enumValueIndex == (int)PalmColliderShape.Box)
+                    EditorGUILayout.PropertyField(palmBoxSize, new GUIContent("Box Size"));
+                else
+                    EditorGUILayout.PropertyField(palmRadius, new GUIContent("Radius"));
                 EditorGUILayout.PropertyField(palmOffset, new GUIContent("Local Offset"));
                 EditorGUI.indentLevel--;
             }
