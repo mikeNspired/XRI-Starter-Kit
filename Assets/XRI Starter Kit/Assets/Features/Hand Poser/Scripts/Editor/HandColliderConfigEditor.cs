@@ -13,6 +13,7 @@ namespace MikeNspired.XRIStarterKit
         public static string[] JointNamesContext;
 
         private SerializedProperty globalRadius, globalHeight;
+        private SerializedProperty skipAux, auxSuffix;
         private SerializedProperty addPalm, palmShape, palmRadius, palmBoxSize, palmOffset;
         private SerializedProperty fingerConfigs, jointOverrides;
 
@@ -23,6 +24,8 @@ namespace MikeNspired.XRIStarterKit
         {
             globalRadius  = serializedObject.FindProperty("globalRadiusMultiplier");
             globalHeight  = serializedObject.FindProperty("globalHeightMultiplier");
+            skipAux       = serializedObject.FindProperty("skipAuxJoints");
+            auxSuffix     = serializedObject.FindProperty("auxNameSuffix");
             addPalm       = serializedObject.FindProperty("addPalmCollider");
             palmShape     = serializedObject.FindProperty("palmShape");
             palmRadius    = serializedObject.FindProperty("palmRadius");
@@ -39,6 +42,16 @@ namespace MikeNspired.XRIStarterKit
             EditorGUILayout.LabelField("Global", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(globalRadius, new GUIContent("Radius Multiplier"));
             EditorGUILayout.PropertyField(globalHeight, new GUIContent("Height Multiplier"));
+
+            EditorGUILayout.Space(6);
+            EditorGUILayout.LabelField("Joints", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(skipAux, new GUIContent("Skip Aux Joints"));
+            if (skipAux.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(auxSuffix, new GUIContent("Aux Name Suffix"));
+                EditorGUI.indentLevel--;
+            }
 
             EditorGUILayout.Space(6);
             EditorGUILayout.LabelField("Palm", EditorStyles.boldLabel);

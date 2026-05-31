@@ -31,6 +31,12 @@ namespace MikeNspired.XRIStarterKit
         [Range(0.05f, 1f)]  public float globalRadiusMultiplier = 0.35f;
         [Range(0.5f, 2f)]   public float globalHeightMultiplier = 1f;
 
+        [Header("Joints")]
+        [Tooltip("Skip auxiliary/helper joints (name ends with the suffix below) when building " +
+                 "colliders. Connectivity is bridged through them so real bones stay linked.")]
+        public bool skipAuxJoints = true;
+        public string auxNameSuffix = "aux";
+
         [Header("Palm")]
         public bool addPalmCollider = true;
         public PalmColliderShape palmShape = PalmColliderShape.Box;
@@ -65,5 +71,9 @@ namespace MikeNspired.XRIStarterKit
                 if (ov.jointName == jointName) return ov;
             return null;
         }
+
+        public bool IsAuxJoint(string jointName) =>
+            skipAuxJoints && !string.IsNullOrEmpty(auxNameSuffix) &&
+            jointName.EndsWith(auxNameSuffix, StringComparison.OrdinalIgnoreCase);
     }
 }

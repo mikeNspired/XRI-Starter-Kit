@@ -56,17 +56,20 @@ namespace MikeNspired.XRIStarterKit
             var joints = handAnimator.currentJoints;
             var jointSet = new HashSet<Transform>(joints);
 
+            // Active joints get colliders; aux/helper joints are skipped but still used as
+            // pass-through links so the bone chain stays connected (e.g. a finger's MCP
+            // knuckle named "..._aux" is bridged to the next real joint).
+            var activeSet = new HashSet<Transform>();
+            foreach (var j in joints)
+                if (j && !(config != null && config.IsAuxJoint(j.name))) activeSet.Add(j);
+
             foreach (var joint in joints)
             {
-                if (!joint) continue;
+                if (!joint || !activeSet.Contains(joint)) continue;
 
-                // Collect children that are also joints
+                // Collect the nearest active descendant joints, bridging through skipped ones.
                 var jointChildren = new List<Transform>();
-                for (int c = 0; c < joint.childCount; c++)
-                {
-                    var child = joint.GetChild(c);
-                    if (jointSet.Contains(child)) jointChildren.Add(child);
-                }
+                CollectActiveChildren(joint, jointSet, activeSet, jointChildren);
 
                 if (jointChildren.Count > 1)
                 {
@@ -82,6 +85,20 @@ namespace MikeNspired.XRIStarterKit
                     // Fingertip — add small sphere-like capsule
                     AddTipCollider(joint);
                 }
+            }
+        }
+
+        // Nearest active descendant joints. Descends through skipped joints (still in jointSet)
+        // to bridge connectivity; ignores non-joint transforms, matching the original behavior.
+        private static void CollectActiveChildren(Transform t, HashSet<Transform> jointSet, HashSet<Transform> activeSet, List<Transform> result)
+        {
+            for (int c = 0; c < t.childCount; c++)
+            {
+                var child = t.GetChild(c);
+                if (activeSet.Contains(child))
+                    result.Add(child);
+                else if (jointSet.Contains(child))
+                    CollectActiveChildren(child, jointSet, activeSet, result);
             }
         }
 
