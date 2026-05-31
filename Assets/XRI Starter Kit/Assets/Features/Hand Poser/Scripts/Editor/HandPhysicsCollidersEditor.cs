@@ -50,8 +50,10 @@ namespace MikeNspired.XRIStarterKit
 
             // Editing the config inline rebuilds colliders live in edit mode — no play mode,
             // no asset hopping. Shared config means both hands update together.
+            HandColliderConfigEditor.JointNamesContext = GetJointNames(poser);
             EditorGUI.BeginChangeCheck();
             configEditor.OnInspectorGUI();
+            HandColliderConfigEditor.JointNamesContext = null;
             if (EditorGUI.EndChangeCheck() && !Application.isPlaying)
             {
                 poser.BuildColliders();
@@ -64,6 +66,20 @@ namespace MikeNspired.XRIStarterKit
                 poser.BuildColliders();
                 EditorUtility.SetDirty(poser);
             }
+        }
+
+        // Joint names for the override dropdown, gathered the same way the builder does.
+        private static string[] GetJointNames(HandPhysicsColliders poser)
+        {
+            var anim = poser.GetComponent<HandAnimator>();
+            if (anim == null) return null;
+            if (anim.currentJoints == null || anim.currentJoints.Count == 0)
+                anim.SetBones();
+
+            var names = new System.Collections.Generic.List<string>();
+            foreach (var j in anim.currentJoints)
+                if (j) names.Add(j.name);
+            return names.ToArray();
         }
     }
 }
