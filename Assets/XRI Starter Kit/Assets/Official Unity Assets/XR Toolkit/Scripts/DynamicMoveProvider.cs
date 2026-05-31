@@ -1,8 +1,9 @@
 using Unity.XR.CoreUtils;
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.XR.Interaction.Toolkit.Locomotion.Movement;
 
-namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
+namespace XR.Interaction.Toolkit.Samples
 {
     /// <summary>
     /// A version of continuous movement that automatically controls the frame of reference that

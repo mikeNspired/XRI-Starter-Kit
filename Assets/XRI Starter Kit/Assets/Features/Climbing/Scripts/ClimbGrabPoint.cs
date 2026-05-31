@@ -1,10 +1,10 @@
-﻿using Unity.XR.CoreUtils;
+﻿using XR.Interaction.Toolkit.Samples;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Inputs.Haptics;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
-using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
 
 namespace MikeNspired.XRIStarterKit
 {

@@ -1,12 +1,11 @@
-﻿
-using System.Collections;
+﻿using System.Collections;
+using XR.Interaction.Toolkit.Samples;
 using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
-using UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets;
-using UnityEngine.XR.Interaction.Toolkit.Locomotion; // For LocomotionProvider / LocomotionMediator
+using UnityEngine.XR.Interaction.Toolkit.Locomotion; 
 
 namespace MikeNspired.XRIStarterKit
 {

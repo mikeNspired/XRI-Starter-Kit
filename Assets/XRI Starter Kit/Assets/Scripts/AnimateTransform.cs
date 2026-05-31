@@ -30,6 +30,11 @@ namespace MikeNspired.XRIStarterKit
             }
         }
 
+
+        public void SetRotation()
+        {
+           
+        }
         public void SetToStartPosition()
         {
             MovingObject.localPosition = startingTransform.position;

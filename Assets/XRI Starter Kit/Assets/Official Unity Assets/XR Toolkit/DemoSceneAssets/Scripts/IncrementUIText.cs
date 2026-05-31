@@ -1,6 +1,7 @@
+using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
+namespace XR.Interaction.Toolkit.Samples
 {
     /// <summary>
     /// Add this component to a GameObject and call the <see cref="IncrementText"/> method
