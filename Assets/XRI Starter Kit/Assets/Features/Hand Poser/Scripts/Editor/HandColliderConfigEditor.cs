@@ -4,7 +4,7 @@ using UnityEngine;
 namespace MikeNspired.XRIStarterKit
 {
     [CustomEditor(typeof(HandColliderConfig))]
-    public class HandColliderConfigEditor : Editor
+    public class HandColliderConfigEditor : UnityEditor.Editor
     {
         private SerializedProperty globalRadius, globalHeight;
         private SerializedProperty addPalm, palmRadius, palmOffset;

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bf91a5113c852c44a2243dd994c4f0b, type: 3}
+  m_Name: HandColliderConfig
+  m_EditorClassIdentifier: MikeNspiredXRIStarterKit.Runtime::MikeNspired.XRIStarterKit.HandColliderConfig
+  globalRadiusMultiplier: 0.35
+  globalHeightMultiplier: 1
+  addPalmCollider: 1
+  palmRadius: 0.035
+  palmOffset: {x: 0, y: 0, z: 0}
+  fingerConfigs:
+  - fingerName: Thumb
+    radiusMultiplier: 1.2
+    heightMultiplier: 1
+  - fingerName: Index
+    radiusMultiplier: 1
+    heightMultiplier: 1
+  - fingerName: Middle
+    radiusMultiplier: 1
+    heightMultiplier: 1
+  - fingerName: Ring
+    radiusMultiplier: 0.9
+    heightMultiplier: 1
+  - fingerName: Pinky
+    radiusMultiplier: 0.8
+    heightMultiplier: 1
+  jointOverrides: []

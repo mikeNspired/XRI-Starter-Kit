@@ -4,7 +4,7 @@ using UnityEngine;
 namespace MikeNspired.XRIStarterKit
 {
     [CustomEditor(typeof(HandPhysicsColliders))]
-    public class HandPhysicsCollidersEditor : Editor
+    public class HandPhysicsCollidersEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
