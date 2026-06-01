@@ -14,10 +14,12 @@ namespace MikeNspired.XRIStarterKit
 
         private SerializedProperty globalRadius, globalHeight;
         private SerializedProperty ignoreNames, fingertipNames, distalLength;
+        private SerializedProperty orientTipChild, warnMirrored, verboseLogging;
         private SerializedProperty addPalm, palmShape, palmRadius, palmBoxSize, palmOffset;
         private SerializedProperty fingerConfigs, jointOverrides;
 
         private bool jointsFoldout = true;
+        private bool fixupsFoldout = false;
         private bool palmFoldout = true;
         private bool fingerFoldout = true;
         private bool overrideFoldout = true;
@@ -29,6 +31,9 @@ namespace MikeNspired.XRIStarterKit
             ignoreNames    = serializedObject.FindProperty("ignoreJointNameContains");
             fingertipNames = serializedObject.FindProperty("fingertipMarkerNameContains");
             distalLength   = serializedObject.FindProperty("distalLengthMultiplier");
+            orientTipChild = serializedObject.FindProperty("orientDistalTipWithChild");
+            warnMirrored   = serializedObject.FindProperty("warnOnMirroredScale");
+            verboseLogging = serializedObject.FindProperty("verboseBuildLogging");
             addPalm        = serializedObject.FindProperty("addPalmCollider");
             palmShape     = serializedObject.FindProperty("palmShape");
             palmRadius    = serializedObject.FindProperty("palmRadius");
@@ -54,6 +59,17 @@ namespace MikeNspired.XRIStarterKit
                 EditorGUILayout.PropertyField(ignoreNames, new GUIContent("Ignore Joint Name Contains"), true);
                 EditorGUILayout.PropertyField(fingertipNames, new GUIContent("Fingertip Marker Name Contains"), true);
                 EditorGUILayout.PropertyField(distalLength, new GUIContent("Distal Length ×"));
+                EditorGUI.indentLevel--;
+            }
+
+            EditorGUILayout.Space(6);
+            fixupsFoldout = EditorGUILayout.Foldout(fixupsFoldout, "Fixups & Diagnostics", true, EditorStyles.foldoutHeader);
+            if (fixupsFoldout)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(orientTipChild, new GUIContent("Orient Distal Tip With Child"));
+                EditorGUILayout.PropertyField(warnMirrored, new GUIContent("Warn On Mirrored Scale"));
+                EditorGUILayout.PropertyField(verboseLogging, new GUIContent("Verbose Build Logging"));
                 EditorGUI.indentLevel--;
             }
 

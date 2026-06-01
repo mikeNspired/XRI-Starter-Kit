@@ -48,6 +48,21 @@ namespace MikeNspired.XRIStarterKit
                  "Used only for last-real-joint leaves that have no child transform to define a tip.")]
         [Range(0.3f, 1.5f)] public float distalLengthMultiplier = 0.8f;
 
+        [Header("Fixups & Diagnostics")]
+        [Tooltip("OFF by default. When the last finger joint isn't oriented down the bone (model not " +
+                 "posed straight), a single-axis CapsuleCollider tilts off the finger. Enable to place " +
+                 "the distal capsule on an auto-created child GameObject oriented down the bone, fixing " +
+                 "tilt and any off-axis center offset. A well-built model does not need this.")]
+        public bool orientDistalTipWithChild = false;
+
+        [Tooltip("Log a warning when a hand (or a parent) has negative/mirrored scale, which Unity " +
+                 "colliders cannot represent correctly. Helps diagnose mirrored left hands.")]
+        public bool warnOnMirroredScale = true;
+
+        [Tooltip("Verbose: log each step of collider building (joint count, skips, per-joint outcomes). " +
+                 "Turn on to diagnose 'Rebuild does nothing'.")]
+        public bool verboseBuildLogging = false;
+
         [Header("Palm")]
         public bool addPalmCollider = true;
         public PalmColliderShape palmShape = PalmColliderShape.Box;
