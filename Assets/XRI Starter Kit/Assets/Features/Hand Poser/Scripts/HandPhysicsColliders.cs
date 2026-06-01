@@ -55,8 +55,16 @@ namespace MikeNspired.XRIStarterKit
             if (handAnimator == null)
                 handAnimator = GetComponent<HandAnimator>();
 
-            if (handAnimator.currentJoints.Count == 0)
+            // Repopulate when the cached list is empty OR every entry is null. A duplicated/mirrored
+            // hand can carry a serialized currentJoints list whose references didn't survive the copy:
+            // Count > 0 but all null. Without this re-check, SetBones never runs and the build below
+            // sees only nulls, then bails with the misleading "every joint matched an ignore token".
+            var joints = handAnimator.currentJoints;
+            if (joints.Count == 0 || AllNull(joints))
+            {
                 handAnimator.SetBones();
+                joints = handAnimator.currentJoints;
+            }
 
             bool verbose = config != null && config.verboseBuildLogging;
 
@@ -64,8 +72,6 @@ namespace MikeNspired.XRIStarterKit
             // hand built by negative-scaling a right-hand skeleton (e.g. Scale X = -1) produces
             // wrong shapes/positions and is the prime suspect when a hand "builds nothing useful".
             WarnIfMirroredScale();
-
-            var joints = handAnimator.currentJoints;
 
             if (joints == null || joints.Count == 0)
             {
@@ -79,12 +85,26 @@ namespace MikeNspired.XRIStarterKit
             // Active joints get colliders; aux/helper joints are skipped but still used as
             // pass-through links so the bone chain stays connected (e.g. a finger's MCP
             // knuckle named "..._aux" is bridged to the next real joint).
+            int nonNull = 0;
             var activeSet = new HashSet<Transform>();
             foreach (var j in joints)
-                if (j && !(config != null && config.IsIgnoredJoint(j.name))) activeSet.Add(j);
+            {
+                if (!j) continue;
+                nonNull++;
+                if (!(config != null && config.IsIgnoredJoint(j.name))) activeSet.Add(j);
+            }
 
             if (verbose)
-                Debug.Log($"[HandPhysicsColliders] {name}: joints={joints.Count}, active={activeSet.Count}", this);
+                Debug.Log($"[HandPhysicsColliders] {name}: joints={joints.Count}, non-null={nonNull}, active={activeSet.Count}", this);
+
+            if (nonNull == 0)
+            {
+                Debug.LogWarning($"[HandPhysicsColliders] {name}: HandAnimator.currentJoints has " +
+                                 $"{joints.Count} entries but all are null (stale references, e.g. a " +
+                                 "duplicated/mirrored hand). Re-assign RootBone on the HandAnimator so " +
+                                 "SetBones can rebuild the joint list.", this);
+                return;
+            }
 
             if (activeSet.Count == 0)
             {
@@ -351,6 +371,13 @@ namespace MikeNspired.XRIStarterKit
             foreach (var go in generatedChildren)
                 if (go) DestroyImmediate(go);
             generatedChildren.Clear();
+        }
+
+        private static bool AllNull(List<Transform> list)
+        {
+            foreach (var t in list)
+                if (t) return false;
+            return true;
         }
 
         private static int DominantAxis(Vector3 v)
