@@ -196,8 +196,17 @@ namespace MikeNspired.XRIStarterKit
 
             if (config.palmShape == PalmColliderShape.Box)
             {
+                // Effective box dims = size * lossyScale. On a mirrored (negative-scale) hand a
+                // positive size yields a negative effective dimension, which Unity warns about and
+                // forces positive. Negating size on the negatively-scaled axes cancels the sign so
+                // the effective box is clean — no child transform needed. Normal hands have positive
+                // lossyScale, so every multiplier is 1 (no-op).
+                Vector3 lossy = joint.lossyScale;
                 var box = joint.gameObject.AddComponent<BoxCollider>();
-                box.size = config.palmBoxSize;
+                box.size = new Vector3(
+                    config.palmBoxSize.x * (lossy.x < 0f ? -1f : 1f),
+                    config.palmBoxSize.y * (lossy.y < 0f ? -1f : 1f),
+                    config.palmBoxSize.z * (lossy.z < 0f ? -1f : 1f));
                 box.center = config.palmOffset;
                 box.enabled = !isGrabbing;
                 fingerColliders.Add(box);
