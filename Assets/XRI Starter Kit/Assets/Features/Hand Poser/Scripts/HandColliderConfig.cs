@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace MikeNspired.XRIStarterKit
@@ -32,10 +33,20 @@ namespace MikeNspired.XRIStarterKit
         [Range(0.5f, 2f)]   public float globalHeightMultiplier = 1f;
 
         [Header("Joints")]
-        [Tooltip("Skip auxiliary/helper joints (name ends with the suffix below) when building " +
-                 "colliders. Connectivity is bridged through them so real bones stay linked.")]
-        public bool skipAuxJoints = true;
-        public string auxNameSuffix = "aux";
+        [Tooltip("Joints whose name contains any of these fragments (case-insensitive) are treated as " +
+                 "helper / non-rotating joints: they are skipped as collider owners but bridged through " +
+                 "so the real bones on either side stay linked. e.g. \"aux\", \"twist\", \"helper\".")]
+        public string[] ignoreJointNameContains = { "aux" };
+
+        [Tooltip("Leaf joints whose name contains any of these fragments are non-rotating fingertip " +
+                 "markers: the parent bone capsule already reaches them, so they get no collider. " +
+                 "Leaves that do NOT match are treated as the last real joint (e.g. a DIP) and get an " +
+                 "extended distal bone past them. Leave empty for rigs that have no tip-marker transform.")]
+        public string[] fingertipMarkerNameContains = { };
+
+        [Tooltip("Length of the extended distal bone as a fraction of its parent bone's length. " +
+                 "Used only for last-real-joint leaves that have no child transform to define a tip.")]
+        [Range(0.3f, 1.5f)] public float distalLengthMultiplier = 0.8f;
 
         [Header("Palm")]
         public bool addPalmCollider = true;
@@ -72,8 +83,14 @@ namespace MikeNspired.XRIStarterKit
             return null;
         }
 
-        public bool IsAuxJoint(string jointName) =>
-            skipAuxJoints && !string.IsNullOrEmpty(auxNameSuffix) &&
-            jointName.EndsWith(auxNameSuffix, StringComparison.OrdinalIgnoreCase);
+        public bool IsIgnoredJoint(string jointName) =>
+            ignoreJointNameContains != null &&
+            ignoreJointNameContains.Any(f => !string.IsNullOrEmpty(f) &&
+                jointName.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0);
+
+        public bool IsFingertipMarker(string jointName) =>
+            fingertipMarkerNameContains != null &&
+            fingertipMarkerNameContains.Any(f => !string.IsNullOrEmpty(f) &&
+                jointName.IndexOf(f, StringComparison.OrdinalIgnoreCase) >= 0);
     }
 }

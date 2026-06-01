@@ -13,20 +13,23 @@ namespace MikeNspired.XRIStarterKit
         public static string[] JointNamesContext;
 
         private SerializedProperty globalRadius, globalHeight;
-        private SerializedProperty skipAux, auxSuffix;
+        private SerializedProperty ignoreNames, fingertipNames, distalLength;
         private SerializedProperty addPalm, palmShape, palmRadius, palmBoxSize, palmOffset;
         private SerializedProperty fingerConfigs, jointOverrides;
 
+        private bool jointsFoldout = true;
+        private bool palmFoldout = true;
         private bool fingerFoldout = true;
         private bool overrideFoldout = true;
 
         void OnEnable()
         {
-            globalRadius  = serializedObject.FindProperty("globalRadiusMultiplier");
-            globalHeight  = serializedObject.FindProperty("globalHeightMultiplier");
-            skipAux       = serializedObject.FindProperty("skipAuxJoints");
-            auxSuffix     = serializedObject.FindProperty("auxNameSuffix");
-            addPalm       = serializedObject.FindProperty("addPalmCollider");
+            globalRadius   = serializedObject.FindProperty("globalRadiusMultiplier");
+            globalHeight   = serializedObject.FindProperty("globalHeightMultiplier");
+            ignoreNames    = serializedObject.FindProperty("ignoreJointNameContains");
+            fingertipNames = serializedObject.FindProperty("fingertipMarkerNameContains");
+            distalLength   = serializedObject.FindProperty("distalLengthMultiplier");
+            addPalm        = serializedObject.FindProperty("addPalmCollider");
             palmShape     = serializedObject.FindProperty("palmShape");
             palmRadius    = serializedObject.FindProperty("palmRadius");
             palmBoxSize   = serializedObject.FindProperty("palmBoxSize");
@@ -44,29 +47,35 @@ namespace MikeNspired.XRIStarterKit
             EditorGUILayout.PropertyField(globalHeight, new GUIContent("Height Multiplier"));
 
             EditorGUILayout.Space(6);
-            EditorGUILayout.LabelField("Joints", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(skipAux, new GUIContent("Skip Aux Joints"));
-            if (skipAux.boolValue)
+            jointsFoldout = EditorGUILayout.Foldout(jointsFoldout, "Joints", true, EditorStyles.foldoutHeader);
+            if (jointsFoldout)
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(auxSuffix, new GUIContent("Aux Name Suffix"));
+                EditorGUILayout.PropertyField(ignoreNames, new GUIContent("Ignore Joint Name Contains"), true);
+                EditorGUILayout.PropertyField(fingertipNames, new GUIContent("Fingertip Marker Name Contains"), true);
+                EditorGUILayout.PropertyField(distalLength, new GUIContent("Distal Length ×"));
                 EditorGUI.indentLevel--;
             }
 
             EditorGUILayout.Space(6);
-            EditorGUILayout.LabelField("Palm", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(addPalm, new GUIContent("Add Palm Collider"));
-            if (addPalm.boolValue)
+            palmFoldout = EditorGUILayout.Foldout(palmFoldout, "Palm", true, EditorStyles.foldoutHeader);
+            if (palmFoldout)
             {
                 EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(palmShape, new GUIContent("Shape"));
-                // Metric values are tiny (meters); sliders with a hand-sized range are far
-                // easier to fine-tune than typing into raw Vector3/float fields.
-                if (palmShape.enumValueIndex == (int)PalmColliderShape.Box)
-                    Vector3Sliders(palmBoxSize, "Box Size (m)", 0.005f, 0.15f);
-                else
-                    palmRadius.floatValue = EditorGUILayout.Slider("Radius (m)", palmRadius.floatValue, 0.005f, 0.1f);
-                Vector3Sliders(palmOffset, "Local Offset (m)", -0.1f, 0.1f);
+                EditorGUILayout.PropertyField(addPalm, new GUIContent("Add Palm Collider"));
+                if (addPalm.boolValue)
+                {
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.PropertyField(palmShape, new GUIContent("Shape"));
+                    // Metric values are tiny (meters); sliders with a hand-sized range are far
+                    // easier to fine-tune than typing into raw Vector3/float fields.
+                    if (palmShape.enumValueIndex == (int)PalmColliderShape.Box)
+                        Vector3Sliders(palmBoxSize, "Box Size (m)", 0.005f, 0.15f);
+                    else
+                        palmRadius.floatValue = EditorGUILayout.Slider("Radius (m)", palmRadius.floatValue, 0.005f, 0.1f);
+                    Vector3Sliders(palmOffset, "Local Offset (m)", -0.1f, 0.1f);
+                    EditorGUI.indentLevel--;
+                }
                 EditorGUI.indentLevel--;
             }
 

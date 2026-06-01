@@ -61,7 +61,7 @@ namespace MikeNspired.XRIStarterKit
             // knuckle named "..._aux" is bridged to the next real joint).
             var activeSet = new HashSet<Transform>();
             foreach (var j in joints)
-                if (j && !(config != null && config.IsAuxJoint(j.name))) activeSet.Add(j);
+                if (j && !(config != null && config.IsIgnoredJoint(j.name))) activeSet.Add(j);
 
             foreach (var joint in joints)
             {
@@ -82,8 +82,14 @@ namespace MikeNspired.XRIStarterKit
                 }
                 else
                 {
-                    // Fingertip — add small sphere-like capsule
-                    AddTipCollider(joint);
+                    // Leaf joint. Two rigs to support:
+                    //  - Rig with a dedicated non-rotating tip marker: the parent capsule already
+                    //    spans to it, so this leaf needs no collider.
+                    //  - Rig where the leaf is the last *real* joint (e.g. a DIP) with the distal
+                    //    phalanx extending past it and no child to define the tip: build a distal
+                    //    bone that continues the finger's last direction.
+                    if (config != null && config.IsFingertipMarker(joint.name)) continue;
+                    AddDistalTipCollider(joint);
                 }
             }
         }
@@ -157,7 +163,60 @@ namespace MikeNspired.XRIStarterKit
             fingerColliders.Add(col);
         }
 
-        private void AddTipCollider(Transform joint)
+        // Builds the distal phalanx for a leaf that is the last *real* joint of a finger (no child
+        // transform marks the tip). Direction and length are derived from the parent bone so the
+        // distal capsule continues the finger naturally instead of being a tiny overlapping sphere.
+        private void AddDistalTipCollider(Transform joint)
+        {
+            var parent = joint.parent;
+
+            // Without a parent we can't infer a bone direction; fall back to a small sphere.
+            if (parent == null)
+            {
+                AddSphereTip(joint);
+                return;
+            }
+
+            // Continue the parent->joint bone direction, expressed in the joint's local space.
+            Vector3 worldDir = joint.position - parent.position;
+            Vector3 localVec = joint.InverseTransformVector(worldDir);
+            float parentLength = localVec.magnitude;
+            if (parentLength < 0.001f)
+            {
+                AddSphereTip(joint);
+                return;
+            }
+
+            Vector3 localDir = localVec.normalized;
+
+            var fingerCfg = config?.GetFingerConfig(joint.name);
+            var overrideCfg = config?.GetJointOverride(joint.name);
+
+            float radMult = (config?.globalRadiusMultiplier ?? 0.35f) * (fingerCfg?.radiusMultiplier ?? 1f);
+            float hMult = (config?.globalHeightMultiplier ?? 1f) * (fingerCfg?.heightMultiplier ?? 1f);
+            float distalMult = config?.distalLengthMultiplier ?? 0.8f;
+
+            float height = overrideCfg is { overrideHeight: true }
+                ? overrideCfg.height
+                : parentLength * distalMult * hMult;
+
+            float radius = overrideCfg is { overrideRadius: true }
+                ? overrideCfg.radius
+                : Mathf.Min(parentLength * radMult, height * 0.49f);
+
+            var col = joint.gameObject.AddComponent<CapsuleCollider>();
+            col.direction = DominantAxis(localDir);
+            col.height = height;
+            col.radius = radius;
+            // Extend outward from the joint along the finger direction.
+            col.center = localDir * (height * 0.5f) + (overrideCfg?.localOffset ?? Vector3.zero);
+            col.enabled = !isGrabbing;
+
+            fingerColliders.Add(col);
+        }
+
+        // Last-resort tiny tip when no bone direction can be inferred (e.g. a parentless leaf).
+        private void AddSphereTip(Transform joint)
         {
             var fingerCfg = config?.GetFingerConfig(joint.name);
             var overrideCfg = config?.GetJointOverride(joint.name);
