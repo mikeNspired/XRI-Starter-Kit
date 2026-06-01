@@ -61,10 +61,18 @@ namespace MikeNspired.XRIStarterKit
             }
 
             EditorGUILayout.Space(8);
-            if (GUILayout.Button("Rebuild Colliders", GUILayout.Height(30)))
+            using (new EditorGUILayout.HorizontalScope())
             {
-                poser.BuildColliders();
-                EditorUtility.SetDirty(poser);
+                if (GUILayout.Button("Rebuild Colliders", GUILayout.Height(30)))
+                {
+                    poser.BuildColliders();
+                    EditorUtility.SetDirty(poser);
+                }
+                if (GUILayout.Button("Clear Colliders", GUILayout.Height(30)))
+                {
+                    poser.ClearColliders();
+                    EditorUtility.SetDirty(poser);
+                }
             }
         }
 

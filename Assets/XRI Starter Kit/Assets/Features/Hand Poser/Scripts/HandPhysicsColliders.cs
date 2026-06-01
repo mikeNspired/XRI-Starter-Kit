@@ -370,7 +370,8 @@ namespace MikeNspired.XRIStarterKit
                 if (col) col.enabled = enabled;
         }
 
-        private void ClearColliders()
+        // Public so a "Clear Colliders" editor button can remove built colliders without rebuilding.
+        public void ClearColliders()
         {
             foreach (var col in fingerColliders)
                 if (col) DestroyImmediate(col);
