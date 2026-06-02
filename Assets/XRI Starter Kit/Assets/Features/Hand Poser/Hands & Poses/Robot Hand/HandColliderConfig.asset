@@ -12,11 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bf91a5113c852c44a2243dd994c4f0b, type: 3}
   m_Name: HandColliderConfig
   m_EditorClassIdentifier: MikeNspiredXRIStarterKit.Runtime::MikeNspired.XRIStarterKit.HandColliderConfig
-  globalRadiusMultiplier: 0.35
-  globalHeightMultiplier: 1
+  globalRadiusMultiplier: 0.243
+  globalHeightMultiplier: 1.298
+  ignoreJointNameContains:
+  - aux
+  fingertipMarkerNameContains: []
+  distalLengthMultiplier: 0.8
+  orientDistalTipWithChild: 1
+  warnOnMirroredScale: 1
+  verboseBuildLogging: 0
   addPalmCollider: 1
+  palmShape: 1
   palmRadius: 0.035
-  palmOffset: {x: 0, y: 0, z: 0}
+  palmBoxSize: {x: 0.1002, y: 0.025, z: 0.064}
+  palmOffset: {x: -0.0342, y: 0, z: 0}
   fingerConfigs:
   - fingerName: Thumb
     radiusMultiplier: 1.2
