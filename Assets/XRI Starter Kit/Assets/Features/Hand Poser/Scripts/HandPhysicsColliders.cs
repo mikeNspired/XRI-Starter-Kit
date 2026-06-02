@@ -312,7 +312,9 @@ namespace MikeNspired.XRIStarterKit
             // centered. A well-built model won't need this, so it's off by default.
             if (config != null && config.orientDistalTipWithChild)
             {
-                var go = new GameObject(joint.name + "_DistalCollider");
+                // Suffix "Ignore" so the Hand Poser's JointUtility (skips EndsWith("Ignore"))
+                // excludes this collider-only child from pose gathering.
+                var go = new GameObject(joint.name + "_DistalCollider_Ignore");
                 var childT = go.transform;
                 childT.SetParent(joint, false);
                 childT.localPosition = Vector3.zero;
