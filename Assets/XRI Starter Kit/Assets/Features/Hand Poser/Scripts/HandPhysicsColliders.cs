@@ -10,7 +10,9 @@ namespace MikeNspired.XRIStarterKit
     public class HandPhysicsColliders : MonoBehaviour
     {
         [SerializeField] private HandColliderConfig config;
-        [SerializeField] private LayerMask interactLayers = ~0;
+        [Tooltip("Layer assigned to every built collider. Use a dedicated layer and exclude it from " +
+                 "the NearFar interactor and DistanceGrabber masks so the fingers don't block grabs.")]
+        [SerializeField] private int colliderLayer;
 
         private HandAnimator handAnimator;
 
@@ -129,8 +131,18 @@ namespace MikeNspired.XRIStarterKit
                 }
             }
 
+            ApplyColliderLayer();
+
             if (verbose)
                 Debug.Log($"[HandPhysicsColliders] {name}: built {fingerColliders.Count} colliders.", this);
+        }
+
+        // A collider's layer is its GameObject's layer; apply to each so they can be excluded from
+        // the interactor/grabber masks.
+        private void ApplyColliderLayer()
+        {
+            foreach (var col in fingerColliders)
+                if (col) col.gameObject.layer = colliderLayer;
         }
 
         // Diagnostic only: Unity colliders can't be mirrored, so warn when the hand or an ancestor

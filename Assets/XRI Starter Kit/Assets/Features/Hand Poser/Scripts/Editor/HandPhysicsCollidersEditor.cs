@@ -7,14 +7,14 @@ namespace MikeNspired.XRIStarterKit
     [CustomEditor(typeof(HandPhysicsColliders))]
     public class HandPhysicsCollidersEditor : UnityEditor.Editor
     {
-        private SerializedProperty configProp, interactLayersProp;
+        private SerializedProperty configProp, colliderLayerProp;
         private UnityEditor.Editor configEditor;
         private HandColliderConfig cachedConfig;
 
         void OnEnable()
         {
             configProp = serializedObject.FindProperty("config");
-            interactLayersProp = serializedObject.FindProperty("interactLayers");
+            colliderLayerProp = serializedObject.FindProperty("colliderLayer");
         }
 
         void OnDisable()
@@ -26,7 +26,7 @@ namespace MikeNspired.XRIStarterKit
         {
             serializedObject.Update();
             EditorGUILayout.PropertyField(configProp);
-            EditorGUILayout.PropertyField(interactLayersProp);
+            colliderLayerProp.intValue = EditorGUILayout.LayerField("Collider Layer", colliderLayerProp.intValue);
             serializedObject.ApplyModifiedProperties();
 
             var poser = (HandPhysicsColliders)target;
