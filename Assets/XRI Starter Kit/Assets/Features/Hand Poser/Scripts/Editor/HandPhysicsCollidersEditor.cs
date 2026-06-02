@@ -1,3 +1,4 @@
+// Author MikeNspired.
 using UnityEditor;
 using UnityEngine;
 
@@ -48,8 +49,7 @@ namespace MikeNspired.XRIStarterKit
             EditorGUILayout.Space(6);
             EditorGUILayout.LabelField("Collider Config (live)", EditorStyles.boldLabel);
 
-            // Editing the config inline rebuilds colliders live in edit mode — no play mode,
-            // no asset hopping. Shared config means both hands update together.
+            // Inline config edits rebuild colliders live in edit mode.
             HandColliderConfigEditor.JointNamesContext = GetJointNames(poser);
             EditorGUI.BeginChangeCheck();
             configEditor.OnInspectorGUI();

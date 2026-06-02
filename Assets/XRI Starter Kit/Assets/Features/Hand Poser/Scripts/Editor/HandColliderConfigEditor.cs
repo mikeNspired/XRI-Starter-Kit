@@ -1,3 +1,4 @@
+// Author MikeNspired.
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -7,9 +8,7 @@ namespace MikeNspired.XRIStarterKit
     [CustomEditor(typeof(HandColliderConfig))]
     public class HandColliderConfigEditor : UnityEditor.Editor
     {
-        // Optional list of the live hand's joint names, set by HandPhysicsCollidersEditor
-        // before this editor is drawn inline. When present, the Per-Joint Overrides section
-        // uses dropdowns instead of free-text. Null when editing the asset standalone.
+        // Live hand's joint names (set by HandPhysicsCollidersEditor); enables override dropdowns.
         public static string[] JointNamesContext;
 
         private SerializedProperty globalRadius, globalHeight;
@@ -83,8 +82,7 @@ namespace MikeNspired.XRIStarterKit
                 {
                     EditorGUI.indentLevel++;
                     EditorGUILayout.PropertyField(palmShape, new GUIContent("Shape"));
-                    // Metric values are tiny (meters); sliders with a hand-sized range are far
-                    // easier to fine-tune than typing into raw Vector3/float fields.
+                    // Sliders are easier than typing tiny metric values.
                     if (palmShape.enumValueIndex == (int)PalmColliderShape.Box)
                         Vector3Sliders(palmBoxSize, "Box Size (m)", 0.005f, 0.15f);
                     else

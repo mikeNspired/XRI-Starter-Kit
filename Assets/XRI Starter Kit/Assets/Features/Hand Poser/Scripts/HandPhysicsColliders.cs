@@ -1,3 +1,4 @@
+// Author MikeNspired.
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,13 +14,8 @@ namespace MikeNspired.XRIStarterKit
 
         private HandAnimator handAnimator;
 
-        // Serialized so colliders built in edit mode are tracked across domain reloads /
-        // play-mode entry. Without this, the list would be empty after a reload and a
-        // rebuild would stack a duplicate set of colliders on top of the existing ones.
+        // Serialized so edit-mode colliders survive domain reloads and aren't duplicated on rebuild.
         [SerializeField, HideInInspector] private List<Collider> fingerColliders = new();
-
-        // GameObjects auto-created to hold oriented distal-tip capsules (opt-in). Tracked so a
-        // rebuild destroys them too, otherwise each rebuild would stack a new child under each tip.
         [SerializeField, HideInInspector] private List<GameObject> generatedChildren = new();
         private bool isGrabbing;
 
@@ -41,13 +37,11 @@ namespace MikeNspired.XRIStarterKit
                 handRef.NearFarInteractor.selectExited.AddListener(_ => SetCollidersEnabled(true));
             }
 
-            // Colliders built (and persisted) in edit mode act as prebuilt geometry — only
-            // build at runtime as a fallback when none exist yet.
+            // Edit-mode colliders are prebuilt geometry; only build at runtime if none exist yet.
             if (fingerColliders == null || fingerColliders.Count == 0)
                 BuildColliders();
         }
 
-        // Called from editor and at Start
         public void BuildColliders()
         {
             ClearColliders();
@@ -55,10 +49,8 @@ namespace MikeNspired.XRIStarterKit
             if (handAnimator == null)
                 handAnimator = GetComponent<HandAnimator>();
 
-            // Repopulate when the cached list is empty OR every entry is null. A duplicated/mirrored
-            // hand can carry a serialized currentJoints list whose references didn't survive the copy:
-            // Count > 0 but all null. Without this re-check, SetBones never runs and the build below
-            // sees only nulls, then bails with the misleading "every joint matched an ignore token".
+            // A duplicated/mirrored hand can carry a serialized joint list of all-null refs, so
+            // rebuild when the list is empty or every entry is null.
             var joints = handAnimator.currentJoints;
             if (joints.Count == 0 || AllNull(joints))
             {
@@ -68,9 +60,6 @@ namespace MikeNspired.XRIStarterKit
 
             bool verbose = config != null && config.verboseBuildLogging;
 
-            // Unity colliders cannot represent a mirrored (negative-determinant) transform. A left
-            // hand built by negative-scaling a right-hand skeleton (e.g. Scale X = -1) produces
-            // wrong shapes/positions and is the prime suspect when a hand "builds nothing useful".
             WarnIfMirroredScale();
 
             if (joints == null || joints.Count == 0)
@@ -82,9 +71,7 @@ namespace MikeNspired.XRIStarterKit
 
             var jointSet = new HashSet<Transform>(joints);
 
-            // Active joints get colliders; aux/helper joints are skipped but still used as
-            // pass-through links so the bone chain stays connected (e.g. a finger's MCP
-            // knuckle named "..._aux" is bridged to the next real joint).
+            // Ignored joints are skipped as collider owners but bridged through to keep the chain linked.
             int nonNull = 0;
             var activeSet = new HashSet<Transform>();
             foreach (var j in joints)
@@ -117,30 +104,20 @@ namespace MikeNspired.XRIStarterKit
             {
                 if (!joint || !activeSet.Contains(joint)) continue;
 
-                // A throw mid-loop must never vanish silently; name the joint that failed.
+                // Catch per joint so a single failure is named instead of aborting the whole build.
                 try
                 {
-                    // Collect the nearest active descendant joints, bridging through skipped ones.
                     var jointChildren = new List<Transform>();
                     CollectActiveChildren(joint, jointSet, activeSet, jointChildren);
 
                     if (jointChildren.Count > 1)
-                    {
-                        // Palm/branching joint — add palm collider (sphere or box)
                         AddPalmCollider(joint);
-                    }
                     else if (jointChildren.Count == 1)
-                    {
                         AddCapsuleCollider(joint, jointChildren[0]);
-                    }
                     else
                     {
-                        // Leaf joint. Two rigs to support:
-                        //  - Rig with a dedicated non-rotating tip marker: the parent capsule already
-                        //    spans to it, so this leaf needs no collider.
-                        //  - Rig where the leaf is the last *real* joint (e.g. a DIP) with the distal
-                        //    phalanx extending past it and no child to define the tip: build a distal
-                        //    bone that continues the finger's last direction.
+                        // Leaf: skip dedicated tip markers (parent capsule covers them), otherwise
+                        // extend a distal bone past the last real joint.
                         if (config != null && config.IsFingertipMarker(joint.name)) continue;
                         AddDistalTipCollider(joint);
                     }
@@ -156,8 +133,8 @@ namespace MikeNspired.XRIStarterKit
                 Debug.Log($"[HandPhysicsColliders] {name}: built {fingerColliders.Count} colliders.", this);
         }
 
-        // Warns (once) when this hand or any ancestor has a mirrored/negative scale. Diagnostic only:
-        // we still attempt the build so verbose logs can reveal whether components get added at all.
+        // Diagnostic only: Unity colliders can't be mirrored, so warn when the hand or an ancestor
+        // has negative scale (still attempts the build).
         private void WarnIfMirroredScale()
         {
             if (config == null || !config.warnOnMirroredScale) return;
@@ -176,8 +153,7 @@ namespace MikeNspired.XRIStarterKit
             }
         }
 
-        // Nearest active descendant joints. Descends through skipped joints (still in jointSet)
-        // to bridge connectivity; ignores non-joint transforms, matching the original behavior.
+        // Nearest active descendant joints, descending through skipped joints to bridge connectivity.
         private static void CollectActiveChildren(Transform t, HashSet<Transform> jointSet, HashSet<Transform> activeSet, List<Transform> result)
         {
             for (int c = 0; c < t.childCount; c++)
@@ -196,11 +172,8 @@ namespace MikeNspired.XRIStarterKit
 
             if (config.palmShape == PalmColliderShape.Box)
             {
-                // Effective box dims = size * lossyScale. On a mirrored (negative-scale) hand a
-                // positive size yields a negative effective dimension, which Unity warns about and
-                // forces positive. Negating size on the negatively-scaled axes cancels the sign so
-                // the effective box is clean — no child transform needed. Normal hands have positive
-                // lossyScale, so every multiplier is 1 (no-op).
+                // Effective box size = size * lossyScale; negate size on mirrored axes so the
+                // effective box stays positive (no child transform needed).
                 Vector3 lossy = joint.lossyScale;
                 var box = joint.gameObject.AddComponent<BoxCollider>();
                 box.size = new Vector3(
@@ -223,7 +196,7 @@ namespace MikeNspired.XRIStarterKit
 
         private void AddCapsuleCollider(Transform joint, Transform childJoint)
         {
-            // Convert world-space vector to local to respect non-uniform scale
+            // Local space respects non-uniform scale.
             Vector3 localVec = joint.InverseTransformVector(childJoint.position - joint.position);
             float localLength = localVec.magnitude;
             if (localLength < 0.001f)
@@ -260,21 +233,17 @@ namespace MikeNspired.XRIStarterKit
             fingerColliders.Add(col);
         }
 
-        // Builds the distal phalanx for a leaf that is the last *real* joint of a finger (no child
-        // transform marks the tip). Direction and length are derived from the parent bone so the
-        // distal capsule continues the finger naturally instead of being a tiny overlapping sphere.
+        // Distal phalanx for a leaf that is the last real joint (no child marks the tip); direction
+        // and length come from the parent bone.
         private void AddDistalTipCollider(Transform joint)
         {
             var parent = joint.parent;
-
-            // Without a parent we can't infer a bone direction; fall back to a small sphere.
             if (parent == null)
             {
                 AddSphereTip(joint);
                 return;
             }
 
-            // Continue the parent->joint bone direction, expressed in the joint's local space.
             Vector3 worldDir = joint.position - parent.position;
             Vector3 localVec = joint.InverseTransformVector(worldDir);
             float parentLength = localVec.magnitude;
@@ -306,26 +275,21 @@ namespace MikeNspired.XRIStarterKit
 
             Vector3 localOffset = overrideCfg?.localOffset ?? Vector3.zero;
 
-            // Opt-in: a CapsuleCollider can only point along X/Y/Z, so on a joint whose local frame
-            // isn't aligned with the finger (model not posed straight) it tilts and may sit off-center.
-            // Placing the capsule on a child GameObject we rotate down the bone makes it straight and
-            // centered. A well-built model won't need this, so it's off by default.
+            // Opt-in: a single-axis CapsuleCollider tilts on joints not aligned with the finger, so
+            // place it on a child rotated down the bone.
             if (config != null && config.orientDistalTipWithChild)
             {
-                // Suffix "Ignore" so the Hand Poser's JointUtility (skips EndsWith("Ignore"))
-                // excludes this collider-only child from pose gathering.
+                // "Ignore" suffix so JointUtility (EndsWith("Ignore")) keeps the Hand Poser off it.
                 var go = new GameObject(joint.name + "_DistalCollider_Ignore");
                 var childT = go.transform;
                 childT.SetParent(joint, false);
                 childT.localPosition = Vector3.zero;
-                // Orient the child's local +Y (capsule's natural axis) along the bone direction.
                 childT.localRotation = Quaternion.FromToRotation(Vector3.up, localDir);
 
                 var childCol = go.AddComponent<CapsuleCollider>();
-                childCol.direction = 1; // Y axis — matches the FromToRotation above
+                childCol.direction = 1; // Y, matching the FromToRotation above
                 childCol.height = height;
                 childCol.radius = radius;
-                // In the oriented child, the bone runs straight up local +Y; offset is purely axial.
                 childCol.center = Vector3.up * (height * 0.5f) + localOffset;
                 childCol.enabled = !isGrabbing;
 
@@ -338,14 +302,13 @@ namespace MikeNspired.XRIStarterKit
             col.direction = DominantAxis(localDir);
             col.height = height;
             col.radius = radius;
-            // Extend outward from the joint along the finger direction.
             col.center = localDir * (height * 0.5f) + localOffset;
             col.enabled = !isGrabbing;
 
             fingerColliders.Add(col);
         }
 
-        // Last-resort tiny tip when no bone direction can be inferred (e.g. a parentless leaf).
+        // Fallback tip when no bone direction can be inferred (e.g. a parentless leaf).
         private void AddSphereTip(Transform joint)
         {
             var fingerCfg = config?.GetFingerConfig(joint.name);
@@ -372,14 +335,13 @@ namespace MikeNspired.XRIStarterKit
                 if (col) col.enabled = enabled;
         }
 
-        // Public so a "Clear Colliders" editor button can remove built colliders without rebuilding.
+        // Public so the "Clear Colliders" editor button can remove colliders without rebuilding.
         public void ClearColliders()
         {
             foreach (var col in fingerColliders)
                 if (col) DestroyImmediate(col);
             fingerColliders.Clear();
 
-            // Destroy auto-created tip-collider children so rebuilds don't stack duplicates.
             foreach (var go in generatedChildren)
                 if (go) DestroyImmediate(go);
             generatedChildren.Clear();
