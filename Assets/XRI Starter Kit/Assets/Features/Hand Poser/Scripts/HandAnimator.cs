@@ -130,7 +130,7 @@ namespace MikeNspired.XRIStarterKit
             StartCoroutine(AnimateByTriggerValue);
         }
 
-        IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose)
+        protected IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose)
         {
             float timer = 0;
             while (timer <= animationTimeToNewPose + Time.deltaTime)
@@ -301,13 +301,13 @@ namespace MikeNspired.XRIStarterKit
                 transform.SetPositionAndRotation(handPositionTarget.position, handPositionTarget.rotation);
         }
 
-        void SetNewJoint(ref Transform joint, Vector3 newPosition, Quaternion newRotation)
+        protected void SetNewJoint(ref Transform joint, Vector3 newPosition, Quaternion newRotation)
         {
             joint.localPosition = newPosition;
             joint.localEulerAngles = newRotation.eulerAngles;
         }
 
-        TransformStruct[] CopyTransformData(List<Transform> joints)
+        protected TransformStruct[] CopyTransformData(List<Transform> joints)
         {
             var transforms = new TransformStruct[joints.Count];
             for (int i = 0; i < joints.Count; i++)
@@ -318,7 +318,7 @@ namespace MikeNspired.XRIStarterKit
             return transforms;
         }
 
-        void SetJointPositions(PoseScriptableObject poseAsset, List<Transform> jointList)
+        protected void SetJointPositions(PoseScriptableObject poseAsset, List<Transform> jointList)
         {
             if (!poseAsset)
             {
@@ -413,7 +413,52 @@ namespace MikeNspired.XRIStarterKit
         }
 
 
-       
+        #region DynamicPosing
+
+        /// <summary>
+        /// Animates the hand to an arbitrary pose defined by raw joint data, blending over
+        /// _animationTime seconds. Joints not present in _jointData keep their current position.
+        /// This is the handoff point for all procedural posing phases.
+        /// </summary>
+        public void SetJointsDirect(PoseScriptableObject.JointData[] _jointData, float _animationTime)
+        {
+            if (_jointData == null || _jointData.Length == 0) return;
+
+            if (currentJoints.Count == 0 || !currentJoints[0])
+                SetBones();
+
+            // Snapshot the current live state as the blend start
+            TransformStruct[] oldPose = CopyTransformData(currentJoints);
+
+            // Build target array parallel to currentJoints, matched by name
+            var newPose = new TransformStruct[currentJoints.Count];
+            for (int i = 0; i < currentJoints.Count; i++)
+            {
+                var joint = currentJoints[i];
+                if (!joint) { newPose[i] = oldPose[i]; continue; }
+
+                bool found = false;
+                for (int j = 0; j < _jointData.Length; j++)
+                {
+                    if (_jointData[j].jointName == joint.name)
+                    {
+                        newPose[i].SetTransformStruct(_jointData[j].localPosition, _jointData[j].localRotation, Vector3.one);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    newPose[i] = oldPose[i];
+            }
+
+            if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
+            if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);
+
+            AnimateToPoseAnimation = AnimateToPoseOverTime(oldPose, newPose);
+            StartCoroutine(AnimateToPoseAnimation);
+        }
+
+        #endregion
 
         private void OnDrawGizmosSelected()
         {
