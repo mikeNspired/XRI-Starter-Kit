@@ -16,6 +16,9 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty handType;
         private SerializedProperty Point;
         private SerializedProperty drawHelperSpheres;
+        private SerializedProperty defaultPose;
+        private SerializedProperty animationPose;
+        private SerializedProperty secondButtonPose;
         private SerializedProperty closedPose;
         private HandAnimator mainScript;
 
@@ -33,6 +36,9 @@ namespace MikeNspired.XRIStarterKit.Editor
 
             handType = serializedObject.FindProperty("handType");
             drawHelperSpheres = serializedObject.FindProperty("drawHelperSpheres");
+            defaultPose = serializedObject.FindProperty("DefaultPose");
+            animationPose = serializedObject.FindProperty("AnimationPose");
+            secondButtonPose = serializedObject.FindProperty("SecondButtonPose");
             closedPose = serializedObject.FindProperty("ClosedPose");
 
             if (mainScript.RootBone == null)
@@ -112,19 +118,19 @@ namespace MikeNspired.XRIStarterKit.Editor
 
             GUILayout.BeginHorizontal();
             var labelToolTip = new GUIContent("Default Pose", "Pose the hand will be in when no buttons are being pressed");
-            mainScript.DefaultPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.DefaultPose, typeof(PoseScriptableObject), false) as PoseScriptableObject;
+            EditorGUILayout.PropertyField(defaultPose, labelToolTip);
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateToCurrent();
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             labelToolTip = new GUIContent("Animation Pose", "Animate to this pose  from Default Pose when pulling the trigger from values 0 to 1");
-            mainScript.AnimationPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.AnimationPose, typeof(PoseScriptableObject), false) as PoseScriptableObject;
+            EditorGUILayout.PropertyField(animationPose, labelToolTip);
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.AnimationPose);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             labelToolTip = new GUIContent("Second Button Pose", "Animation used when not holding an item and pulling the grip button");
-            mainScript.SecondButtonPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.SecondButtonPose, typeof(PoseScriptableObject), false) as PoseScriptableObject;
+            EditorGUILayout.PropertyField(secondButtonPose, labelToolTip);
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.SecondButtonPose);
             GUILayout.EndHorizontal();
 
