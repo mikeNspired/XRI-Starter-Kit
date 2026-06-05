@@ -25,6 +25,13 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Seconds to blend to the target pose.")]
         [SerializeField] private float m_AnimationTime = 0.5f;
 
+        [Header("Per-Finger Curl (Phase 1) — requires HandAnimator.ClosedPose")]
+        [SerializeField, Range(0f, 1f)] private float m_ThumbCurl  = 0f;
+        [SerializeField, Range(0f, 1f)] private float m_IndexCurl  = 0f;
+        [SerializeField, Range(0f, 1f)] private float m_MiddleCurl = 0f;
+        [SerializeField, Range(0f, 1f)] private float m_RingCurl   = 0f;
+        [SerializeField, Range(0f, 1f)] private float m_PinkyCurl  = 0f;
+
         #endregion
 
         #region Context Menu Tests
@@ -82,6 +89,24 @@ namespace MikeNspired.XRIStarterKit
 
             m_Hand.SetJointsDirect(data, m_AnimationTime);
             Debug.Log($"[DynamicPoseTester] Partial curl at blend={m_BlendAmount:F2}, duration={m_AnimationTime}s");
+        }
+
+        /// <summary>
+        /// Poses each finger independently using HandAnimator.SetFingerCurls.
+        /// Requires HandAnimator.ClosedPose to be assigned.
+        /// </summary>
+        [Button("Test Finger Curls")]
+        private void TestFingerCurls()
+        {
+            if (!ValidateForTest()) return;
+            if (!m_Hand.ClosedPose)
+            {
+                Debug.LogError("[DynamicPoseTester] HandAnimator.ClosedPose is not assigned. Assign a fist pose to use per-finger curl.");
+                return;
+            }
+
+            m_Hand.SetFingerCurls(new[] { m_ThumbCurl, m_IndexCurl, m_MiddleCurl, m_RingCurl, m_PinkyCurl });
+            Debug.Log($"[DynamicPoseTester] Finger curls applied — thumb={m_ThumbCurl:F2} index={m_IndexCurl:F2} middle={m_MiddleCurl:F2} ring={m_RingCurl:F2} pinky={m_PinkyCurl:F2}");
         }
 
         /// <summary>

@@ -23,6 +23,9 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject AnimationPose;
         public PoseScriptableObject SecondButtonPose;
 
+        [Tooltip("Fist/grip pose used as the closed end of the per-finger curl sweep (t=1). Assign in the Inspector.")]
+        public PoseScriptableObject ClosedPose;
+
         [Tooltip("Time hand skeleton animates to next pose")]
         public float animationTimeToNewPose = .1f;
 
@@ -84,10 +87,54 @@ namespace MikeNspired.XRIStarterKit
             BeginNewPoses(DefaultPose, AnimationPose, false);
         }
 
+        [System.Serializable]
+        public class HandFingerMap
+        {
+            public List<Transform> thumb  = new List<Transform>();
+            public List<Transform> index  = new List<Transform>();
+            public List<Transform> middle = new List<Transform>();
+            public List<Transform> ring   = new List<Transform>();
+            public List<Transform> pinky  = new List<Transform>();
+
+            public List<Transform> Finger(int i) => i switch
+            {
+                0 => thumb, 1 => index, 2 => middle, 3 => ring, 4 => pinky, _ => null
+            };
+        }
+
+        public HandFingerMap fingerMap = new HandFingerMap();
+
         public void SetBones()
         {
             currentJoints.Clear();
             JointUtility.GatherTransformsForPose(RootBone.transform, currentJoints);
+            BuildFingerMap();
+        }
+
+        void BuildFingerMap()
+        {
+            fingerMap.thumb.Clear();
+            fingerMap.index.Clear();
+            fingerMap.middle.Clear();
+            fingerMap.ring.Clear();
+            fingerMap.pinky.Clear();
+
+            BuildChainFromTip(thumbTopTransform,  fingerMap.thumb);
+            BuildChainFromTip(indexTopTransform,  fingerMap.index);
+            BuildChainFromTip(middleTopTransform, fingerMap.middle);
+            BuildChainFromTip(ringTopTransform,   fingerMap.ring);
+            BuildChainFromTip(pinkyTopTransform,  fingerMap.pinky);
+        }
+
+        void BuildChainFromTip(Transform tip, List<Transform> chain)
+        {
+            if (!tip || !RootBone) return;
+            var t = tip;
+            while (t != null && t != RootBone.transform)
+            {
+                chain.Insert(0, t);
+                t = t.parent;
+            }
         }
 
         public void SetPoses(PoseScriptableObject primaryPose, PoseScriptableObject animationPose)
@@ -488,6 +535,71 @@ namespace MikeNspired.XRIStarterKit
 
             AnimateToPoseAnimation = AnimateToPoseOverTime(oldPose, newPose, _animationTime);
             StartCoroutine(AnimateToPoseAnimation);
+        }
+
+        /// <summary>
+        /// Immediately poses a single finger to the lerp between DefaultPose (t=0) and ClosedPose (t=1).
+        /// fingerIndex: 0=thumb, 1=index, 2=middle, 3=ring, 4=pinky.
+        /// No coroutine — direct transform write, same pattern as AnimateToPoseByValue2.
+        /// </summary>
+        public void SetFingerCurl(int fingerIndex, float t)
+        {
+            if (!ClosedPose)
+            {
+                Debug.LogWarning("[HandAnimator] ClosedPose is not assigned. Assign a fist/grip PoseScriptableObject to enable per-finger curl.");
+                return;
+            }
+            if (!DefaultPose)
+            {
+                Debug.LogWarning("[HandAnimator] DefaultPose is not assigned.");
+                return;
+            }
+
+            var chain = fingerMap.Finger(fingerIndex);
+            if (chain == null || chain.Count == 0) return;
+
+            var openJoints   = DefaultPose.joints;
+            var closedJoints = ClosedPose.joints;
+
+            foreach (var bone in chain)
+            {
+                if (!bone) continue;
+
+                PoseScriptableObject.JointData openData   = default;
+                PoseScriptableObject.JointData closedData = default;
+                bool foundOpen = false, foundClosed = false;
+
+                for (int i = 0; i < openJoints.Length; i++)
+                {
+                    if (openJoints[i].jointName == bone.name) { openData = openJoints[i]; foundOpen = true; break; }
+                }
+                for (int i = 0; i < closedJoints.Length; i++)
+                {
+                    if (closedJoints[i].jointName == bone.name) { closedData = closedJoints[i]; foundClosed = true; break; }
+                }
+
+                if (!foundOpen || !foundClosed) continue;
+
+                var pos = Vector3.Lerp(openData.localPosition, closedData.localPosition, t);
+                var rot = Quaternion.Lerp(openData.localRotation, closedData.localRotation, t);
+                var boneRef = bone;
+                SetNewJoint(ref boneRef, pos, rot);
+            }
+        }
+
+        /// <summary>
+        /// Convenience overload: pose all five fingers at once.
+        /// t must have at least 5 elements (thumb=0, index=1, middle=2, ring=3, pinky=4).
+        /// </summary>
+        public void SetFingerCurls(float[] t)
+        {
+            if (t == null || t.Length < 5)
+            {
+                Debug.LogWarning("[HandAnimator] SetFingerCurls requires an array of at least 5 values.");
+                return;
+            }
+            for (int i = 0; i < 5; i++)
+                SetFingerCurl(i, t[i]);
         }
 
         #endregion
