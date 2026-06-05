@@ -16,6 +16,7 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty handType;
         private SerializedProperty Point;
         private SerializedProperty drawHelperSpheres;
+        private SerializedProperty closedPose;
         private HandAnimator mainScript;
 
         private bool showReferencePoses;
@@ -32,6 +33,7 @@ namespace MikeNspired.XRIStarterKit.Editor
 
             handType = serializedObject.FindProperty("handType");
             drawHelperSpheres = serializedObject.FindProperty("drawHelperSpheres");
+            closedPose = serializedObject.FindProperty("ClosedPose");
 
             if (mainScript.RootBone == null)
             {
@@ -128,7 +130,7 @@ namespace MikeNspired.XRIStarterKit.Editor
 
             GUILayout.BeginHorizontal();
             labelToolTip = new GUIContent("Closed Pose", "Fist/grip pose used as the closed end (t=1) of the procedural per-finger curl sweep");
-            mainScript.ClosedPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.ClosedPose, typeof(PoseScriptableObject), false) as PoseScriptableObject;
+            EditorGUILayout.PropertyField(closedPose, labelToolTip);
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.ClosedPose);
             GUILayout.EndHorizontal();
 
