@@ -126,6 +126,12 @@ namespace MikeNspired.XRIStarterKit.Editor
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.SecondButtonPose);
             GUILayout.EndHorizontal();
 
+            GUILayout.BeginHorizontal();
+            labelToolTip = new GUIContent("Closed Pose", "Fist/grip pose used as the closed end (t=1) of the procedural per-finger curl sweep");
+            mainScript.ClosedPose = EditorGUILayout.ObjectField(labelToolTip, mainScript.ClosedPose, typeof(PoseScriptableObject), false) as PoseScriptableObject;
+            if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.ClosedPose);
+            GUILayout.EndHorizontal();
+
             serializedObject.ApplyModifiedProperties();
         }
 

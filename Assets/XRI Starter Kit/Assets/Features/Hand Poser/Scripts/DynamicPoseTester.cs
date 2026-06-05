@@ -1,19 +1,22 @@
 // Editor test utility — safe to remove in production
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
-    /// Drop on any GameObject alongside a HandAnimator to test SetJointsDirect in Play Mode.
-    /// Assign a closed/grip PoseScriptableObject to m_TargetPose (e.g. Pose_HandGunBottom),
-    /// then use the right-click context menu to trigger test blends.
+    /// Drop on any GameObject alongside a HandAnimator to test dynamic posing in Play Mode.
+    /// Assign a closed/grip PoseScriptableObject to m_TargetPose (e.g. Pose_HandGunBottom)
+    /// for the whole-hand blend test, and a fist pose to HandAnimator.ClosedPose for the
+    /// per-finger curl test, then use the Odin buttons below to trigger the tests.
     /// </summary>
     public class DynamicPoseTester : MonoBehaviour
     {
         #region Fields
 
-        [SerializeField] private HandAnimator m_Hand;
+        [FormerlySerializedAs("m_Hand")]
+        [SerializeField] private HandAnimator m_HandAnimator;
 
         [Tooltip("A closed or grip pose from the project (e.g. Pose_HandGunBottom). " +
                  "Test Partial Curl lerps between DefaultPose and this pose at m_BlendAmount.")]
@@ -34,7 +37,7 @@ namespace MikeNspired.XRIStarterKit
 
         #endregion
 
-        #region Context Menu Tests
+        #region Button Tests
 
         /// <summary>
         /// Lerps each joint between DefaultPose and TargetPose at m_BlendAmount,
@@ -51,13 +54,13 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            if (!m_Hand.DefaultPose)
+            if (!m_HandAnimator.DefaultPose)
             {
                 Debug.LogError("[DynamicPoseTester] HandAnimator.DefaultPose is not assigned.");
                 return;
             }
 
-            var openJoints   = m_Hand.DefaultPose.joints;
+            var openJoints   = m_HandAnimator.DefaultPose.joints;
             var closedJoints = m_TargetPose.joints;
 
             // Build a blended JointData[] at m_BlendAmount between open and closed
@@ -87,7 +90,7 @@ namespace MikeNspired.XRIStarterKit
                 };
             }
 
-            m_Hand.SetJointsDirect(data, m_AnimationTime);
+            m_HandAnimator.SetJointsDirect(data, m_AnimationTime);
             Debug.Log($"[DynamicPoseTester] Partial curl at blend={m_BlendAmount:F2}, duration={m_AnimationTime}s");
         }
 
@@ -99,13 +102,13 @@ namespace MikeNspired.XRIStarterKit
         private void TestFingerCurls()
         {
             if (!ValidateForTest()) return;
-            if (!m_Hand.ClosedPose)
+            if (!m_HandAnimator.ClosedPose)
             {
                 Debug.LogError("[DynamicPoseTester] HandAnimator.ClosedPose is not assigned. Assign a fist pose to use per-finger curl.");
                 return;
             }
 
-            m_Hand.SetFingerCurls(new[] { m_ThumbCurl, m_IndexCurl, m_MiddleCurl, m_RingCurl, m_PinkyCurl });
+            m_HandAnimator.SetFingerCurls(new[] { m_ThumbCurl, m_IndexCurl, m_MiddleCurl, m_RingCurl, m_PinkyCurl });
             Debug.Log($"[DynamicPoseTester] Finger curls applied — thumb={m_ThumbCurl:F2} index={m_IndexCurl:F2} middle={m_MiddleCurl:F2} ring={m_RingCurl:F2} pinky={m_PinkyCurl:F2}");
         }
 
@@ -117,13 +120,13 @@ namespace MikeNspired.XRIStarterKit
         {
             if (!ValidateForTest()) return;
 
-            if (!m_Hand.DefaultPose)
+            if (!m_HandAnimator.DefaultPose)
             {
                 Debug.LogError("[DynamicPoseTester] HandAnimator.DefaultPose is not assigned.");
                 return;
             }
 
-            m_Hand.SetJointsDirect(m_Hand.DefaultPose.joints, m_AnimationTime);
+            m_HandAnimator.SetJointsDirect(m_HandAnimator.DefaultPose.joints, m_AnimationTime);
             Debug.Log($"[DynamicPoseTester] Returning to DefaultPose over {m_AnimationTime}s");
         }
 
@@ -138,12 +141,12 @@ namespace MikeNspired.XRIStarterKit
                 Debug.LogWarning("[DynamicPoseTester] Must be in Play Mode.");
                 return false;
             }
-            if (!m_Hand)
+            if (!m_HandAnimator)
             {
                 Debug.LogError("[DynamicPoseTester] No HandAnimator assigned.");
                 return false;
             }
-            if (m_Hand.currentJoints.Count == 0)
+            if (m_HandAnimator.currentJoints.Count == 0)
             {
                 Debug.LogError("[DynamicPoseTester] HandAnimator has no joints — did SetBones() run?");
                 return false;
@@ -153,8 +156,8 @@ namespace MikeNspired.XRIStarterKit
 
         private void OnValidate()
         {
-            if (!m_Hand)
-                m_Hand = GetComponentInChildren<HandAnimator>();
+            if (!m_HandAnimator)
+                m_HandAnimator = GetComponentInChildren<HandAnimator>();
         }
 
         #endregion

@@ -119,22 +119,39 @@ namespace MikeNspired.XRIStarterKit
             fingerMap.ring.Clear();
             fingerMap.pinky.Clear();
 
-            BuildChainFromTip(thumbTopTransform,  fingerMap.thumb);
-            BuildChainFromTip(indexTopTransform,  fingerMap.index);
-            BuildChainFromTip(middleTopTransform, fingerMap.middle);
-            BuildChainFromTip(ringTopTransform,   fingerMap.ring);
-            BuildChainFromTip(pinkyTopTransform,  fingerMap.pinky);
+            BuildFingerChain(thumbTopTransform,  "thumb",  fingerMap.thumb);
+            BuildFingerChain(indexTopTransform,  "index",  fingerMap.index);
+            BuildFingerChain(middleTopTransform, "middle", fingerMap.middle);
+            BuildFingerChain(ringTopTransform,   "ring",   fingerMap.ring);
+            BuildFingerChain(pinkyTopTransform,  "pinky",  fingerMap.pinky);
         }
 
-        void BuildChainFromTip(Transform tip, List<Transform> chain)
+        /// <summary>
+        /// Builds a finger's joint chain (the finger's base joint plus all of its
+        /// descendants). Prefers the explicitly-assigned base transform (the
+        /// "Finger Parent Transform" fields); if none is assigned, falls back to a
+        /// name match against the root bone's direct children, so the map still
+        /// builds on hands where those fields were never wired up. Walks DOWN the
+        /// hierarchy via the same JointUtility used by SetBones / SetPoseByValue.
+        /// </summary>
+        void BuildFingerChain(Transform assignedBase, string nameKeyword, List<Transform> chain)
         {
-            if (!tip || !RootBone) return;
-            var t = tip;
-            while (t != null && t != RootBone.transform)
+            var baseJoint = assignedBase ? assignedBase : FindFingerBaseByName(nameKeyword);
+            if (!baseJoint) return;
+            JointUtility.GatherTransformsForPose(baseJoint, chain);
+        }
+
+        Transform FindFingerBaseByName(string nameKeyword)
+        {
+            if (!RootBone) return null;
+            var root = RootBone.transform;
+            for (int i = 0; i < root.childCount; i++)
             {
-                chain.Insert(0, t);
-                t = t.parent;
+                var child = root.GetChild(i);
+                if (child.name.ToLowerInvariant().Contains(nameKeyword))
+                    return child;
             }
+            return null;
         }
 
         public void SetPoses(PoseScriptableObject primaryPose, PoseScriptableObject animationPose)
