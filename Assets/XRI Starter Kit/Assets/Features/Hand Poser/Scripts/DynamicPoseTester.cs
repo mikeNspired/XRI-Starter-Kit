@@ -5,53 +5,86 @@ namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
     /// Drop on any GameObject alongside a HandAnimator to test SetJointsDirect in Play Mode.
-    /// Use the right-click context menu on this component to trigger test poses.
+    /// Assign a closed/grip PoseScriptableObject to m_TargetPose (e.g. Pose_HandGunBottom),
+    /// then use the right-click context menu to trigger test blends.
     /// </summary>
     public class DynamicPoseTester : MonoBehaviour
     {
         #region Fields
 
         [SerializeField] private HandAnimator m_Hand;
-        [SerializeField] private float m_AnimationTime = 0.3f;
 
-        private const float c_TestCurlDegrees = 45f;
+        [Tooltip("A closed or grip pose from the project (e.g. Pose_HandGunBottom). " +
+                 "Test Partial Curl lerps between DefaultPose and this pose at m_BlendAmount.")]
+        [SerializeField] private PoseScriptableObject m_TargetPose;
+
+        [Tooltip("How far to curl: 0 = open (DefaultPose), 1 = fully closed (TargetPose).")]
+        [SerializeField] [Range(0f, 1f)] private float m_BlendAmount = 0.5f;
+
+        [Tooltip("Seconds to blend to the target pose.")]
+        [SerializeField] private float m_AnimationTime = 0.5f;
 
         #endregion
 
         #region Context Menu Tests
 
         /// <summary>
-        /// Applies a partial curl to every joint in the hand by rotating each joint
-        /// an additional 45 degrees around its local Y axis. Run repeatedly to increase curl.
+        /// Lerps each joint between DefaultPose and TargetPose at m_BlendAmount,
+        /// then applies the result via SetJointsDirect over m_AnimationTime seconds.
         /// </summary>
         [ContextMenu("Test Partial Curl")]
         private void TestPartialCurl()
         {
             if (!ValidateForTest()) return;
 
-            var joints = m_Hand.currentJoints;
-            var data = new PoseScriptableObject.JointData[joints.Count];
-
-            for (int i = 0; i < joints.Count; i++)
+            if (!m_TargetPose)
             {
-                var joint = joints[i];
+                Debug.LogError("[DynamicPoseTester] Assign a closed/grip pose to m_TargetPose in the Inspector.");
+                return;
+            }
+
+            if (!m_Hand.DefaultPose)
+            {
+                Debug.LogError("[DynamicPoseTester] HandAnimator.DefaultPose is not assigned.");
+                return;
+            }
+
+            var openJoints   = m_Hand.DefaultPose.joints;
+            var closedJoints = m_TargetPose.joints;
+
+            // Build a blended JointData[] at m_BlendAmount between open and closed
+            var data = new PoseScriptableObject.JointData[openJoints.Length];
+            for (int i = 0; i < openJoints.Length; i++)
+            {
+                // Find matching closed joint by name; fall back to open data if not found
+                var openJoint = openJoints[i];
+                var closedRot = openJoint.localRotation;
+                var closedPos = openJoint.localPosition;
+
+                for (int j = 0; j < closedJoints.Length; j++)
+                {
+                    if (closedJoints[j].jointName == openJoint.jointName)
+                    {
+                        closedRot = closedJoints[j].localRotation;
+                        closedPos = closedJoints[j].localPosition;
+                        break;
+                    }
+                }
+
                 data[i] = new PoseScriptableObject.JointData
                 {
-                    jointName  = joint.name,
-                    localPosition = joint.localPosition,
-                    // Skip root joint (palm); curl all finger joints
-                    localRotation = (i == 0)
-                        ? joint.localRotation
-                        : joint.localRotation * Quaternion.Euler(0, c_TestCurlDegrees, 0)
+                    jointName     = openJoint.jointName,
+                    localPosition = Vector3.Lerp(openJoint.localPosition, closedPos, m_BlendAmount),
+                    localRotation = Quaternion.Lerp(openJoint.localRotation, closedRot, m_BlendAmount)
                 };
             }
 
             m_Hand.SetJointsDirect(data, m_AnimationTime);
-            Debug.Log($"[DynamicPoseTester] SetJointsDirect — {data.Length} joints, blend {m_AnimationTime}s");
+            Debug.Log($"[DynamicPoseTester] Partial curl at blend={m_BlendAmount:F2}, duration={m_AnimationTime}s");
         }
 
         /// <summary>
-        /// Resets the hand to its DefaultPose via SetJointsDirect to confirm the blend back works.
+        /// Returns the hand to its DefaultPose via SetJointsDirect.
         /// </summary>
         [ContextMenu("Test Return to Default Pose")]
         private void TestReturnToDefault()
@@ -65,7 +98,7 @@ namespace MikeNspired.XRIStarterKit
             }
 
             m_Hand.SetJointsDirect(m_Hand.DefaultPose.joints, m_AnimationTime);
-            Debug.Log($"[DynamicPoseTester] SetJointsDirect — returning to DefaultPose over {m_AnimationTime}s");
+            Debug.Log($"[DynamicPoseTester] Returning to DefaultPose over {m_AnimationTime}s");
         }
 
         #endregion

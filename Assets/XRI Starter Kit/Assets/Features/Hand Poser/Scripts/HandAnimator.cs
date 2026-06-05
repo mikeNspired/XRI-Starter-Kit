@@ -149,6 +149,38 @@ namespace MikeNspired.XRIStarterKit
             }
         }
 
+        // Overload used by SetJointsDirect so callers can specify an explicit blend duration
+        // without touching animationTimeToNewPose (which BeginNewPoses relies on).
+        protected IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose, float _duration)
+        {
+            if (_duration <= 0f)
+            {
+                for (int i = 0; i < currentJoints.Count; i++)
+                {
+                    var joint = currentJoints[i];
+                    if (!joint) continue;
+                    SetNewJoint(ref joint, newPose[i].position, newPose[i].rotation);
+                }
+                yield break;
+            }
+
+            float timer = 0;
+            while (timer <= _duration + Time.deltaTime)
+            {
+                for (int i = 0; i < currentJoints.Count; i++)
+                {
+                    var joint = currentJoints[i];
+                    if (!joint) continue;
+
+                    var pos = Vector3.Lerp(originalPose[i].position, newPose[i].position, timer / _duration);
+                    var rot = Quaternion.Lerp(originalPose[i].rotation, newPose[i].rotation, timer / _duration);
+                    SetNewJoint(ref joint, pos, rot);
+                }
+                timer += Time.deltaTime;
+                yield return new WaitForSeconds(Time.deltaTime);
+            }
+        }
+
         IEnumerator AnimateToPoseByValue2(PoseScriptableObject newPose, ControllerButtons button)
         {
             SetJointPositions(DefaultPose, goalPoseJoints);
@@ -454,7 +486,7 @@ namespace MikeNspired.XRIStarterKit
             if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
             if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);
 
-            AnimateToPoseAnimation = AnimateToPoseOverTime(oldPose, newPose);
+            AnimateToPoseAnimation = AnimateToPoseOverTime(oldPose, newPose, _animationTime);
             StartCoroutine(AnimateToPoseAnimation);
         }
 
