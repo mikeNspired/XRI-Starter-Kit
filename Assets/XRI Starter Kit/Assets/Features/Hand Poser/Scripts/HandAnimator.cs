@@ -557,7 +557,7 @@ namespace MikeNspired.XRIStarterKit
         /// <summary>
         /// Immediately poses a single finger to the lerp between DefaultPose (t=0) and ClosedPose (t=1).
         /// fingerIndex: 0=thumb, 1=index, 2=middle, 3=ring, 4=pinky.
-        /// No coroutine — direct transform write, same pattern as AnimateToPoseByValue2.
+        /// Delegates to the existing SetPoseByValue for the per-joint lerp.
         /// </summary>
         public void SetFingerCurl(int fingerIndex, float t)
         {
@@ -566,42 +566,12 @@ namespace MikeNspired.XRIStarterKit
                 Debug.LogWarning("[HandAnimator] ClosedPose is not assigned. Assign a fist/grip PoseScriptableObject to enable per-finger curl.");
                 return;
             }
-            if (!DefaultPose)
-            {
-                Debug.LogWarning("[HandAnimator] DefaultPose is not assigned.");
-                return;
-            }
 
             var chain = fingerMap.Finger(fingerIndex);
             if (chain == null || chain.Count == 0) return;
 
-            var openJoints   = DefaultPose.joints;
-            var closedJoints = ClosedPose.joints;
-
-            foreach (var bone in chain)
-            {
-                if (!bone) continue;
-
-                PoseScriptableObject.JointData openData   = default;
-                PoseScriptableObject.JointData closedData = default;
-                bool foundOpen = false, foundClosed = false;
-
-                for (int i = 0; i < openJoints.Length; i++)
-                {
-                    if (openJoints[i].jointName == bone.name) { openData = openJoints[i]; foundOpen = true; break; }
-                }
-                for (int i = 0; i < closedJoints.Length; i++)
-                {
-                    if (closedJoints[i].jointName == bone.name) { closedData = closedJoints[i]; foundClosed = true; break; }
-                }
-
-                if (!foundOpen || !foundClosed) continue;
-
-                var pos = Vector3.Lerp(openData.localPosition, closedData.localPosition, t);
-                var rot = Quaternion.Lerp(openData.localRotation, closedData.localRotation, t);
-                var boneRef = bone;
-                SetNewJoint(ref boneRef, pos, rot);
-            }
+            // chain[0] is the finger's base joint; SetPoseByValue walks its descendants
+            SetPoseByValue(chain[0], DefaultPose, ClosedPose, t);
         }
 
         /// <summary>
