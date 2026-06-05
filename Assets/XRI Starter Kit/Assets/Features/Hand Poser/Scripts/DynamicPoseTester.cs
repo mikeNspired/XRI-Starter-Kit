@@ -1,4 +1,5 @@
 // Editor test utility — safe to remove in production
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace MikeNspired.XRIStarterKit
@@ -32,7 +33,7 @@ namespace MikeNspired.XRIStarterKit
         /// Lerps each joint between DefaultPose and TargetPose at m_BlendAmount,
         /// then applies the result via SetJointsDirect over m_AnimationTime seconds.
         /// </summary>
-        [ContextMenu("Test Partial Curl")]
+        [Button("Test Partial Curl")]
         private void TestPartialCurl()
         {
             if (!ValidateForTest()) return;
@@ -86,7 +87,7 @@ namespace MikeNspired.XRIStarterKit
         /// <summary>
         /// Returns the hand to its DefaultPose via SetJointsDirect.
         /// </summary>
-        [ContextMenu("Test Return to Default Pose")]
+        [Button("Test Return to Default Pose")]
         private void TestReturnToDefault()
         {
             if (!ValidateForTest()) return;
