@@ -49,6 +49,18 @@ Acceptance (I will verify in Unity): in an empty scene each slider 0->1 curls on
 Out of scope: sweeping, colliders, grabbing. Open a PR with the acceptance steps restated; do not start Phase 2.
 ```
 
+### Phase 1 outcome — carry-forward notes (read before Phase 2)
+
+What actually shipped (use these instead of rebuilding them):
+- **`HandAnimator.fingerMap` (`HandFingerMap`)** — exposes the five live chains via `fingerMap.Finger(int i)` (0=thumb … 4=pinky), each a `List<Transform>` ordered **base → tip**. Built in `BuildFingerMap()`, called at the end of `SetBones()`. Chains are gathered by walking **down** from each finger's base joint via `JointUtility.GatherTransformsForPose`, with a name-based fallback against the root bone's direct children when the base field is unassigned.
+- **`SetFingerCurl(int fingerIndex, float t)` / `SetFingerCurls(float[])`** — apply a per-finger Open→Closed curl. Internally delegates to the existing `SetPoseByValue(chain[0], DefaultPose, ClosedPose, t)`; reuse these rather than re-deriving the lerp.
+- **`ClosedPose : PoseScriptableObject`** field exists on HandAnimator (Open = `DefaultPose`).
+
+Corrections to assumptions in the prompts below and in CLAUDE.md:
+- **`thumbTopTransform` / `indexTopTransform` / … are NOT fingertips.** The custom editor labels them "Finger **Parent** Transform"; they are each finger's **base** joint near the palm. The true fingertip for probing is the **last element of the chain**: `var tip = chain[chain.Count - 1];` (use `fingerMap.Finger(i)`). Do **not** use the `*TopTransform` field as a tip probe anchor.
+- **HandAnimator has a custom editor (`HandAnimatorEditor`) that hides default-drawn fields.** Any new serialized field must be added to that editor via a cached `SerializedProperty` + `EditorGUILayout.PropertyField` (not `mainScript.x = ObjectField(...)`, which nulls out on prefab instances when entering Play). 
+- **`DynamicPoseTester` uses Odin `[Button]`** for test UI (never `[ContextMenu]`), and its `HandAnimator` reference field is `m_HandAnimator`.
+
 ---
 
 ## Phase 2 — Curl sweep solver (in isolation)
@@ -62,7 +74,7 @@ Build:
 - Define `interface IHandPoseSolver { PoseScriptableObject.JointData[] Solve(HandSolveContext ctx); }`. HandSolveContext carries: the HandAnimator, the finger map, the Open and Closed poses, the target colliders (or a LayerMask), step count N, and probe radius.
 - Implement `CurlSweepSolver : IHandPoseSolver`:
   - Per finger, sweep t from 0->1 in N steps (default 15).
-  - At each step apply the finger curl (Phase 1 logic), then sample contact at the fingertip via Physics.OverlapSphere(tipPos, probeRadius, mask, QueryTriggerInteraction.Ignore).
+  - At each step apply the finger curl via the existing `SetFingerCurl(fingerIndex, t)`, then sample contact at the fingertip via Physics.OverlapSphere(tipPos, probeRadius, mask, QueryTriggerInteraction.Ignore). The tip is the LAST joint of the chain: `tipPos = fingerMap.Finger(i)[^1].position` — NOT the `*TopTransform` field (that's the finger's base joint; see Phase 1 carry-forward notes).
   - Lock tFinal at the last step BEFORE first contact (optional + pressBias, default 0). If no contact at t=1, tFinal=1.
   - Return the full-hand JointData[] at the per-finger tFinal values.
 - Restore the hand to its pre-solve state on early-out.
@@ -153,7 +165,7 @@ Implement ONLY Phase 6. Branch: phase-6-polish.
 Goal: make it read like a real hand and lock the extension points.
 
 Build:
-- Multi-sample per finger: sample contact at 2-3 points along each finger (not just the tip) so edge-wrap reads as a drape, not a claw.
+- Multi-sample per finger: sample contact at 2-3 points along each finger (not just the tip) so edge-wrap reads as a drape, not a claw. Sample at joints spread along `fingerMap.Finger(i)` (base→tip order), e.g. mid-chain and tip, not the `*TopTransform` field.
 - Preferred-angle bias: a finger that contacts nothing drifts toward a gentle rest curl (preferredT per finger blended by preferredWeight) instead of fully open/closed.
 - Per-finger enable mask: allow specific fingers to stay on the authored pose while others solve.
 - Optional HandJointLimits asset: per-joint min/max clamp, behind a null check, for cases where the fist pose alone isn't a tight enough limit.
