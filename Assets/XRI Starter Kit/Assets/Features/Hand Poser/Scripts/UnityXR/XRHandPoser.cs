@@ -19,6 +19,11 @@ namespace MikeNspired.XRIStarterKit
         public bool WaitTillEaseInTimeToMaintainPosition = true;
         public bool overrideEaseTime = false;
         public float easeInTimeOverride = 0;
+
+        [Header("Dynamic Pose Gate")]
+        [SerializeField] private float positionThreshold = 0.05f;
+        [SerializeField] private float rotationThreshold = 30f;
+
         protected override void Awake()
         {
             base.Awake();
@@ -37,16 +42,46 @@ namespace MikeNspired.XRIStarterKit
 
         private void TryStartPosing(SelectEnterEventArgs x)
         {
-            var hand = x.interactorObject.transform.GetComponentInParent<HandReference>();
-            if (!hand) return;
+            var handRef = x.interactorObject.transform.GetComponentInParent<HandReference>();
+            if (!handRef) return;
 
-            if (hand.NearFarInteractor != null && hand.NearFarInteractor.interactionAttachController.hasOffset)
+            if (handRef.NearFarInteractor != null && handRef.NearFarInteractor.interactionAttachController.hasOffset)
             {
                 Debug.Log("Hand poser skipped also");
                 return; // Skip hand posing for far interactions
             }
-            
-            BeginNewHandPoses(hand.Hand);
+
+            // Phase 3: log the routing decision before any pose is applied.
+            // Both branches fall through to BeginNewHandPoses — no behavioral change yet.
+            LogGrabDecision(x.interactorObject.transform, handRef.Hand);
+            BeginNewHandPoses(handRef.Hand);
+        }
+
+        // Computes authored-vs-dynamic and logs the decision.  No pose is changed here.
+        private void LogGrabDecision(Transform interactorTransform, HandAnimator hand)
+        {
+            if (!CheckIfPoseExistForHand(hand))
+            {
+                Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — no authored pose for {hand.handType} hand");
+                return;
+            }
+
+            var authoredAttach = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
+            if (!authoredAttach)
+            {
+                Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — no attach transform found, treating as on-axis");
+                return;
+            }
+
+            float offsetPos   = Vector3.Distance(interactorTransform.position, authoredAttach.position);
+            float offsetAngle = Quaternion.Angle(interactorTransform.rotation, authoredAttach.rotation);
+
+            bool isDynamic = offsetPos > positionThreshold || offsetAngle > rotationThreshold;
+
+            if (isDynamic)
+                Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {positionThreshold}m), angle={offsetAngle:F1}° (threshold {rotationThreshold}°)");
+            else
+                Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — pos={offsetPos:F3}m, angle={offsetAngle:F1}°");
         }
 
         private void TryReleaseHand(SelectExitEventArgs x)
