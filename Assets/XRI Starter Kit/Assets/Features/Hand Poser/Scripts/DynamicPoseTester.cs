@@ -28,7 +28,19 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Seconds to blend to the target pose.")]
         [SerializeField] private float m_AnimationTime = 0.5f;
 
+        [Header("Curl Sweep Solver Test")]
+        [Tooltip("The object whose colliders fingers will curl toward and stop at.")]
+        [SerializeField] private GameObject m_Target;
+
+        [Tooltip("Number of t steps per finger sweep (higher = more accurate, more expensive).")]
+        [SerializeField] [Range(5, 30)] private int m_SolverStepCount = 15;
+
+        [Tooltip("Radius of the sphere probe at each fingertip during the sweep.")]
+        [SerializeField] [Range(0.001f, 0.05f)] private float m_SolverProbeRadius = 0.01f;
+
         #endregion
+
+        private CurlSweepSolver m_LastSolver;
 
         #region Button Tests
 
@@ -103,6 +115,77 @@ namespace MikeNspired.XRIStarterKit
 
             m_HandAnimator.SetJointsDirect(m_HandAnimator.DefaultPose.joints, m_AnimationTime);
             Debug.Log($"[DynamicPoseTester] Returning to DefaultPose over {m_AnimationTime}s");
+        }
+
+        /// <summary>
+        /// Runs the CurlSweepSolver against m_Target's colliders and applies the result
+        /// via SetJointsDirect. Gizmos show each finger's final probe position.
+        /// Must be in Play Mode.
+        /// </summary>
+        [Button("Test Curl Sweep Solver")]
+        private void TestCurlSweepSolver()
+        {
+            if (!ValidateForTest()) return;
+
+            if (!m_Target)
+            {
+                Debug.LogError("[DynamicPoseTester] Assign a target GameObject to m_Target.");
+                return;
+            }
+            if (!m_HandAnimator.ClosedPose)
+            {
+                Debug.LogError("[DynamicPoseTester] HandAnimator.ClosedPose is not assigned. Assign a fist pose.");
+                return;
+            }
+            if (!m_HandAnimator.DefaultPose)
+            {
+                Debug.LogError("[DynamicPoseTester] HandAnimator.DefaultPose is not assigned.");
+                return;
+            }
+
+            var colliders = m_Target.GetComponentsInChildren<Collider>();
+            if (colliders.Length == 0)
+                Debug.LogWarning($"[DynamicPoseTester] '{m_Target.name}' has no Colliders — solver will fully close all fingers.");
+
+            var ctx = new HandSolveContext
+            {
+                hand            = m_HandAnimator,
+                fingerMap       = m_HandAnimator.fingerMap,
+                openPose        = m_HandAnimator.DefaultPose,
+                closedPose      = m_HandAnimator.ClosedPose,
+                targetColliders = colliders,
+                targetMask      = 1 << m_Target.layer,
+                stepCount       = m_SolverStepCount,
+                probeRadius     = m_SolverProbeRadius
+            };
+
+            m_LastSolver = new CurlSweepSolver();
+            var result = m_LastSolver.Solve(ctx);
+
+            if (result != null && result.Length > 0)
+            {
+                m_HandAnimator.SetJointsDirect(result, m_AnimationTime);
+                Debug.Log($"[DynamicPoseTester] Curl sweep: solved {result.Length} joints against '{m_Target.name}'.");
+            }
+            else
+            {
+                Debug.LogWarning("[DynamicPoseTester] Solver returned no joint data.");
+            }
+        }
+
+        #endregion
+
+        #region Gizmos
+
+        private void OnDrawGizmos()
+        {
+            if (m_LastSolver?.LastSolveProbePositions == null) return;
+
+            for (int i = 0; i < 5; i++)
+            {
+                Gizmos.color = m_LastSolver.LastSolveContacted[i] ? Color.green : Color.yellow;
+                Gizmos.DrawWireSphere(m_LastSolver.LastSolveProbePositions[i], m_SolverProbeRadius);
+            }
         }
 
         #endregion
