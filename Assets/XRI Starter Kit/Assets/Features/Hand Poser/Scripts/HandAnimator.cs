@@ -166,13 +166,13 @@ namespace MikeNspired.XRIStarterKit
             NewPoseStarting.Invoke(isGrabbingObject);
 
             SetJointPositions(DefaultPose, goalPoseJoints);
-            TransformStruct[] oldPose = CopyTransformData(goalPoseJoints);
+            TransformStruct[] oldPose = CopyTransformData(currentJoints);
 
             AnimationPose = animationPose;
             DefaultPose = primaryPose;
 
             SetJointPositions(primaryPose, goalPoseJoints);
-            TransformStruct[] newPose = CopyTransformData(goalPoseJoints);
+            TransformStruct[] newPose = CopyTransformData(currentJoints);
 
             if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
             if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);

@@ -76,10 +76,13 @@ namespace MikeNspired.XRIStarterKit
             float offsetPos   = Vector3.Distance(interactorTransform.position, authoredAttach.position);
             float offsetAngle = Quaternion.Angle(interactorTransform.rotation, authoredAttach.rotation);
 
-            bool isDynamic = offsetPos > positionThreshold || offsetAngle > rotationThreshold;
+            // Rotation alone doesn't drive the decision: the authored attach bakes in the
+            // hand-model offset from the controller, so raw controller vs. attach angle is
+            // routinely 30-90° even on a correct on-axis grab. Log it for future tuning.
+            bool isDynamic = offsetPos > positionThreshold;
 
             if (isDynamic)
-                Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {positionThreshold}m), angle={offsetAngle:F1}° (threshold {rotationThreshold}°)");
+                Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {positionThreshold}m), angle={offsetAngle:F1}°");
             else
                 Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — pos={offsetPos:F3}m, angle={offsetAngle:F1}°");
         }
