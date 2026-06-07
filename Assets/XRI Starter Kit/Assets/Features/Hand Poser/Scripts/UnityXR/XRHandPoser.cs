@@ -65,19 +65,22 @@ namespace MikeNspired.XRIStarterKit
                 BeginNewHandPoses(handRef.Hand);
         }
 
-        // Returns true when the grab should use the dynamic solver; logs the decision either way.
-        public bool IsGrabDynamic(HandAnimator hand)
+        // Returns true when the grab should use the dynamic solver. Pass logDecision:false to
+        // query the decision without printing it — HandReference calls this on the interactor's
+        // selectEntered (which fires just before our own), so only our call should log to avoid
+        // a duplicate line per grab.
+        public bool IsGrabDynamic(HandAnimator hand, bool logDecision = true)
         {
             if (!CheckIfPoseExistForHand(hand))
             {
-                Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — no authored pose for {hand.handType} hand");
+                if (logDecision) Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — no authored pose for {hand.handType} hand");
                 return true;
             }
 
             var authoredAttach = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
             if (!authoredAttach)
             {
-                Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — no attach transform found, treating as on-axis");
+                if (logDecision) Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — no attach transform found, treating as on-axis");
                 return false;
             }
 
@@ -90,10 +93,13 @@ namespace MikeNspired.XRIStarterKit
 
             bool isDynamic = offsetPos > positionThreshold || offsetAngle > rotationThreshold;
 
-            if (isDynamic)
-                Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {positionThreshold}m), angle={offsetAngle:F1}° (threshold {rotationThreshold}°)");
-            else
-                Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — pos={offsetPos:F3}m, angle={offsetAngle:F1}°");
+            if (logDecision)
+            {
+                if (isDynamic)
+                    Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {positionThreshold}m), angle={offsetAngle:F1}° (threshold {rotationThreshold}°)");
+                else
+                    Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — pos={offsetPos:F3}m, angle={offsetAngle:F1}°");
+            }
 
             return isDynamic;
         }
