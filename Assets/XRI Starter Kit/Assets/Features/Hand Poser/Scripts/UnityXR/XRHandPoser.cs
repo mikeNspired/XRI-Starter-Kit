@@ -1,5 +1,6 @@
-// Author MikeNspired. 
+// Author MikeNspired.
 
+using System.Collections;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -23,6 +24,12 @@ namespace MikeNspired.XRIStarterKit
         [Header("Dynamic Pose Gate")]
         [SerializeField] private float positionThreshold = 0.05f;
         [SerializeField] private float rotationThreshold = 30f;
+
+        [Header("Dynamic Pose Solver")]
+        [SerializeField] private int   dynamicStepCount   = 15;
+        [SerializeField] private float dynamicProbeRadius = 0.01f;
+
+        private IHandPoseSolver poseSolver;
 
         protected override void Awake()
         {
@@ -51,26 +58,26 @@ namespace MikeNspired.XRIStarterKit
                 return; // Skip hand posing for far interactions
             }
 
-            // Phase 3: log the routing decision before any pose is applied.
-            // Both branches fall through to BeginNewHandPoses — no behavioral change yet.
-            LogGrabDecision(x.interactorObject.transform, handRef.Hand);
-            BeginNewHandPoses(handRef.Hand);
+            if (GrabIsDynamic(x.interactorObject.transform, handRef.Hand))
+                BeginDynamicPose(handRef.Hand);
+            else
+                BeginNewHandPoses(handRef.Hand);
         }
 
-        // Computes authored-vs-dynamic and logs the decision.  No pose is changed here.
-        private void LogGrabDecision(Transform interactorTransform, HandAnimator hand)
+        // Returns true when the grab should use the dynamic solver; logs the decision either way.
+        private bool GrabIsDynamic(Transform interactorTransform, HandAnimator hand)
         {
             if (!CheckIfPoseExistForHand(hand))
             {
                 Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — no authored pose for {hand.handType} hand");
-                return;
+                return true;
             }
 
             var authoredAttach = hand.handType == LeftRight.Left ? leftHandAttach : rightHandAttach;
             if (!authoredAttach)
             {
                 Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — no attach transform found, treating as on-axis");
-                return;
+                return false;
             }
 
             float offsetPos   = Vector3.Distance(interactorTransform.position, authoredAttach.position);
@@ -78,14 +85,68 @@ namespace MikeNspired.XRIStarterKit
 
             // Rotation alone doesn't drive the decision: the authored attach bakes in the
             // hand-model offset from the controller, so raw controller vs. attach angle is
-            // routinely 30-90° even on a correct on-axis grab. Log it for future tuning.
+            // routinely 30-90° even on a correct on-axis grab. Logged for future tuning only.
             bool isDynamic = offsetPos > positionThreshold;
 
             if (isDynamic)
                 Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {positionThreshold}m), angle={offsetAngle:F1}°");
             else
                 Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — pos={offsetPos:F3}m, angle={offsetAngle:F1}°");
+
+            return isDynamic;
         }
+
+        // ─── Dynamic pose path ────────────────────────────────────────────────────
+
+        private void BeginDynamicPose(HandAnimator hand)
+        {
+            RegisterGrabbingHand(hand);  // so Release() can return the hand on un-grab
+            StartCoroutine(SolveDynamicPoseRoutine(hand));
+        }
+
+        private IEnumerator SolveDynamicPoseRoutine(HandAnimator hand)
+        {
+            // Wait for the object's attach ease-in so the hand is at the grab location
+            // before we probe — otherwise fingers solve against thin air.
+            float ease = GetEaseInTime();
+            if (ease > 0f) yield return new WaitForSeconds(ease);
+            yield return null;  // one extra frame for the grab to fully settle
+
+            if (!hand || !hand.ClosedPose || !hand.DefaultPose)
+            {
+                Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve skipped: hand, ClosedPose, or DefaultPose is not assigned.");
+                yield break;
+            }
+
+            var colliders = interactable.GetComponentsInChildren<Collider>();
+            if (colliders.Length == 0)
+                Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve: no colliders on interactable; fingers will fully close.");
+
+            int mask = 0;
+            foreach (var c in colliders) mask |= 1 << c.gameObject.layer;
+
+            var ctx = new HandSolveContext
+            {
+                hand            = hand,
+                fingerMap       = hand.fingerMap,
+                openPose        = hand.DefaultPose,
+                closedPose      = hand.ClosedPose,
+                targetColliders = colliders,
+                targetMask      = mask,
+                stepCount       = dynamicStepCount,
+                probeRadius     = dynamicProbeRadius,
+            };
+
+            poseSolver ??= new CurlSweepSolver();
+            var result = poseSolver.Solve(ctx);
+
+            if (result != null && result.Length > 0)
+                hand.SetJointsDirect(result, hand.animationTimeToNewPose);
+            else
+                Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve returned no joint data.");
+        }
+
+        // ─── Shared / authored path (unchanged) ──────────────────────────────────
 
         private void TryReleaseHand(SelectExitEventArgs x)
         {
@@ -129,6 +190,7 @@ namespace MikeNspired.XRIStarterKit
 
             return time;
         }
+
         private void OnValidate()
         {
             if (!interactable)
