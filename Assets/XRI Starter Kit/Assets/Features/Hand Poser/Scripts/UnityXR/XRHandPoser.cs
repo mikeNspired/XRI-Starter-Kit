@@ -102,8 +102,9 @@ namespace MikeNspired.XRIStarterKit
 
         private void BeginDynamicPose(HandAnimator hand)
         {
-            RegisterGrabbingHand(hand);   // so Release() can return the hand on un-grab
-            hand.isGrabbingObject = true; // gate the grip-hold animation so it can't overwrite the solved pose (authored path does this via BeginNewPoses)
+            RegisterGrabbingHand(hand);    // so Release() can return the hand on un-grab
+            hand.isGrabbingObject = true;  // gate the grip-hold animation so it can't overwrite the solved pose (authored path does this via BeginNewPoses)
+            hand.AnimationPose = null;     // no authored trigger pose on a dynamic grab; null gates the trigger animation so it can't overwrite the solve. ReturnAnimationsToOriginal restores it on release.
             if (dynamicSolveRoutine != null) StopCoroutine(dynamicSolveRoutine);
             dynamicSolveRoutine = StartCoroutine(SolveDynamicPoseRoutine(hand));
         }
