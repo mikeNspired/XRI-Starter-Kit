@@ -59,14 +59,14 @@ namespace MikeNspired.XRIStarterKit
                 return; // Skip hand posing for far interactions
             }
 
-            if (GrabIsDynamic(handRef.Hand))
+            if (IsGrabDynamic(handRef.Hand))
                 BeginDynamicPose(handRef.Hand);
             else
                 BeginNewHandPoses(handRef.Hand);
         }
 
         // Returns true when the grab should use the dynamic solver; logs the decision either way.
-        private bool GrabIsDynamic(HandAnimator hand)
+        public bool IsGrabDynamic(HandAnimator hand)
         {
             if (!CheckIfPoseExistForHand(hand))
             {
