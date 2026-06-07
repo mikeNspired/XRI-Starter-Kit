@@ -38,7 +38,7 @@ namespace MikeNspired.XRIStarterKit
             {
                 // Start every finger at open pose so sweeps are independent
                 for (int i = 0; i < 5; i++)
-                    _ctx.hand.SetFingerCurl(i, 0f);
+                    _ctx.hand.SetFingerCurl(i, 0f, _ctx.openPose, _ctx.closedPose);
 
                 for (int fingerIdx = 0; fingerIdx < 5; fingerIdx++)
                 {
@@ -60,7 +60,7 @@ namespace MikeNspired.XRIStarterKit
                     for (int step = 1; step <= _ctx.stepCount; step++)
                     {
                         float t = (float)step / _ctx.stepCount;
-                        _ctx.hand.SetFingerCurl(fingerIdx, t);
+                        _ctx.hand.SetFingerCurl(fingerIdx, t, _ctx.openPose, _ctx.closedPose);
 
                         Vector3 probePos = tip.position;
 
@@ -86,7 +86,7 @@ namespace MikeNspired.XRIStarterKit
                     }
 
                     // Reset before the next finger's sweep so chains don't interfere
-                    _ctx.hand.SetFingerCurl(fingerIdx, 0f);
+                    _ctx.hand.SetFingerCurl(fingerIdx, 0f, _ctx.openPose, _ctx.closedPose);
                 }
             }
             finally

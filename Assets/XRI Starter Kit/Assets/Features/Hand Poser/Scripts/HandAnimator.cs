@@ -23,6 +23,9 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject AnimationPose;
         public PoseScriptableObject SecondButtonPose;
 
+        [Tooltip("Fully-open/splayed pose used as the open end of the per-finger curl sweep (t=0). Kept distinct from DefaultPose (the relaxed idle) so the solver has full finger range and fingertips start clear of the target. Falls back to DefaultPose if left unassigned.")]
+        public PoseScriptableObject OpenPose;
+
         [Tooltip("Fist/grip pose used as the closed end of the per-finger curl sweep (t=1). Assign in the Inspector.")]
         public PoseScriptableObject ClosedPose;
 
@@ -166,13 +169,13 @@ namespace MikeNspired.XRIStarterKit
             NewPoseStarting.Invoke(isGrabbingObject);
 
             SetJointPositions(DefaultPose, goalPoseJoints);
-            TransformStruct[] oldPose = CopyTransformData(goalPoseJoints);
+            TransformStruct[] oldPose = CopyTransformData(currentJoints);
 
             AnimationPose = animationPose;
             DefaultPose = primaryPose;
 
             SetJointPositions(primaryPose, goalPoseJoints);
-            TransformStruct[] newPose = CopyTransformData(goalPoseJoints);
+            TransformStruct[] newPose = CopyTransformData(currentJoints);
 
             if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
             if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);
@@ -557,13 +560,20 @@ namespace MikeNspired.XRIStarterKit
         /// <summary>
         /// Immediately poses a single finger to the lerp between DefaultPose (t=0) and ClosedPose (t=1).
         /// fingerIndex: 0=thumb, 1=index, 2=middle, 3=ring, 4=pinky.
-        /// Delegates to the existing SetPoseByValue for the per-joint lerp.
+        /// Delegates to the explicit-pose overload using the hand's own DefaultPose / ClosedPose.
         /// </summary>
-        public void SetFingerCurl(int fingerIndex, float t)
+        public void SetFingerCurl(int fingerIndex, float t) => SetFingerCurl(fingerIndex, t, DefaultPose, ClosedPose);
+
+        /// <summary>
+        /// Poses a single finger to the lerp between openPose (t=0) and closedPose (t=1) using
+        /// explicitly-supplied poses. A solver sweeps with this so the poses it curls through are
+        /// exactly the poses it lerps the final result from (no reliance on the hand's live fields).
+        /// </summary>
+        public void SetFingerCurl(int fingerIndex, float t, PoseScriptableObject openPose, PoseScriptableObject closedPose)
         {
-            if (!ClosedPose)
+            if (!openPose || !closedPose)
             {
-                Debug.LogWarning("[HandAnimator] ClosedPose is not assigned. Assign a fist/grip PoseScriptableObject to enable per-finger curl.");
+                Debug.LogWarning("[HandAnimator] SetFingerCurl: openPose or closedPose is not assigned. Assign DefaultPose and a fist/grip ClosedPose to enable per-finger curl.");
                 return;
             }
 
@@ -571,7 +581,7 @@ namespace MikeNspired.XRIStarterKit
             if (chain == null || chain.Count == 0) return;
 
             // chain[0] is the finger's base joint; SetPoseByValue walks its descendants
-            SetPoseByValue(chain[0], DefaultPose, ClosedPose, t);
+            SetPoseByValue(chain[0], openPose, closedPose, t);
         }
 
         /// <summary>

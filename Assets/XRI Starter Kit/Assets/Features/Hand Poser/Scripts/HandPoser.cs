@@ -76,6 +76,10 @@ namespace MikeNspired.XRIStarterKit
             currentHandGrabbing = null;
         }
 
+        // Registers the grabbing hand so Release() can return it even when BeginNewHandPoses
+        // was bypassed (e.g. the dynamic pose path sets this directly).
+        protected void RegisterGrabbingHand(HandAnimator hand) => currentHandGrabbing = hand;
+
 
         //Tells the hand to begin the new poses
         private void SetToPose(HandAnimator hand, PoseScriptableObject primaryPose, PoseScriptableObject animPose)

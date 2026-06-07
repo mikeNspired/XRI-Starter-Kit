@@ -19,6 +19,7 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty defaultPose;
         private SerializedProperty animationPose;
         private SerializedProperty secondButtonPose;
+        private SerializedProperty openPose;
         private SerializedProperty closedPose;
         private HandAnimator mainScript;
 
@@ -39,6 +40,7 @@ namespace MikeNspired.XRIStarterKit.Editor
             defaultPose = serializedObject.FindProperty("DefaultPose");
             animationPose = serializedObject.FindProperty("AnimationPose");
             secondButtonPose = serializedObject.FindProperty("SecondButtonPose");
+            openPose = serializedObject.FindProperty("OpenPose");
             closedPose = serializedObject.FindProperty("ClosedPose");
 
             if (mainScript.RootBone == null)
@@ -132,6 +134,12 @@ namespace MikeNspired.XRIStarterKit.Editor
             labelToolTip = new GUIContent("Second Button Pose", "Animation used when not holding an item and pulling the grip button");
             EditorGUILayout.PropertyField(secondButtonPose, labelToolTip);
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.SecondButtonPose);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            labelToolTip = new GUIContent("Open Pose", "Fully-open/splayed pose used as the open end (t=0) of the procedural per-finger curl sweep. Distinct from Default Pose; falls back to Default Pose if unassigned.");
+            EditorGUILayout.PropertyField(openPose, labelToolTip);
+            if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.OpenPose);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
