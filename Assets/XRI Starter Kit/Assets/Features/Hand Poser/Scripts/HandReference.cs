@@ -53,10 +53,8 @@ namespace MikeNspired.XRIStarterKit
             if (!currentHandPoser)
                 return;
 
-            // Skip snap for dynamic grabs (off-axis or no authored pose for this hand).
-            // logDecision:false — XRHandPoser logs the decision from its own selectEntered;
-            // we only need the bool here so we don't double-log every grab.
-            if (currentHandPoser is XRHandPoser xrPoser && xrPoser.IsGrabDynamic(Hand, false))
+            // Skip snap for dynamic grabs (off-axis or no authored pose for this hand)
+            if (currentHandPoser is XRHandPoser xrPoser && xrPoser.IsGrabDynamic(Hand))
                 return;
 
             var interactableAttach = LeftRight == LeftRight.Left
