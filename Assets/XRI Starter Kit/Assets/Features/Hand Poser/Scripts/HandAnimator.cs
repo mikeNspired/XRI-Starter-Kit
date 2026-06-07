@@ -23,6 +23,9 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject AnimationPose;
         public PoseScriptableObject SecondButtonPose;
 
+        [Tooltip("Fully-open/splayed pose used as the open end of the per-finger curl sweep (t=0). Kept distinct from DefaultPose (the relaxed idle) so the solver has full finger range and fingertips start clear of the target. Falls back to DefaultPose if left unassigned.")]
+        public PoseScriptableObject OpenPose;
+
         [Tooltip("Fist/grip pose used as the closed end of the per-finger curl sweep (t=1). Assign in the Inspector.")]
         public PoseScriptableObject ClosedPose;
 

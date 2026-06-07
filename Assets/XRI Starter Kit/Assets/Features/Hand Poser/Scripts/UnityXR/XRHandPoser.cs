@@ -130,11 +130,16 @@ namespace MikeNspired.XRIStarterKit
             int mask = 0;
             foreach (var c in colliders) mask |= 1 << c.gameObject.layer;
 
+            // Sweep from the dedicated max-open pose so fingers have full range and start clear
+            // of the target. Falls back to the relaxed DefaultPose on hands without an OpenPose
+            // authored yet, preserving prior behavior.
+            var openPose = hand.OpenPose ? hand.OpenPose : hand.DefaultPose;
+
             var ctx = new HandSolveContext
             {
                 hand            = hand,
                 fingerMap       = hand.fingerMap,
-                openPose        = hand.DefaultPose,
+                openPose        = openPose,
                 closedPose      = hand.ClosedPose,
                 targetColliders = colliders,
                 targetMask      = mask,
