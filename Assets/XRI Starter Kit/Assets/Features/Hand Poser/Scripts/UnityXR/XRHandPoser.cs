@@ -30,6 +30,7 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private float dynamicProbeRadius = 0.01f;
 
         private IHandPoseSolver poseSolver;
+        private Coroutine dynamicSolveRoutine;
 
         protected override void Awake()
         {
@@ -58,14 +59,14 @@ namespace MikeNspired.XRIStarterKit
                 return; // Skip hand posing for far interactions
             }
 
-            if (GrabIsDynamic(x.interactorObject.transform, handRef.Hand))
+            if (GrabIsDynamic(handRef.Hand))
                 BeginDynamicPose(handRef.Hand);
             else
                 BeginNewHandPoses(handRef.Hand);
         }
 
         // Returns true when the grab should use the dynamic solver; logs the decision either way.
-        private bool GrabIsDynamic(Transform interactorTransform, HandAnimator hand)
+        private bool GrabIsDynamic(HandAnimator hand)
         {
             if (!CheckIfPoseExistForHand(hand))
             {
@@ -80,16 +81,17 @@ namespace MikeNspired.XRIStarterKit
                 return false;
             }
 
-            float offsetPos   = Vector3.Distance(interactorTransform.position, authoredAttach.position);
-            float offsetAngle = Quaternion.Angle(interactorTransform.rotation, authoredAttach.rotation);
+            // Measure from the HAND ROOT, not the controller: SaveAttachPoints defines the
+            // authored attach as hand.transform's pose, so hand-vs-attach cancels the
+            // hand-model grip offset and a clean on-axis grab reads ~0. Comparing the
+            // controller instead bakes in that offset and trips DYNAMIC on every grab.
+            float offsetPos   = Vector3.Distance(hand.transform.position, authoredAttach.position);
+            float offsetAngle = Quaternion.Angle(hand.transform.rotation, authoredAttach.rotation);
 
-            // Rotation alone doesn't drive the decision: the authored attach bakes in the
-            // hand-model offset from the controller, so raw controller vs. attach angle is
-            // routinely 30-90° even on a correct on-axis grab. Logged for future tuning only.
-            bool isDynamic = offsetPos > positionThreshold;
+            bool isDynamic = offsetPos > positionThreshold || offsetAngle > rotationThreshold;
 
             if (isDynamic)
-                Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {positionThreshold}m), angle={offsetAngle:F1}°");
+                Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {positionThreshold}m), angle={offsetAngle:F1}° (threshold {rotationThreshold}°)");
             else
                 Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — pos={offsetPos:F3}m, angle={offsetAngle:F1}°");
 
@@ -101,7 +103,8 @@ namespace MikeNspired.XRIStarterKit
         private void BeginDynamicPose(HandAnimator hand)
         {
             RegisterGrabbingHand(hand);  // so Release() can return the hand on un-grab
-            StartCoroutine(SolveDynamicPoseRoutine(hand));
+            if (dynamicSolveRoutine != null) StopCoroutine(dynamicSolveRoutine);
+            dynamicSolveRoutine = StartCoroutine(SolveDynamicPoseRoutine(hand));
         }
 
         private IEnumerator SolveDynamicPoseRoutine(HandAnimator hand)
@@ -151,6 +154,15 @@ namespace MikeNspired.XRIStarterKit
         private void TryReleaseHand(SelectExitEventArgs x)
         {
             if (!x.interactorObject.transform.GetComponentInParent<HandReference>()) return;
+
+            // Cancel any pending dynamic solve so a stale solve can't land on the hand
+            // after release (or during the next grab).
+            if (dynamicSolveRoutine != null)
+            {
+                StopCoroutine(dynamicSolveRoutine);
+                dynamicSolveRoutine = null;
+            }
+
             Release();
         }
 
