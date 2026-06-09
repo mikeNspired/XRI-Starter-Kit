@@ -156,6 +156,12 @@ namespace MikeNspired.XRIStarterKit
         private void BeginDynamicPose(HandAnimator hand, IXRSelectInteractor interactor)
         {
             RegisterGrabbingHand(hand);    // so Release() can return the hand on un-grab
+            // Gate the grip-hold + trigger animations immediately so the hand can't fist up to
+            // SecondButtonPose during the ease-in/solve wait (StartAnimationByButtonValue checks
+            // isGrabbingObject). Without this the hand visibly clenches, opens, then poses.
+            // Failed-grasp paths reset these: drop → ReturnToDefaultPosing, fallback → BeginNewPoses.
+            hand.isGrabbingObject = true;
+            hand.AnimationPose = null; // ReturnAnimationsToOriginal restores it on release.
             if (dynamicSolveRoutine != null) StopCoroutine(dynamicSolveRoutine);
             dynamicSolveRoutine = StartCoroutine(SolveDynamicPoseRoutine(hand, interactor));
         }
@@ -218,12 +224,8 @@ namespace MikeNspired.XRIStarterKit
                 yield break;
             }
 
-            // Grasp holds: gate the grip-hold + trigger animations so they can't overwrite the
-            // solved pose (authored path does the equivalent via BeginNewPoses). Deferred to here
-            // so a failed grasp that falls back to authored doesn't leave these mutated.
-            hand.isGrabbingObject = true;
-            hand.AnimationPose = null; // ReturnAnimationsToOriginal restores it on release.
-
+            // Grasp holds: apply the solved pose. (Animation gating was set in BeginDynamicPose so
+            // the hand doesn't fist up during the solve wait.)
             hand.SetJointsDirect(result, hand.animationTimeToNewPose);
         }
 
