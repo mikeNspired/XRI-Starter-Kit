@@ -53,6 +53,19 @@ namespace MikeNspired.XRIStarterKit
             if (!currentHandPoser)
                 return;
 
+            // Dynamic grab (off-axis / no authored pose): hold the object where it was grabbed
+            // instead of snapping its authored grip into the palm. Aligning the interactor attach
+            // to the object's CURRENT attach pose makes XRI's grab target == current → no teleport,
+            // so the curl solver wraps the fingers onto the geometry where the hand actually is.
+            // (Mechanic proven in isolation by HoldInPlaceOnGrab.) Authored path below is unchanged.
+            if (currentHandPoser is XRHandPoser xrPoser && xrPoser.IsGrabDynamic(Hand))
+            {
+                var objectAttach = args.interactableObject.GetAttachTransform(args.interactorObject);
+                if (objectAttach)
+                    attachTransform.SetPositionAndRotation(objectAttach.position, objectAttach.rotation);
+                return;
+            }
+
             var interactableAttach = LeftRight == LeftRight.Left
                 ? currentHandPoser.leftHandAttach
                 : currentHandPoser.rightHandAttach;
