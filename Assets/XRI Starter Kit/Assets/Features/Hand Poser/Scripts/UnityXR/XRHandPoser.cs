@@ -160,27 +160,18 @@ namespace MikeNspired.XRIStarterKit
             RegisterGrabbingHand(hand);    // so Release() can return the hand on un-grab
             hand.isGrabbingObject = true;  // gate the grip-hold animation from (re)starting
             hand.AnimationPose = null;     // gate the trigger animation; ReturnAnimationsToOriginal restores it on release
-
-            // Actively stop any in-flight grip/trigger animation and hold the open (sweep-start)
-            // pose during the ease-in/solve wait. Gating isGrabbingObject alone can't stop a grip
-            // clench that already started this frame (StartAnimationByButtonValue's guard only
-            // blocks new starts). SetJointsDirect cancels the running coroutine, so the hand reads
-            // as a natural open → curl instead of clench → open → pose.
-            var openPose = hand.OpenPose ? hand.OpenPose : hand.DefaultPose;
-            if (openPose && openPose.joints != null)
-                hand.SetJointsDirect(openPose.joints, hand.animationTimeToNewPose);
-
             if (dynamicSolveRoutine != null) StopCoroutine(dynamicSolveRoutine);
             dynamicSolveRoutine = StartCoroutine(SolveDynamicPoseRoutine(hand, interactor));
         }
 
         private IEnumerator SolveDynamicPoseRoutine(HandAnimator hand, IXRSelectInteractor interactor)
         {
-            // Wait for the object's attach ease-in so the hand is at the grab location
-            // before we probe — otherwise fingers solve against thin air.
-            float ease = GetEaseInTime();
-            if (ease > 0f) yield return new WaitForSeconds(ease);
-            yield return null;  // one extra frame for the grab to fully settle
+            // Phase 5 holds the object where it was grabbed (it does not ease toward the hand), so
+            // the geometry is already in place — no need to wait out attachEaseInTime. One frame lets
+            // the grab's attach write and transform sync settle, then we solve and apply a single
+            // blend from the current pose straight to the solved pose (like the authored path), with
+            // no intermediate open/fist flailing.
+            yield return null;
 
             if (!hand || !hand.ClosedPose || !hand.DefaultPose)
             {
