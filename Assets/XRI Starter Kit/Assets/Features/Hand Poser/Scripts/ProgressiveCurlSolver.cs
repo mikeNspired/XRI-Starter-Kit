@@ -154,11 +154,24 @@ namespace MikeNspired.XRIStarterKit
                     prevT = t;
                 }
 
-                // Contact → lock just before penetration; no contact → relax to a gentle rest curl
-                // (not a full fist) so a finger that reaches nothing looks natural rather than clawed.
-                tj[i] = jointHit ? prevT : Mathf.Clamp01(_ctx.noContactCurl);
+                // Contact → lock just before penetration. No contact → keep curling toward closed so a
+                // finger that contacted earlier still wraps its distal joints around a thin object.
+                tj[i] = jointHit ? prevT : 1f;
                 ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]); // freeze at the locked amount
                 if (jointHit) _contacted = true;
+            }
+
+            // Only when the finger touched nothing at all does it relax to a gentle rest curl
+            // (not a full fist), so a finger that reaches nothing reads as natural rather than clawed.
+            // A finger that contacted anywhere keeps the wrap computed above.
+            if (!_contacted)
+            {
+                float rest = Mathf.Clamp01(_ctx.noContactCurl);
+                for (int i = 0; i < n; i++)
+                {
+                    tj[i] = rest;
+                    ApplyJoint(_chain[i], _openDict, _closedDict, rest);
+                }
             }
 
             return tj;
