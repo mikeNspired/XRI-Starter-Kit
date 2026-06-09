@@ -58,7 +58,7 @@ namespace MikeNspired.XRIStarterKit
             // to the object's CURRENT attach pose makes XRI's grab target == current → no teleport,
             // so the curl solver wraps the fingers onto the geometry where the hand actually is.
             // (Mechanic proven in isolation by HoldInPlaceOnGrab.) Authored path below is unchanged.
-            if (currentHandPoser is XRHandPoser xrPoser && xrPoser.IsGrabDynamic(Hand))
+            if (currentHandPoser is XRHandPoser xrPoser && xrPoser.ShouldUseDynamic(Hand))
             {
                 var objectAttach = args.interactableObject.GetAttachTransform(args.interactorObject);
                 if (objectAttach)

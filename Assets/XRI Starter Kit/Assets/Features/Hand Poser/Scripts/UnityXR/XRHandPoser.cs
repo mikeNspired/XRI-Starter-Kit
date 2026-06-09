@@ -21,16 +21,36 @@ namespace MikeNspired.XRIStarterKit
         public bool overrideEaseTime = false;
         public float easeInTimeOverride = 0;
 
-        [Header("Dynamic Pose Gate")]
-        [SerializeField] private float positionThreshold = 0.05f;
-        [SerializeField] private float rotationThreshold = 30f;
+        [Header("Hand Pose Policy")]
+        [Tooltip("Auto: authored near the grip, dynamic fallback off-axis. AuthoredOnly: never solve " +
+                 "(e.g. a handgun). DynamicOnly: always solve (e.g. a cube). NoPosing: no hand posing.")]
+        [SerializeField] private HandPosePolicy posePolicy = HandPosePolicy.Auto;
 
-        [Header("Dynamic Pose Solver")]
+        [Tooltip("When off, this object uses the global defaults on the HandPoserSettings asset. " +
+                 "Turn on to override the thresholds and grasp rule below for this object only.")]
+        [SerializeField] private bool overrideGlobalSettings = false;
+
+        [Header("Per-Object Overrides (used only when Override Global Settings is on)")]
+        [SerializeField] private float positionThreshold = 0.08f;
+        [SerializeField] private float rotationThreshold = 45f;
         [SerializeField] private int   dynamicStepCount   = 15;
         [SerializeField] private float dynamicProbeRadius = 0.01f;
+        [SerializeField] private bool  graspRequireThumb  = true;
+        [SerializeField, Range(0, 4)] private int graspRequiredFingers = 2;
+        [SerializeField] private FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;
 
         private IHandPoseSolver poseSolver;
         private Coroutine dynamicSolveRoutine;
+
+        // ─── Effective settings: per-object override when enabled, else global defaults ───
+        private HandPoserSettings Settings => HandPoserSettings.Instance;
+        private float PositionThreshold     => overrideGlobalSettings ? positionThreshold     : Settings.dynamicPositionThreshold;
+        private float RotationThreshold     => overrideGlobalSettings ? rotationThreshold     : Settings.dynamicRotationThreshold;
+        private int   DynamicStepCount      => overrideGlobalSettings ? dynamicStepCount      : Settings.dynamicStepCount;
+        private float DynamicProbeRadius    => overrideGlobalSettings ? dynamicProbeRadius    : Settings.dynamicProbeRadius;
+        private bool  GraspRequireThumb     => overrideGlobalSettings ? graspRequireThumb     : Settings.graspRequireThumb;
+        private int   GraspRequiredFingers  => overrideGlobalSettings ? graspRequiredFingers  : Settings.graspRequiredFingers;
+        private FailedGraspResponse FailedGraspResponse => overrideGlobalSettings ? failedGraspResponse : Settings.failedGraspResponse;
 
         protected override void Awake()
         {
@@ -59,10 +79,36 @@ namespace MikeNspired.XRIStarterKit
                 return; // Skip hand posing for far interactions
             }
 
-            if (IsGrabDynamic(handRef.Hand, logDecision: true))
-                BeginDynamicPose(handRef.Hand);
-            else
-                BeginNewHandPoses(handRef.Hand);
+            switch (posePolicy)
+            {
+                case HandPosePolicy.NoPosing:
+                    return;
+                case HandPosePolicy.AuthoredOnly:
+                    BeginNewHandPoses(handRef.Hand);
+                    return;
+                case HandPosePolicy.DynamicOnly:
+                    BeginDynamicPose(handRef.Hand, x.interactorObject);
+                    return;
+                default: // Auto
+                    if (IsGrabDynamic(handRef.Hand, logDecision: true))
+                        BeginDynamicPose(handRef.Hand, x.interactorObject);
+                    else
+                        BeginNewHandPoses(handRef.Hand);
+                    return;
+            }
+        }
+
+        // Effective dynamic-vs-authored decision including the per-object policy. HandReference
+        // calls this so its snap suppression matches exactly what TryStartPosing will do.
+        public bool ShouldUseDynamic(HandAnimator hand)
+        {
+            switch (posePolicy)
+            {
+                case HandPosePolicy.NoPosing:     return false;
+                case HandPosePolicy.AuthoredOnly: return false;
+                case HandPosePolicy.DynamicOnly:  return true;
+                default:                          return IsGrabDynamic(hand);
+            }
         }
 
         // Returns true when the grab should use the dynamic solver. Public so the interactor-side
@@ -92,12 +138,12 @@ namespace MikeNspired.XRIStarterKit
             float offsetPos   = Vector3.Distance(hand.transform.position, authoredAttach.position);
             float offsetAngle = Quaternion.Angle(hand.transform.rotation, authoredAttach.rotation);
 
-            bool isDynamic = offsetPos > positionThreshold || offsetAngle > rotationThreshold;
+            bool isDynamic = offsetPos > PositionThreshold || offsetAngle > RotationThreshold;
 
             if (logDecision)
             {
                 if (isDynamic)
-                    Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {positionThreshold}m), angle={offsetAngle:F1}° (threshold {rotationThreshold}°)");
+                    Debug.Log($"[XRHandPoser] {gameObject.name} | DYNAMIC — pos={offsetPos:F3}m (threshold {PositionThreshold}m), angle={offsetAngle:F1}° (threshold {RotationThreshold}°)");
                 else
                     Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — pos={offsetPos:F3}m, angle={offsetAngle:F1}°");
             }
@@ -107,16 +153,14 @@ namespace MikeNspired.XRIStarterKit
 
         // ─── Dynamic pose path ────────────────────────────────────────────────────
 
-        private void BeginDynamicPose(HandAnimator hand)
+        private void BeginDynamicPose(HandAnimator hand, IXRSelectInteractor interactor)
         {
             RegisterGrabbingHand(hand);    // so Release() can return the hand on un-grab
-            hand.isGrabbingObject = true;  // gate the grip-hold animation so it can't overwrite the solved pose (authored path does this via BeginNewPoses)
-            hand.AnimationPose = null;     // no authored trigger pose on a dynamic grab; null gates the trigger animation so it can't overwrite the solve. ReturnAnimationsToOriginal restores it on release.
             if (dynamicSolveRoutine != null) StopCoroutine(dynamicSolveRoutine);
-            dynamicSolveRoutine = StartCoroutine(SolveDynamicPoseRoutine(hand));
+            dynamicSolveRoutine = StartCoroutine(SolveDynamicPoseRoutine(hand, interactor));
         }
 
-        private IEnumerator SolveDynamicPoseRoutine(HandAnimator hand)
+        private IEnumerator SolveDynamicPoseRoutine(HandAnimator hand, IXRSelectInteractor interactor)
         {
             // Wait for the object's attach ease-in so the hand is at the grab location
             // before we probe — otherwise fingers solve against thin air.
@@ -150,17 +194,74 @@ namespace MikeNspired.XRIStarterKit
                 closedPose      = hand.ClosedPose,
                 targetColliders = colliders,
                 targetMask      = mask,
-                stepCount       = dynamicStepCount,
-                probeRadius     = dynamicProbeRadius,
+                stepCount       = DynamicStepCount,
+                probeRadius     = DynamicProbeRadius,
             };
 
             poseSolver ??= new CurlSweepSolver();
             var result = poseSolver.Solve(ctx);
 
-            if (result != null && result.Length > 0)
-                hand.SetJointsDirect(result, hand.animationTimeToNewPose);
-            else
-                Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve returned no joint data.");
+            if (result == null || result.Length == 0)
+            {
+                Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve returned no joint data; treating as failed grasp.");
+                HandleFailedGrasp(hand, interactor);
+                yield break;
+            }
+
+            // Graspability gate: a sphere-cast grab can catch an object the hand only floated past.
+            // Require the configured contact before committing, otherwise the object would hang in
+            // mid-air. The solver records per-finger contact (thumb=0 … pinky=4).
+            if (!IsGraspValid(poseSolver.LastSolveContacted))
+            {
+                Debug.Log($"[XRHandPoser] {gameObject.name} — dynamic grasp failed contact test ({DescribeContacts(poseSolver.LastSolveContacted)}); {FailedGraspResponse}.");
+                HandleFailedGrasp(hand, interactor);
+                yield break;
+            }
+
+            // Grasp holds: gate the grip-hold + trigger animations so they can't overwrite the
+            // solved pose (authored path does the equivalent via BeginNewPoses). Deferred to here
+            // so a failed grasp that falls back to authored doesn't leave these mutated.
+            hand.isGrabbingObject = true;
+            hand.AnimationPose = null; // ReturnAnimationsToOriginal restores it on release.
+
+            hand.SetJointsDirect(result, hand.animationTimeToNewPose);
+        }
+
+        // thumb = index 0; fingers 1..4 are index/middle/ring/pinky.
+        private bool IsGraspValid(bool[] contacted)
+        {
+            if (contacted == null || contacted.Length < 5) return false;
+
+            if (GraspRequireThumb && !contacted[0]) return false;
+
+            int fingers = 0;
+            for (int i = 1; i < 5; i++)
+                if (contacted[i]) fingers++;
+
+            return fingers >= GraspRequiredFingers;
+        }
+
+        private static string DescribeContacts(bool[] contacted)
+        {
+            if (contacted == null) return "no data";
+            return $"thumb={contacted[0]}, fingers={(contacted[1] ? 1 : 0) + (contacted[2] ? 1 : 0) + (contacted[3] ? 1 : 0) + (contacted[4] ? 1 : 0)}";
+        }
+
+        private void HandleFailedGrasp(HandAnimator hand, IXRSelectInteractor interactor)
+        {
+            // FallbackToAuthored: if an authored pose exists, apply it. The object is already held
+            // in place (HandReference suppressed its snap), so BeginNewHandPoses moves the hand onto
+            // the authored grip and poses it — no object jump. With no authored pose, fall through to drop.
+            if (FailedGraspResponse == FailedGraspResponse.FallbackToAuthored && CheckIfPoseExistForHand(hand))
+            {
+                BeginNewHandPoses(hand);
+                return;
+            }
+
+            // Drop: force-release so the object can't hang in the air. The select-exit chain
+            // (TryReleaseHand + HandReference.ResetAttachTransform) returns the hand and attach.
+            if (interactor != null && interactable && interactable.interactionManager)
+                interactable.interactionManager.SelectExit(interactor, (IXRSelectInteractable)interactable);
         }
 
         // ─── Shared / authored path (unchanged) ──────────────────────────────────

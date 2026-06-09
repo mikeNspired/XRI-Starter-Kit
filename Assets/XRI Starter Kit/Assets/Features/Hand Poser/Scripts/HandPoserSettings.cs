@@ -41,6 +41,24 @@ namespace MikeNspired.XRIStarterKit
         public List<PoseScriptableObject> ReferencePoses;
         public bool sortReferencePoses;
 
+        [Header("Dynamic Pose — Global Defaults")]
+        [Tooltip("How far (m) a grab can land from the authored grip before it counts as off-axis (DYNAMIC). Per-object XRHandPoser can override.")]
+        public float dynamicPositionThreshold = 0.08f;
+        [Tooltip("How far (deg) a grab can rotate from the authored grip before it counts as off-axis (DYNAMIC). Per-object XRHandPoser can override.")]
+        public float dynamicRotationThreshold = 45f;
+        [Tooltip("Curl-sweep resolution: number of t steps per finger.")]
+        public int dynamicStepCount = 15;
+        [Tooltip("Fingertip probe sphere radius (m) used to detect contact during the sweep.")]
+        public float dynamicProbeRadius = 0.01f;
+
+        [Header("Dynamic Grasp — Global Defaults")]
+        [Tooltip("Require the thumb to make contact for a dynamic grasp to hold.")]
+        public bool graspRequireThumb = true;
+        [Tooltip("Number of non-thumb fingers that must contact for a dynamic grasp to hold.")]
+        [Range(0, 4)] public int graspRequiredFingers = 2;
+        [Tooltip("What to do when a dynamic grasp fails its contact test.")]
+        public FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;
+
         private void OnValidate()
         {
             if (sortReferencePoses)
