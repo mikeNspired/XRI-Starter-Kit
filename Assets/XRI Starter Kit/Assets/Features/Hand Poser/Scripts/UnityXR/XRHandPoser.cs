@@ -158,12 +158,18 @@ namespace MikeNspired.XRIStarterKit
         private void BeginDynamicPose(HandAnimator hand, IXRSelectInteractor interactor)
         {
             RegisterGrabbingHand(hand);    // so Release() can return the hand on un-grab
-            // Gate the grip-hold + trigger animations immediately so the hand can't fist up to
-            // SecondButtonPose during the ease-in/solve wait (StartAnimationByButtonValue checks
-            // isGrabbingObject). Without this the hand visibly clenches, opens, then poses.
-            // Failed-grasp paths reset these: drop → ReturnToDefaultPosing, fallback → BeginNewPoses.
-            hand.isGrabbingObject = true;
-            hand.AnimationPose = null; // ReturnAnimationsToOriginal restores it on release.
+            hand.isGrabbingObject = true;  // gate the grip-hold animation from (re)starting
+            hand.AnimationPose = null;     // gate the trigger animation; ReturnAnimationsToOriginal restores it on release
+
+            // Actively stop any in-flight grip/trigger animation and hold the open (sweep-start)
+            // pose during the ease-in/solve wait. Gating isGrabbingObject alone can't stop a grip
+            // clench that already started this frame (StartAnimationByButtonValue's guard only
+            // blocks new starts). SetJointsDirect cancels the running coroutine, so the hand reads
+            // as a natural open → curl instead of clench → open → pose.
+            var openPose = hand.OpenPose ? hand.OpenPose : hand.DefaultPose;
+            if (openPose && openPose.joints != null)
+                hand.SetJointsDirect(openPose.joints, hand.animationTimeToNewPose);
+
             if (dynamicSolveRoutine != null) StopCoroutine(dynamicSolveRoutine);
             dynamicSolveRoutine = StartCoroutine(SolveDynamicPoseRoutine(hand, interactor));
         }
