@@ -12,5 +12,8 @@ namespace MikeNspired.XRIStarterKit
         public LayerMask targetMask;
         public int stepCount = 15;
         public float probeRadius = 0.01f;
+        // How many joints from the fingertip inward to sphere-test each step. 1 = tip only;
+        // 2+ catches a finger wrapping the object even when the tip slips past it.
+        public int samplesPerFinger = 2;
     }
 }

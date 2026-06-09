@@ -34,7 +34,8 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private float positionThreshold = 0.08f;
         [SerializeField] private float rotationThreshold = 45f;
         [SerializeField] private int   dynamicStepCount   = 15;
-        [SerializeField] private float dynamicProbeRadius = 0.01f;
+        [SerializeField] private float dynamicProbeRadius = 0.02f;
+        [SerializeField, Range(1, 4)] private int dynamicSamplesPerFinger = 2;
         [SerializeField] private bool  graspRequireThumb  = true;
         [SerializeField, Range(0, 4)] private int graspRequiredFingers = 2;
         [SerializeField] private FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;
@@ -48,6 +49,7 @@ namespace MikeNspired.XRIStarterKit
         private float RotationThreshold     => overrideGlobalSettings ? rotationThreshold     : Settings.dynamicRotationThreshold;
         private int   DynamicStepCount      => overrideGlobalSettings ? dynamicStepCount      : Settings.dynamicStepCount;
         private float DynamicProbeRadius    => overrideGlobalSettings ? dynamicProbeRadius    : Settings.dynamicProbeRadius;
+        private int   SamplesPerFinger      => overrideGlobalSettings ? dynamicSamplesPerFinger : Settings.dynamicSamplesPerFinger;
         private bool  GraspRequireThumb     => overrideGlobalSettings ? graspRequireThumb     : Settings.graspRequireThumb;
         private int   GraspRequiredFingers  => overrideGlobalSettings ? graspRequiredFingers  : Settings.graspRequiredFingers;
         private FailedGraspResponse FailedGraspResponse => overrideGlobalSettings ? failedGraspResponse : Settings.failedGraspResponse;
@@ -202,6 +204,7 @@ namespace MikeNspired.XRIStarterKit
                 targetMask      = mask,
                 stepCount       = DynamicStepCount,
                 probeRadius     = DynamicProbeRadius,
+                samplesPerFinger = SamplesPerFinger,
             };
 
             poseSolver ??= new CurlSweepSolver();

@@ -51,8 +51,12 @@ namespace MikeNspired.XRIStarterKit
                         continue;
                     }
 
-                    // Probe at the deepest joint (actual fingertip bone)
+                    // Sample the last N joints (fingertip inward). Multi-sampling catches a
+                    // finger that wraps the object even when the tip slips past the side.
                     var tip = chain[chain.Count - 1];
+                    int samples = Mathf.Clamp(_ctx.samplesPerFinger, 1, chain.Count);
+                    int sampleStart = chain.Count - samples;
+
                     float prevT = 0f;
                     Vector3 prevProbePos = tip.position;
                     bool contacted = false;
@@ -62,9 +66,7 @@ namespace MikeNspired.XRIStarterKit
                         float t = (float)step / _ctx.stepCount;
                         _ctx.hand.SetFingerCurl(fingerIdx, t, _ctx.openPose, _ctx.closedPose);
 
-                        Vector3 probePos = tip.position;
-
-                        if (OverlapsTarget(probePos, _ctx))
+                        if (AnySampleOverlaps(chain, sampleStart, _ctx))
                         {
                             // Lock at the last position before contact
                             tFinals[fingerIdx] = prevT;
@@ -75,7 +77,7 @@ namespace MikeNspired.XRIStarterKit
                         }
 
                         prevT = t;
-                        prevProbePos = probePos;
+                        prevProbePos = tip.position;
                     }
 
                     if (!contacted)
@@ -105,6 +107,17 @@ namespace MikeNspired.XRIStarterKit
         }
 
         #region Private Helpers
+
+        // True if any of the sampled joints (sampleStart..tip) overlaps the target this step.
+        private static bool AnySampleOverlaps(List<Transform> _chain, int _sampleStart, HandSolveContext _ctx)
+        {
+            for (int j = _sampleStart; j < _chain.Count; j++)
+            {
+                var joint = _chain[j];
+                if (joint && OverlapsTarget(joint.position, _ctx)) return true;
+            }
+            return false;
+        }
 
         private static bool OverlapsTarget(Vector3 _center, HandSolveContext _ctx)
         {

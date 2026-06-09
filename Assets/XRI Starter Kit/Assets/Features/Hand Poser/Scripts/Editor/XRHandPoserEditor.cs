@@ -29,6 +29,7 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty rotationThreshold;
         private SerializedProperty dynamicStepCount;
         private SerializedProperty dynamicProbeRadius;
+        private SerializedProperty dynamicSamplesPerFinger;
         private SerializedProperty graspRequireThumb;
         private SerializedProperty graspRequiredFingers;
         private SerializedProperty failedGraspResponse;
@@ -62,6 +63,7 @@ namespace MikeNspired.XRIStarterKit.Editor
             rotationThreshold = serializedObject.FindProperty("rotationThreshold");
             dynamicStepCount = serializedObject.FindProperty("dynamicStepCount");
             dynamicProbeRadius = serializedObject.FindProperty("dynamicProbeRadius");
+            dynamicSamplesPerFinger = serializedObject.FindProperty("dynamicSamplesPerFinger");
             graspRequireThumb = serializedObject.FindProperty("graspRequireThumb");
             graspRequiredFingers = serializedObject.FindProperty("graspRequiredFingers");
             failedGraspResponse = serializedObject.FindProperty("failedGraspResponse");
@@ -174,6 +176,9 @@ namespace MikeNspired.XRIStarterKit.Editor
                     "Curl-sweep resolution: number of t steps per finger."));
                 EditorGUILayout.PropertyField(dynamicProbeRadius, new GUIContent("Probe Radius",
                     "Fingertip probe sphere radius (m) used to detect contact during the sweep."));
+                EditorGUILayout.PropertyField(dynamicSamplesPerFinger, new GUIContent("Samples Per Finger",
+                    "Joints from the fingertip inward to sphere-test each step. 1 = tip only; " +
+                    "2+ catches a finger wrapping the object even when the tip slips past it."));
                 EditorGUILayout.PropertyField(graspRequireThumb, new GUIContent("Grasp Require Thumb",
                     "Require the thumb to make contact for a dynamic grasp to hold."));
                 EditorGUILayout.PropertyField(graspRequiredFingers, new GUIContent("Grasp Required Fingers",

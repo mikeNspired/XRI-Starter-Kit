@@ -49,7 +49,10 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Curl-sweep resolution: number of t steps per finger.")]
         public int dynamicStepCount = 15;
         [Tooltip("Fingertip probe sphere radius (m) used to detect contact during the sweep.")]
-        public float dynamicProbeRadius = 0.01f;
+        public float dynamicProbeRadius = 0.02f;
+        [Tooltip("Joints from the fingertip inward to sphere-test each step. 1 = tip only; " +
+                 "2+ catches a finger wrapping the object even when the tip slips past it.")]
+        [Range(1, 4)] public int dynamicSamplesPerFinger = 2;
 
         [Header("Dynamic Grasp — Global Defaults")]
         [Tooltip("Require the thumb to make contact for a dynamic grasp to hold.")]
