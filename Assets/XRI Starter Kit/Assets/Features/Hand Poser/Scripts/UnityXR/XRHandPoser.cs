@@ -207,7 +207,9 @@ namespace MikeNspired.XRIStarterKit
                 samplesPerFinger = SamplesPerFinger,
             };
 
-            poseSolver ??= new CurlSweepSolver();
+            poseSolver ??= Settings.useProgressiveSolver
+                ? (IHandPoseSolver)new ProgressiveCurlSolver()
+                : new CurlSweepSolver();
             var result = poseSolver.Solve(ctx);
 
             if (result == null || result.Length == 0)

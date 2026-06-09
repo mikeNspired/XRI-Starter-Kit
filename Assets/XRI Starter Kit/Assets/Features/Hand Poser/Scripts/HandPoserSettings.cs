@@ -53,6 +53,9 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Joints from the fingertip inward to sphere-test each step. 1 = tip only; " +
                  "2+ catches a finger wrapping the object even when the tip slips past it.")]
         [Range(1, 4)] public int dynamicSamplesPerFinger = 2;
+        [Tooltip("Use the per-joint progressive-curl solver (fingertips wrap onto surfaces even when " +
+                 "the knuckle rests on the object). Off uses the simpler single-t-per-finger curl sweep.")]
+        public bool useProgressiveSolver = true;
 
         [Header("Dynamic Grasp — Global Defaults")]
         [Tooltip("Require the thumb to make contact for a dynamic grasp to hold.")]
