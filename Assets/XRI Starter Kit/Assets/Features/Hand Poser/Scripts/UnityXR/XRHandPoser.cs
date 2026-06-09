@@ -36,6 +36,7 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private int   dynamicStepCount   = 15;
         [SerializeField] private float dynamicProbeRadius = 0.02f;
         [SerializeField, Range(1, 4)] private int dynamicSamplesPerFinger = 2;
+        [SerializeField, Range(0, 1)] private float dynamicNoContactCurl = 0.4f;
         [SerializeField] private bool  graspRequireThumb  = true;
         [SerializeField, Range(0, 4)] private int graspRequiredFingers = 2;
         [SerializeField] private FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;
@@ -50,6 +51,7 @@ namespace MikeNspired.XRIStarterKit
         private int   DynamicStepCount      => overrideGlobalSettings ? dynamicStepCount      : Settings.dynamicStepCount;
         private float DynamicProbeRadius    => overrideGlobalSettings ? dynamicProbeRadius    : Settings.dynamicProbeRadius;
         private int   SamplesPerFinger      => overrideGlobalSettings ? dynamicSamplesPerFinger : Settings.dynamicSamplesPerFinger;
+        private float NoContactCurl         => overrideGlobalSettings ? dynamicNoContactCurl   : Settings.dynamicNoContactCurl;
         private bool  GraspRequireThumb     => overrideGlobalSettings ? graspRequireThumb     : Settings.graspRequireThumb;
         private int   GraspRequiredFingers  => overrideGlobalSettings ? graspRequiredFingers  : Settings.graspRequiredFingers;
         private FailedGraspResponse FailedGraspResponse => overrideGlobalSettings ? failedGraspResponse : Settings.failedGraspResponse;
@@ -205,6 +207,7 @@ namespace MikeNspired.XRIStarterKit
                 stepCount       = DynamicStepCount,
                 probeRadius     = DynamicProbeRadius,
                 samplesPerFinger = SamplesPerFinger,
+                noContactCurl    = NoContactCurl,
             };
 
             poseSolver ??= Settings.useProgressiveSolver

@@ -19,5 +19,8 @@ namespace MikeNspired.XRIStarterKit
         // How many joints from the fingertip inward to sphere-test each step. 1 = tip only;
         // 2+ catches a finger wrapping the object even when the tip slips past it.
         public int samplesPerFinger = 2;
+        // Curl applied to a finger joint that contacts nothing (progressive solver). 1 = full fist;
+        // a smaller value relaxes missed fingers to a natural rest instead of clawing.
+        public float noContactCurl = 0.4f;
     }
 }

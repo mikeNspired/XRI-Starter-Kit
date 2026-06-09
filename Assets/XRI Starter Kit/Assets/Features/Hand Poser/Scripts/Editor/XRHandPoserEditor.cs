@@ -30,6 +30,7 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty dynamicStepCount;
         private SerializedProperty dynamicProbeRadius;
         private SerializedProperty dynamicSamplesPerFinger;
+        private SerializedProperty dynamicNoContactCurl;
         private SerializedProperty graspRequireThumb;
         private SerializedProperty graspRequiredFingers;
         private SerializedProperty failedGraspResponse;
@@ -64,6 +65,7 @@ namespace MikeNspired.XRIStarterKit.Editor
             dynamicStepCount = serializedObject.FindProperty("dynamicStepCount");
             dynamicProbeRadius = serializedObject.FindProperty("dynamicProbeRadius");
             dynamicSamplesPerFinger = serializedObject.FindProperty("dynamicSamplesPerFinger");
+            dynamicNoContactCurl = serializedObject.FindProperty("dynamicNoContactCurl");
             graspRequireThumb = serializedObject.FindProperty("graspRequireThumb");
             graspRequiredFingers = serializedObject.FindProperty("graspRequiredFingers");
             failedGraspResponse = serializedObject.FindProperty("failedGraspResponse");
@@ -177,8 +179,11 @@ namespace MikeNspired.XRIStarterKit.Editor
                 EditorGUILayout.PropertyField(dynamicProbeRadius, new GUIContent("Probe Radius",
                     "Fingertip probe sphere radius (m) used to detect contact during the sweep."));
                 EditorGUILayout.PropertyField(dynamicSamplesPerFinger, new GUIContent("Samples Per Finger",
-                    "Joints from the fingertip inward to sphere-test each step. 1 = tip only; " +
-                    "2+ catches a finger wrapping the object even when the tip slips past it."));
+                    "Curl-sweep solver only. Joints from the fingertip inward to sphere-test each step. " +
+                    "1 = tip only; 2+ catches a finger wrapping the object even when the tip slips past it."));
+                EditorGUILayout.PropertyField(dynamicNoContactCurl, new GUIContent("No-Contact Curl",
+                    "Progressive solver only. Curl applied to a finger joint that touches nothing. " +
+                    "1 = full fist; lower relaxes fingers that reach nothing to a natural rest."));
                 EditorGUILayout.PropertyField(graspRequireThumb, new GUIContent("Grasp Require Thumb",
                     "Require the thumb to make contact for a dynamic grasp to hold."));
                 EditorGUILayout.PropertyField(graspRequiredFingers, new GUIContent("Grasp Required Fingers",

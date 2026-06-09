@@ -136,17 +136,35 @@ namespace MikeNspired.XRIStarterKit
                     float t = (float)step / _ctx.stepCount;
                     ApplyJoint(_chain[i], _openDict, _closedDict, t);
 
-                    if (SegmentOverlaps(_chain, i, probeIdx, _ctx)) { jointHit = true; break; }
+                    if (SegmentOverlaps(_chain, i, probeIdx, _ctx))
+                    {
+                        // Refine between prevT (clear) and t (overlapping) so the joint sits snug
+                        // against the surface instead of a coarse sweep-step short of it.
+                        float lo = prevT, hi = t;
+                        for (int k = 0; k < RefineIterations; k++)
+                        {
+                            float mid = (lo + hi) * 0.5f;
+                            ApplyJoint(_chain[i], _openDict, _closedDict, mid);
+                            if (SegmentOverlaps(_chain, i, probeIdx, _ctx)) hi = mid; else lo = mid;
+                        }
+                        prevT = lo;
+                        jointHit = true;
+                        break;
+                    }
                     prevT = t;
                 }
 
-                tj[i] = jointHit ? prevT : 1f;
+                // Contact → lock just before penetration; no contact → relax to a gentle rest curl
+                // (not a full fist) so a finger that reaches nothing looks natural rather than clawed.
+                tj[i] = jointHit ? prevT : Mathf.Clamp01(_ctx.noContactCurl);
                 ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]); // freeze at the locked amount
                 if (jointHit) _contacted = true;
             }
 
             return tj;
         }
+
+        private const int RefineIterations = 5;
 
         // Sets a single joint's local pose to the lerp between its open and closed pose at t.
         private static void ApplyJoint(
