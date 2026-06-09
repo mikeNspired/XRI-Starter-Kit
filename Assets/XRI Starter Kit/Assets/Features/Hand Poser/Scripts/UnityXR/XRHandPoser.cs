@@ -160,6 +160,8 @@ namespace MikeNspired.XRIStarterKit
             RegisterGrabbingHand(hand);    // so Release() can return the hand on un-grab
             hand.isGrabbingObject = true;  // gate the grip-hold animation from (re)starting
             hand.AnimationPose = null;     // gate the trigger animation; ReturnAnimationsToOriginal restores it on release
+            hand.StopButtonValueAnimation(); // freeze at the current grab shape so the grip clench
+                                             // can't keep fisting the hand during the one-frame solve wait
             if (dynamicSolveRoutine != null) StopCoroutine(dynamicSolveRoutine);
             dynamicSolveRoutine = StartCoroutine(SolveDynamicPoseRoutine(hand, interactor));
         }

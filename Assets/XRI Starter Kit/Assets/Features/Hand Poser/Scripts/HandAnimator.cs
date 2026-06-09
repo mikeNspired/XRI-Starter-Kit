@@ -89,6 +89,18 @@ namespace MikeNspired.XRIStarterKit
         public void StartSecondaryPosing() => StartAnimationByButtonValue(ControllerButtons.Grip);
         public void SetSecondaryValue(float val) => gripAnimationValue = val;
 
+        // Stops the live grip/trigger value-driven animation in place (without changing the current
+        // pose), so a system like dynamic posing can take over from the hand's current shape instead
+        // of the grip clench continuing to fist the hand for a frame before the solved pose lands.
+        public void StopButtonValueAnimation()
+        {
+            if (AnimateByTriggerValue != null)
+            {
+                StopCoroutine(AnimateByTriggerValue);
+                AnimateByTriggerValue = null;
+            }
+        }
+
         public void ReturnToDefaultPosing()
         {
             isGrabbingObject = false;
