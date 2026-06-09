@@ -29,6 +29,11 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Fist/grip pose used as the closed end of the per-finger curl sweep (t=1). Assign in the Inspector.")]
         public PoseScriptableObject ClosedPose;
 
+        [Tooltip("Optional extra closed poses (e.g. a precision/pinch shape alongside the fist). The dynamic " +
+                 "solver sweeps each finger against every candidate and keeps the one whose fingertip ends " +
+                 "closest to the object. ClosedPose is always included as the first candidate.")]
+        public List<PoseScriptableObject> ClosedPoses = new List<PoseScriptableObject>();
+
         [Tooltip("Time hand skeleton animates to next pose")]
         public float animationTimeToNewPose = .1f;
 

@@ -206,6 +206,7 @@ namespace MikeNspired.XRIStarterKit
                 fingerMap       = hand.fingerMap,
                 openPose        = openPose,
                 closedPose      = hand.ClosedPose,
+                closedPoses     = hand.ClosedPoses,
                 targetColliders = colliders,
                 targetMask      = mask,
                 stepCount       = DynamicStepCount,

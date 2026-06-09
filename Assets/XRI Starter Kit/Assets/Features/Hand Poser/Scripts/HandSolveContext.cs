@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace MikeNspired.XRIStarterKit
@@ -8,6 +9,9 @@ namespace MikeNspired.XRIStarterKit
         public HandAnimator.HandFingerMap fingerMap;
         public PoseScriptableObject openPose;
         public PoseScriptableObject closedPose;
+        // Optional candidate closed poses. When non-empty the solver picks, per finger, the one
+        // whose fingertip ends closest to the target. Falls back to closedPose when null/empty.
+        public List<PoseScriptableObject> closedPoses;
         public Collider[] targetColliders;
         public LayerMask targetMask;
         public int stepCount = 15;

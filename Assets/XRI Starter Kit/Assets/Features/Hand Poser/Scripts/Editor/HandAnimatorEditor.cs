@@ -21,6 +21,7 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty secondButtonPose;
         private SerializedProperty openPose;
         private SerializedProperty closedPose;
+        private SerializedProperty closedPoses;
         private HandAnimator mainScript;
 
         private bool showReferencePoses;
@@ -42,6 +43,7 @@ namespace MikeNspired.XRIStarterKit.Editor
             secondButtonPose = serializedObject.FindProperty("SecondButtonPose");
             openPose = serializedObject.FindProperty("OpenPose");
             closedPose = serializedObject.FindProperty("ClosedPose");
+            closedPoses = serializedObject.FindProperty("ClosedPoses");
 
             if (mainScript.RootBone == null)
             {
@@ -147,6 +149,12 @@ namespace MikeNspired.XRIStarterKit.Editor
             EditorGUILayout.PropertyField(closedPose, labelToolTip);
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.ClosedPose);
             GUILayout.EndHorizontal();
+
+            labelToolTip = new GUIContent("Extra Closed Poses",
+                "Optional additional closed shapes (e.g. a precision/pinch pose). The dynamic solver sweeps " +
+                "each finger against Closed Pose plus these, keeping the one whose fingertip ends closest to " +
+                "the object. Leave empty to use only Closed Pose.");
+            EditorGUILayout.PropertyField(closedPoses, labelToolTip, true);
 
             serializedObject.ApplyModifiedProperties();
         }
