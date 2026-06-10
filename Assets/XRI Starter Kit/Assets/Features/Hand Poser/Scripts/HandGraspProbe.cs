@@ -91,6 +91,10 @@ namespace MikeNspired.XRIStarterKit
                  "instead of splaying open. 1 = fist, 0 = open.")]
         [SerializeField, Range(0, 1)] private float noContactCurl = 0.5f;
 
+        [Tooltip("After a finger grips, how far each further-out joint keeps curling when it finds " +
+                 "nothing (a gentle wrap) instead of fisting. ~0.33 reads natural.")]
+        [SerializeField, Range(0, 1)] private float distalFollowCurl = 0.33f;
+
         [Tooltip("Per-frame smoothing time-constant (seconds). 0 = snap instantly to the solved pose; " +
                  "small values (e.g. 0.05) damp solver jitter so fingers settle instead of flicking.")]
         [SerializeField, Range(0f, 0.3f)] private float smoothing = 0.04f;
@@ -244,6 +248,7 @@ namespace MikeNspired.XRIStarterKit
             ctx.probeRadius      = probeRadius;
             ctx.samplesPerFinger = samplesPerFinger;
             ctx.noContactCurl    = noContactCurl;
+            ctx.distalFollowCurl = distalFollowCurl;
             ctx.collectDebug     = handAnimator.requestSolveDebug ||
                                    (HandPoserSettings.Instance && HandPoserSettings.Instance.drawSolveDebug);
         }

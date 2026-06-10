@@ -23,6 +23,10 @@ namespace MikeNspired.XRIStarterKit
         // non-gripping fingers settle into a relaxed fist rather than splaying open. 1 = full fist,
         // 0 = fully open; ~0.7 reads as a natural relaxed grip.
         public float noContactCurl = 0.7f;
+        // After a finger has gripped upstream, how much each further-out joint keeps curling when it
+        // finds nothing — a gentle wrap continuing the finger's spiral — instead of snapping straight
+        // to a full fist (the distal "claw"). 0 = stop dead at the last grip; ~0.33 reads natural.
+        public float distalFollowCurl = 0.33f;
         // When true the solver records per-joint debug telemetry into its LastSolveDebug for the gizmo
         // drawer. Adds a little work, so leave off unless a HandPoseSolveDebugDrawer is showing it.
         public bool collectDebug;

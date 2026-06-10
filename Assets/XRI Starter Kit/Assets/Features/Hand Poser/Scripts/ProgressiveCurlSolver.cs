@@ -155,10 +155,31 @@ namespace MikeNspired.XRIStarterKit
             for (int i = 0; i < n; i++)
                 ApplyJoint(_chain[i], _openDict, _closedDict, 0f);
 
+            float follow = Mathf.Max(0f, _ctx.distalFollowCurl);
+
             for (int i = 0; i < n; i++)
             {
-                // Curling joint i rotates the segment toward joint i+1 (or the tip for the last joint).
-                int probeIdx = Mathf.Min(i + 1, n - 1);
+                // The most distal joint is a leaf: rotating it moves only geometry below it, and there
+                // is none in the chain to sphere-test — its own pivot stays put. A contact sweep there
+                // is degenerate (it can only snap the tip fully open or fully closed), so instead test
+                // the pivot ONCE to keep the grasp/contact gate honest, and pose the tip by continuing
+                // the finger's natural curl rather than the binary open/closed it produced before.
+                if (i == n - 1)
+                {
+                    bool leafHit = SegmentOverlaps(_chain, i, i, _ctx);
+                    float baseLeaf = i > 0 ? tj[i - 1] : Mathf.Clamp01(_ctx.noContactCurl);
+                    // Pivot already on the surface → hold at the parent's curl (don't drive the tip
+                    // through it). Else, if the finger gripped upstream, let the tip follow a little
+                    // further to wrap; if nothing gripped, this is overwritten by the relax pass below.
+                    tj[i] = leafHit ? baseLeaf : (_contacted ? Mathf.Min(1f, baseLeaf + follow) : baseLeaf);
+                    ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]);
+                    if (leafHit) _contacted = true;
+                    if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = leafHit;
+                    continue;
+                }
+
+                // Curling joint i rotates the segment toward joint i+1.
+                int probeIdx = i + 1;
 
                 float prevT = 0f;
                 bool jointHit = false;
@@ -185,11 +206,27 @@ namespace MikeNspired.XRIStarterKit
                     prevT = t;
                 }
 
-                // Contact → lock just before penetration. No contact → keep curling toward closed so a
-                // finger that contacted earlier still wraps its distal joints around a thin object.
-                tj[i] = jointHit ? prevT : 1f;
-                ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]); // freeze at the locked amount
-                if (jointHit) _contacted = true;
+                if (jointHit)
+                {
+                    tj[i] = prevT;            // lock just before penetration
+                    _contacted = true;
+                }
+                else if (_contacted)
+                {
+                    // The finger is already gripping upstream but this joint reached nothing. Continue
+                    // the curl as a gentle natural spiral from the previous joint instead of slamming
+                    // to a full fist — that distal "claw" was the main source of unnatural grab poses.
+                    // Still monotonic, so it wraps a thin object over a couple joints yet never hard-
+                    // fists past a thick one.
+                    tj[i] = Mathf.Min(1f, tj[i - 1] + follow);
+                }
+                else
+                {
+                    // Nothing has gripped yet: keep closing toward the fist so a more distal joint can
+                    // still find the object. A finger that ends up touching nothing relaxes below.
+                    tj[i] = 1f;
+                }
+                ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]); // freeze at the chosen amount
                 if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = jointHit;
             }
 

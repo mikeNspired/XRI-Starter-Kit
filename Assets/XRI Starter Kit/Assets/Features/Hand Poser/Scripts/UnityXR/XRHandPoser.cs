@@ -37,6 +37,7 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private float dynamicProbeRadius = 0.02f;
         [SerializeField, Range(1, 4)] private int dynamicSamplesPerFinger = 2;
         [SerializeField, Range(0, 1)] private float dynamicNoContactCurl = 0.7f;
+        [SerializeField, Range(0, 1)] private float dynamicDistalFollowCurl = 0.33f;
         [SerializeField] private bool  graspRequireThumb  = true;
         [SerializeField, Range(0, 4)] private int graspRequiredFingers = 2;
         [SerializeField] private FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;
@@ -52,6 +53,7 @@ namespace MikeNspired.XRIStarterKit
         private float DynamicProbeRadius    => overrideGlobalSettings ? dynamicProbeRadius    : Settings.dynamicProbeRadius;
         private int   SamplesPerFinger      => overrideGlobalSettings ? dynamicSamplesPerFinger : Settings.dynamicSamplesPerFinger;
         private float NoContactCurl         => overrideGlobalSettings ? dynamicNoContactCurl   : Settings.dynamicNoContactCurl;
+        private float DistalFollowCurl      => overrideGlobalSettings ? dynamicDistalFollowCurl : Settings.dynamicDistalFollowCurl;
         private bool  GraspRequireThumb     => overrideGlobalSettings ? graspRequireThumb     : Settings.graspRequireThumb;
         private int   GraspRequiredFingers  => overrideGlobalSettings ? graspRequiredFingers  : Settings.graspRequiredFingers;
         private FailedGraspResponse FailedGraspResponse => overrideGlobalSettings ? failedGraspResponse : Settings.failedGraspResponse;
@@ -210,6 +212,7 @@ namespace MikeNspired.XRIStarterKit
                 probeRadius     = DynamicProbeRadius,
                 samplesPerFinger = SamplesPerFinger,
                 noContactCurl    = NoContactCurl,
+                distalFollowCurl = DistalFollowCurl,
                 collectDebug     = Settings.drawSolveDebug || hand.requestSolveDebug,
             };
 

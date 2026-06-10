@@ -232,6 +232,19 @@ Out of scope: polish. Open a PR with the acceptance steps restated; do not start
 > - **Known-not-good / deferred:** the true world-reaction pushback (Feature 1); `IHandPoseSolver.Solve`
 >   still allocates per call (buffer-reuse pass needed before per-frame use is GC-clean; driver-level buffers
 >   already reused); grasp *shapes* are unjudged here (no Unity) and share the Phase 7 dial-in needs.
+> - **Solver-quality pass (`ProgressiveCurlSolver`, the default).** Two structural causes of the "claw"
+>   grab poses, both kinematic-only fixes: (1) a joint that found no contact snapped straight to a full
+>   fist (`t=1`), so a finger resting its knuckle on an object slammed its fingertip closed — now, once a
+>   finger has gripped upstream, each further-out no-contact joint continues as a gentle monotonic spiral
+>   (`tj[i] = min(1, tj[i-1] + distalFollowCurl)`), wrapping thin objects over a couple joints without
+>   hard-fisting past thick ones; (2) the most-distal joint is a leaf whose contact sweep is degenerate
+>   (rotating it doesn't move its own pivot, so it could only snap the tip fully open/closed) — now its
+>   pivot is tested once to keep the grasp-contact gate honest, and the tip is posed by continuing the
+>   finger's curl. New tunable `distalFollowCurl` (HandSolveContext default 0.33; `dynamicDistalFollowCurl`
+>   in HandPoserSettings + XRHandPoser override + HandGraspProbe), mirroring `noContactCurl` plumbing.
+>   Known remaining (deferred, needs in-editor iteration): during the pre-contact *search* a proximal
+>   joint that misses still closes to `t=1`, so a small object held only at the fingertips can over-fist
+>   the base — proper fix is a gross-close-then-distal-wrap two-pass, larger than this surgical change.
 > - **Hardening pass (post-reframe review):** committed the 4 missing `.cs.meta` files (solver interface/context,
 >   CurlSweepSolver, DynamicPoseTester); both solvers now skip `Collider.ClosestPoint` on unsupported colliders
 >   (non-convex mesh/terrain — was a per-call Unity error + gap=0 corrupting candidate pick); grab + tester
