@@ -23,10 +23,12 @@ namespace MikeNspired.XRIStarterKit
                 _instance = CreateInstance<HandPoserSettings>();
 
 #if UNITY_EDITOR
-                string assetPath = System.IO.Path.Combine("Assets", "HandPoserSettings.asset");
-                if (Directory.Exists(assetPath) == false)
-                    Directory.CreateDirectory(assetPath);
-                UnityEditor.AssetDatabase.CreateAsset(_instance, assetPath);
+                // Create inside a Resources folder so the Resources.Load above finds it next time.
+                string resourcesDir = System.IO.Path.Combine("Assets", "Resources");
+                if (Directory.Exists(resourcesDir) == false)
+                    Directory.CreateDirectory(resourcesDir);
+                UnityEditor.AssetDatabase.CreateAsset(_instance,
+                    System.IO.Path.Combine(resourcesDir, "HandPoserSettings.asset"));
                 UnityEditor.AssetDatabase.SaveAssets();
 #endif
                 ShowNotSetupWarning();

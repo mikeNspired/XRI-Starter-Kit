@@ -104,12 +104,23 @@ namespace MikeNspired.XRIStarterKit
         #region Private Fields
 
         private IHandPoseSolver solver;
+        private bool solverIsProgressive;
         private HandSolveContext ctx;
         private Collider[] colliders;
         private Transform ignoreRoot;   // resolved hand/rig root whose colliders are skipped
         private bool ignoreRootResolved;
         private bool isPosing;          // wrote a solved pose last evaluated frame
         private bool warned;
+        private bool warnedNoMask;
+
+        // Smoothing state: the probe's own last-written pose, per joint name. Smoothing must blend
+        // against THIS, not the live joints — the grip/trigger value animations also write the joints
+        // every Update (before this LateUpdate), and lerping from their output would let them dilute
+        // the solved pose forever (the hand would hang mostly fisted instead of settling on the surface).
+        private readonly System.Collections.Generic.Dictionary<string, TransformStruct> displayedPose
+            = new System.Collections.Generic.Dictionary<string, TransformStruct>();
+        private PoseScriptableObject.JointData[] writeBuffer;
+        private System.Collections.Generic.Dictionary<string, Transform> jointByName;
 
         #endregion
 
@@ -134,7 +145,11 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            if (!Ready()) return;
+            if (!Ready())
+            {
+                ReleasePosing();
+                return;
+            }
 
             Vector3 center = (probeCenter ? probeCenter : transform).position;
             int hits = Physics.OverlapSphereNonAlloc(center, reachRadius, colliders, worldMask,
@@ -157,7 +172,7 @@ namespace MikeNspired.XRIStarterKit
             if (result != null && result.Length > 0)
             {
                 float lerp = smoothing <= 0f ? 1f : 1f - Mathf.Exp(-Time.deltaTime / smoothing);
-                handAnimator.SetJointsImmediate(result, lerp);
+                handAnimator.SetJointsImmediate(SmoothAgainstOwnOutput(result, lerp));
                 isPosing = true;
             }
         }
@@ -185,6 +200,17 @@ namespace MikeNspired.XRIStarterKit
 
         private bool Ready()
         {
+            if (worldMask == 0)
+            {
+                if (!warnedNoMask)
+                {
+                    Debug.LogWarning($"[HandGraspProbe] {name} — World Mask is set to Nothing, so the probe " +
+                                     "can never find geometry. Set it to your environment layer(s).", this);
+                    warnedNoMask = true;
+                }
+                return false;
+            }
+
             if (handAnimator.ClosedPose && (handAnimator.OpenPose || handAnimator.DefaultPose))
                 return true;
 
@@ -200,7 +226,12 @@ namespace MikeNspired.XRIStarterKit
         private void BuildContext()
         {
             ctx ??= new HandSolveContext();
-            solver ??= useProgressiveSolver ? new ProgressiveCurlSolver() : (IHandPoseSolver)new CurlSweepSolver();
+            // Re-created when the toggle changes so flipping it during play-mode dial-in takes effect.
+            if (solver == null || solverIsProgressive != useProgressiveSolver)
+            {
+                solver = useProgressiveSolver ? (IHandPoseSolver)new ProgressiveCurlSolver() : new CurlSweepSolver();
+                solverIsProgressive = useProgressiveSolver;
+            }
 
             ctx.hand             = handAnimator;
             ctx.fingerMap        = handAnimator.fingerMap;
@@ -245,6 +276,54 @@ namespace MikeNspired.XRIStarterKit
             return ignoreRoot;
         }
 
+        // Blends the fresh solve against the probe's own previous output (per joint, by name) and
+        // returns a buffer to write authoritatively (snap). A joint seen for the first time seeds from
+        // its live local pose so posing still eases in from wherever the hand currently is.
+        private PoseScriptableObject.JointData[] SmoothAgainstOwnOutput(
+            PoseScriptableObject.JointData[] _solved, float _lerp)
+        {
+            bool snap = _lerp >= 1f;
+            if (writeBuffer == null || writeBuffer.Length != _solved.Length)
+                writeBuffer = new PoseScriptableObject.JointData[_solved.Length];
+
+            for (int i = 0; i < _solved.Length; i++)
+            {
+                var target = _solved[i];
+                Vector3 pos = target.localPosition;
+                Quaternion rot = target.localRotation;
+
+                if (!snap)
+                {
+                    if (displayedPose.TryGetValue(target.jointName, out var prev))
+                    {
+                        pos = Vector3.Lerp(prev.position, target.localPosition, _lerp);
+                        rot = Quaternion.Slerp(prev.rotation, target.localRotation, _lerp);
+                    }
+                    else if (JointByName().TryGetValue(target.jointName, out var joint) && joint)
+                    {
+                        pos = Vector3.Lerp(joint.localPosition, target.localPosition, _lerp);
+                        rot = Quaternion.Slerp(joint.localRotation, target.localRotation, _lerp);
+                    }
+                }
+
+                writeBuffer[i] = new PoseScriptableObject.JointData
+                {
+                    jointName = target.jointName, localPosition = pos, localRotation = rot
+                };
+                displayedPose[target.jointName] = new TransformStruct(pos, rot, Vector3.one);
+            }
+            return writeBuffer;
+        }
+
+        private System.Collections.Generic.Dictionary<string, Transform> JointByName()
+        {
+            if (jointByName != null) return jointByName;
+            jointByName = new System.Collections.Generic.Dictionary<string, Transform>();
+            foreach (var joint in handAnimator.currentJoints)
+                if (joint && !jointByName.ContainsKey(joint.name)) jointByName[joint.name] = joint;
+            return jointByName;
+        }
+
         // Trigger ended (disabled / grabbing / grip released / nothing in reach): hand back to normal posing.
         // Writes DefaultPose directly (no coroutine stop) so a held trigger/grip animation keeps control and
         // simply overwrites this on its next frame; only matters when nothing else is driving the hand.
@@ -252,6 +331,7 @@ namespace MikeNspired.XRIStarterKit
         {
             if (!isPosing) return;
             isPosing = false;
+            displayedPose.Clear(); // next posing session eases in fresh from the live pose
             // Leave handAnimator.LastSolveDebug as-is: nulling it here would wipe a fresh grab's telemetry
             // (XRHandPoser sets it during the grab's Update, before this LateUpdate). The drawer simply
             // shows the last solve until something solves again.

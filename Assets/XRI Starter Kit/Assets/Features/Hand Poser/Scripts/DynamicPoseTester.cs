@@ -143,9 +143,13 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            var colliders = m_Target.GetComponentsInChildren<Collider>();
+            // Solid colliders only, matching XRHandPoser's gather: triggers can't stop fingers and
+            // would corrupt the fingertip-gap measurements.
+            var colliders = System.Array.FindAll(
+                m_Target.GetComponentsInChildren<Collider>(),
+                c => c.enabled && !c.isTrigger);
             if (colliders.Length == 0)
-                Debug.LogWarning($"[DynamicPoseTester] '{m_Target.name}' has no Colliders — solver will fully close all fingers.");
+                Debug.LogWarning($"[DynamicPoseTester] '{m_Target.name}' has no solid Colliders — solver will fully close all fingers.");
 
             var ctx = new HandSolveContext
             {

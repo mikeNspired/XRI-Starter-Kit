@@ -275,13 +275,20 @@ namespace MikeNspired.XRIStarterKit
             if (_ctx.targetColliders == null) return best;
             foreach (var col in _ctx.targetColliders)
             {
-                if (!col) continue;
+                if (!col || !SupportsClosestPoint(col)) continue;
                 Vector3 cp = col.ClosestPoint(_p);
                 float d = (cp - _p).sqrMagnitude;
                 if (d < min) { min = d; best = cp; _hasSurface = true; }
             }
             return best;
         }
+
+        // Collider.ClosestPoint only supports primitives and CONVEX mesh colliders; calling it on a
+        // non-convex mesh or terrain logs a Unity error per call and returns the query point (gap 0),
+        // which would both spam the console and corrupt candidate selection on environment geometry.
+        private static bool SupportsClosestPoint(Collider _col) =>
+            _col is BoxCollider || _col is SphereCollider || _col is CapsuleCollider ||
+            (_col is MeshCollider mc && mc.convex);
 
         private const int RefineIterations = 5;
 
@@ -327,7 +334,7 @@ namespace MikeNspired.XRIStarterKit
             float min = float.PositiveInfinity;
             foreach (var col in _ctx.targetColliders)
             {
-                if (!col) continue;
+                if (!col || !SupportsClosestPoint(col)) continue;
                 float d = Vector3.Distance(_tipPos, col.ClosestPoint(_tipPos));
                 if (d < min) min = d;
             }

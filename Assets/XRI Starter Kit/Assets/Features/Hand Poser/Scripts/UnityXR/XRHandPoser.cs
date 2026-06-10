@@ -180,9 +180,14 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            var colliders = interactable.GetComponentsInChildren<Collider>();
+            // Solid colliders only: trigger volumes (hover zones, sound triggers) can never stop a finger
+            // (the sweep queries ignore triggers) but they WOULD pollute the fingertip-gap candidate
+            // selection and the layer mask. Disabled colliders likewise aren't in the physics world.
+            var colliders = System.Array.FindAll(
+                interactable.GetComponentsInChildren<Collider>(),
+                c => c.enabled && !c.isTrigger);
             if (colliders.Length == 0)
-                Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve: no colliders on interactable; fingers will fully close.");
+                Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve: no solid colliders on interactable; fingers will fully close.");
 
             int mask = 0;
             foreach (var c in colliders) mask |= 1 << c.gameObject.layer;
@@ -208,9 +213,11 @@ namespace MikeNspired.XRIStarterKit
                 collectDebug     = Settings.drawSolveDebug || hand.requestSolveDebug,
             };
 
-            poseSolver ??= Settings.useProgressiveSolver
-                ? (IHandPoseSolver)new ProgressiveCurlSolver()
-                : new CurlSweepSolver();
+            // Re-created when the settings toggle changes so flipping useProgressiveSolver during
+            // play-mode dial-in takes effect on the next grab (??= alone would pin the first choice).
+            bool wantProgressive = Settings.useProgressiveSolver;
+            if (poseSolver == null || (poseSolver is ProgressiveCurlSolver) != wantProgressive)
+                poseSolver = wantProgressive ? (IHandPoseSolver)new ProgressiveCurlSolver() : new CurlSweepSolver();
             var result = poseSolver.Solve(ctx);
 
             // Publish solve telemetry to the hand so HandPoseSolveDebugDrawer can visualize this grab.

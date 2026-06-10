@@ -232,6 +232,15 @@ Out of scope: polish. Open a PR with the acceptance steps restated; do not start
 > - **Known-not-good / deferred:** the true world-reaction pushback (Feature 1); `IHandPoseSolver.Solve`
 >   still allocates per call (buffer-reuse pass needed before per-frame use is GC-clean; driver-level buffers
 >   already reused); grasp *shapes* are unjudged here (no Unity) and share the Phase 7 dial-in needs.
+> - **Hardening pass (post-reframe review):** committed the 4 missing `.cs.meta` files (solver interface/context,
+>   CurlSweepSolver, DynamicPoseTester); both solvers now skip `Collider.ClosestPoint` on unsupported colliders
+>   (non-convex mesh/terrain — was a per-call Unity error + gap=0 corrupting candidate pick); grab + tester
+>   collider gathers filter trigger/disabled colliders; `HandGraspProbe` smooths against its **own last output**
+>   instead of the live joints (the grip/trigger value animations write joints every Update and were diluting
+>   the solve to ~25% per frame), warns on an empty World Mask, and releases cleanly when not Ready;
+>   `useProgressiveSolver` toggles now take effect live (solver was pinned by `??=`); `XRControllerButtons`
+>   unsubscribes the same delegate instances it subscribed (was leaking handlers onto the shared InputAction);
+>   `HandPoserSettings` auto-create no longer makes a folder named `…asset` and lands in `Assets/Resources`.
 
 ---
 

@@ -6,9 +6,11 @@ namespace MikeNspired.XRIStarterKit
     /// Draws the dynamic solver's per-finger telemetry as Scene-view gizmos so you can tell, at a glance,
     /// why each finger ended up straight or curled. Put this on the hand (alongside <see cref="HandAnimator"/>).
     ///
-    /// Telemetry is only produced when the global "Draw Solve Debug" switch on the HandPoserSettings asset is
-    /// on; with it off this component draws nothing and adds no cost. Works for both real grabs (XRHandPoser)
-    /// and the free-hand touch driver — whoever solves publishes the data to <see cref="HandAnimator.LastSolveDebug"/>.
+    /// Telemetry is produced while this component's 'draw' toggle is on (it sets the hand's
+    /// requestSolveDebug flag each frame) or while the global "Draw Solve Debug" switch on the
+    /// HandPoserSettings asset is on; with both off, nothing is recorded or drawn and there is no cost.
+    /// Works for both real grabs (XRHandPoser) and the grasp probe — whoever solves publishes the data
+    /// to <see cref="HandAnimator.LastSolveDebug"/>.
     ///
     /// Per finger it draws a sphere at every sampled joint, coloured by how the finger resolved:
     /// green = contacted, red = no contact, yellow = relaxed-fist fallback. Contact normals are drawn in cyan,
