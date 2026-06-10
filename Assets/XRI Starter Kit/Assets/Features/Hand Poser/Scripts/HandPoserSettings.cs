@@ -61,6 +61,13 @@ namespace MikeNspired.XRIStarterKit
                  "1 = full fist, 0 = fully open; ~0.7 reads as a natural relaxed grip.")]
         [Range(0, 1)] public float dynamicNoContactCurl = 0.7f;
 
+        [Header("Dynamic Pose — Debug")]
+        [Tooltip("Master switch for the per-finger solve visualization. When on, dynamic solves record " +
+                 "telemetry and a HandPoseSolveDebugDrawer on the hand draws, per finger: a sphere at each " +
+                 "sampled joint (green = contacted, red = no contact, yellow = relaxed-fist), the locked t, " +
+                 "the chosen closed pose, and the contact normal. Off = zero overhead.")]
+        public bool drawSolveDebug = false;
+
         [Header("Dynamic Grasp — Global Defaults")]
         [Tooltip("Require the thumb to make contact for a dynamic grasp to hold.")]
         public bool graspRequireThumb = true;

@@ -205,12 +205,16 @@ namespace MikeNspired.XRIStarterKit
                 probeRadius     = DynamicProbeRadius,
                 samplesPerFinger = SamplesPerFinger,
                 noContactCurl    = NoContactCurl,
+                collectDebug     = Settings.drawSolveDebug,
             };
 
             poseSolver ??= Settings.useProgressiveSolver
                 ? (IHandPoseSolver)new ProgressiveCurlSolver()
                 : new CurlSweepSolver();
             var result = poseSolver.Solve(ctx);
+
+            // Publish solve telemetry to the hand so HandPoseSolveDebugDrawer can visualize this grab.
+            hand.LastSolveDebug = poseSolver.LastSolveDebug;
 
             if (result == null || result.Length == 0)
             {

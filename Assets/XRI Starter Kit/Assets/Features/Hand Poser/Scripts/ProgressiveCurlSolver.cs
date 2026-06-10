@@ -18,9 +18,16 @@ namespace MikeNspired.XRIStarterKit
         public Vector3[] LastSolveProbePositions { get; private set; } = new Vector3[5];
         public bool[] LastSolveContacted { get; private set; } = new bool[5];
 
+        // Per-finger debug telemetry, filled only when _ctx.collectDebug. Reused across solves.
+        private readonly HandSolveDebug _debug = new HandSolveDebug();
+        public HandSolveDebug LastSolveDebug { get; private set; }
+
         public PoseScriptableObject.JointData[] Solve(HandSolveContext _ctx)
         {
             if (!Validate(_ctx)) return null;
+
+            if (_ctx.collectDebug) { _debug.BeginSolve(); LastSolveDebug = _debug; }
+            else LastSolveDebug = null;
 
             var joints = _ctx.hand.currentJoints;
             int jointCount = joints.Count;
@@ -39,6 +46,21 @@ namespace MikeNspired.XRIStarterKit
 
             var fingerJointT  = new float[5][];                 // per-joint curl amount, indexed to the finger chain
             var fingerClosed  = new PoseScriptableObject[5];    // closed pose chosen per finger
+
+            // Debug scratch (only when recording): per-joint contact for the current/winning candidate.
+            bool[] jointHitScratch = null;
+            bool[] bestJointHit    = null;
+            if (_ctx.collectDebug)
+            {
+                int maxChain = 0;
+                for (int f = 0; f < 5; f++)
+                {
+                    var c = _ctx.fingerMap.Finger(f);
+                    if (c != null && c.Count > maxChain) maxChain = c.Count;
+                }
+                jointHitScratch = new bool[maxChain];
+                bestJointHit    = new bool[maxChain];
+            }
 
             try
             {
@@ -71,7 +93,7 @@ namespace MikeNspired.XRIStarterKit
                             closedDicts[cp] = closedDict;
                         }
 
-                        var tj = CurlFinger(_ctx, chain, openDict, closedDict, out bool contacted);
+                        var tj = CurlFinger(_ctx, chain, openDict, closedDict, out bool contacted, jointHitScratch);
                         float gap = TipGap(tip.position, _ctx);
 
                         if (!anyEvaluated || IsBetter(contacted, gap, bestContacted, bestGap))
@@ -82,6 +104,8 @@ namespace MikeNspired.XRIStarterKit
                             bestT         = tj;
                             bestPose      = cp;
                             bestProbe     = tip.position;
+                            if (_ctx.collectDebug)
+                                System.Array.Copy(jointHitScratch, bestJointHit, chain.Count);
                         }
                     }
 
@@ -89,6 +113,10 @@ namespace MikeNspired.XRIStarterKit
                     fingerClosed[fingerIdx] = bestPose;
                     LastSolveProbePositions[fingerIdx] = bestProbe;
                     LastSolveContacted[fingerIdx] = bestContacted;
+
+                    if (_ctx.collectDebug)
+                        RecordFingerDebug(fingerIdx, chain, bestT, bestJointHit, bestPose, bestContacted,
+                                          openDict, closedDicts, _ctx);
                 }
             }
             finally
@@ -102,6 +130,8 @@ namespace MikeNspired.XRIStarterKit
                 }
             }
 
+            if (_ctx.collectDebug) _debug.hasData = true;
+
             return BuildJointData(_ctx, openDict, closedDicts, fingerJointT, fingerClosed);
         }
 
@@ -114,7 +144,8 @@ namespace MikeNspired.XRIStarterKit
             List<Transform> _chain,
             Dictionary<string, PoseScriptableObject.JointData> _openDict,
             Dictionary<string, PoseScriptableObject.JointData> _closedDict,
-            out bool _contacted)
+            out bool _contacted,
+            bool[] _jointHit = null) // optional per-joint contact out-buffer (debug only)
         {
             int n = _chain.Count;
             var tj = new float[n];
@@ -159,6 +190,7 @@ namespace MikeNspired.XRIStarterKit
                 tj[i] = jointHit ? prevT : 1f;
                 ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]); // freeze at the locked amount
                 if (jointHit) _contacted = true;
+                if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = jointHit;
             }
 
             // Only when the finger touched nothing at all does it relax to a gentle rest curl
@@ -171,10 +203,84 @@ namespace MikeNspired.XRIStarterKit
                 {
                     tj[i] = rest;
                     ApplyJoint(_chain[i], _openDict, _closedDict, rest);
+                    if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = false;
                 }
             }
 
             return tj;
+        }
+
+        // Re-poses the finger at its chosen per-joint t and records each joint's world position,
+        // locked t, contact flag, and nearest surface point/normal into the debug buffer (gizmos only).
+        private void RecordFingerDebug(
+            int _fingerIdx,
+            List<Transform> _chain,
+            float[] _tj,
+            bool[] _jointHit,
+            PoseScriptableObject _closedPose,
+            bool _contacted,
+            Dictionary<string, PoseScriptableObject.JointData> _openDict,
+            Dictionary<PoseScriptableObject, Dictionary<string, PoseScriptableObject.JointData>> _closedDicts,
+            HandSolveContext _ctx)
+        {
+            var dbg = _debug.fingers[_fingerIdx];
+            if (_chain == null || _chain.Count == 0 || _tj == null)
+            {
+                dbg.state = FingerSolveState.NoData;
+                dbg.probeCount = 0;
+                return;
+            }
+
+            var closedPose = _closedPose ? _closedPose : _ctx.closedPose;
+            if (!_closedDicts.TryGetValue(closedPose, out var closedDict))
+            {
+                closedDict = ToDict(closedPose);
+                _closedDicts[closedPose] = closedDict;
+            }
+
+            int n = _chain.Count;
+            dbg.EnsureCapacity(n);
+            dbg.probeRadius  = _ctx.probeRadius;
+            dbg.chosenClosed = closedPose;
+            dbg.state        = _contacted ? FingerSolveState.Contacted : FingerSolveState.RelaxedFist;
+
+            // Re-pose at the chosen per-joint t so recorded world positions match the returned pose
+            // (the candidate loop may have left the chain at a different candidate's shape).
+            for (int i = 0; i < n; i++)
+                ApplyJoint(_chain[i], _openDict, closedDict, i < _tj.Length ? _tj[i] : 1f);
+
+            for (int i = 0; i < n; i++)
+            {
+                var joint = _chain[i];
+                Vector3 pos = joint ? joint.position : Vector3.zero;
+                Vector3 surface = NearestSurfacePoint(pos, _ctx, out bool hasSurface);
+                dbg.probes[i] = new JointProbe
+                {
+                    position      = pos,
+                    lockedT       = i < _tj.Length ? _tj[i] : 1f,
+                    contacted     = _jointHit != null && i < _jointHit.Length && _jointHit[i],
+                    contactPoint  = hasSurface ? surface : pos,
+                    contactNormal = hasSurface ? (pos - surface).normalized : Vector3.zero,
+                };
+            }
+            dbg.probeCount = n;
+        }
+
+        // Nearest point on any target collider to _p (approx surface contact point for the gizmos).
+        private static Vector3 NearestSurfacePoint(Vector3 _p, HandSolveContext _ctx, out bool _hasSurface)
+        {
+            _hasSurface = false;
+            Vector3 best = _p;
+            float min = float.PositiveInfinity;
+            if (_ctx.targetColliders == null) return best;
+            foreach (var col in _ctx.targetColliders)
+            {
+                if (!col) continue;
+                Vector3 cp = col.ClosestPoint(_p);
+                float d = (cp - _p).sqrMagnitude;
+                if (d < min) { min = d; best = cp; _hasSurface = true; }
+            }
+            return best;
         }
 
         private const int RefineIterations = 5;

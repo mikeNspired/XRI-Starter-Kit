@@ -16,9 +16,16 @@ namespace MikeNspired.XRIStarterKit
         // true = finger stopped on contact, false = reached full close with no contact
         public bool[] LastSolveContacted { get; private set; } = new bool[5];
 
+        // Per-finger debug telemetry, filled only when _ctx.collectDebug. Reused across solves.
+        private readonly HandSolveDebug _debug = new HandSolveDebug();
+        public HandSolveDebug LastSolveDebug { get; private set; }
+
         public PoseScriptableObject.JointData[] Solve(HandSolveContext _ctx)
         {
             if (!Validate(_ctx)) return null;
+
+            if (_ctx.collectDebug) { _debug.BeginSolve(); LastSolveDebug = _debug; }
+            else LastSolveDebug = null;
 
             var joints = _ctx.hand.currentJoints;
             int jointCount = joints.Count;
@@ -104,6 +111,9 @@ namespace MikeNspired.XRIStarterKit
                     chosenClosed[fingerIdx]         = bestPose;
                     LastSolveProbePositions[fingerIdx] = bestProbe;
                     LastSolveContacted[fingerIdx]   = bestContacted;
+
+                    if (_ctx.collectDebug)
+                        RecordFingerDebug(fingerIdx, chain, sampleStart, bestT, bestPose, bestContacted, _ctx);
                 }
             }
             finally
@@ -118,7 +128,75 @@ namespace MikeNspired.XRIStarterKit
                 }
             }
 
+            if (_ctx.collectDebug) _debug.hasData = true;
+
             return BuildJointData(_ctx, tFinals, chosenClosed);
+        }
+
+        // Re-poses the finger at its locked t and records each sampled joint's world position and
+        // nearest surface point/normal into the debug buffer (gizmos only). Single t per finger, so
+        // every sampled joint shares the finger's locked t and contact state.
+        private void RecordFingerDebug(
+            int _fingerIdx,
+            List<Transform> _chain,
+            int _sampleStart,
+            float _t,
+            PoseScriptableObject _closedPose,
+            bool _contacted,
+            HandSolveContext _ctx)
+        {
+            var dbg = _debug.fingers[_fingerIdx];
+            if (_chain == null || _chain.Count == 0)
+            {
+                dbg.state = FingerSolveState.NoData;
+                dbg.probeCount = 0;
+                return;
+            }
+
+            // Re-apply the chosen pose so recorded positions match the returned result (the candidate
+            // loop resets each finger to open after evaluating it).
+            _ctx.hand.SetFingerCurl(_fingerIdx, _t, _ctx.openPose, _closedPose ? _closedPose : _ctx.closedPose);
+
+            int sampleStart = Mathf.Clamp(_sampleStart, 0, _chain.Count - 1);
+            int count = _chain.Count - sampleStart;
+            dbg.EnsureCapacity(count);
+            dbg.probeRadius  = _ctx.probeRadius;
+            dbg.chosenClosed = _closedPose ? _closedPose : _ctx.closedPose;
+            dbg.state        = _contacted ? FingerSolveState.Contacted : FingerSolveState.NoContact;
+
+            int w = 0;
+            for (int j = sampleStart; j < _chain.Count; j++)
+            {
+                var joint = _chain[j];
+                Vector3 pos = joint ? joint.position : Vector3.zero;
+                Vector3 surface = NearestSurfacePoint(pos, _ctx, out bool hasSurface);
+                dbg.probes[w++] = new JointProbe
+                {
+                    position      = pos,
+                    lockedT       = _t,
+                    contacted     = _contacted,
+                    contactPoint  = hasSurface ? surface : pos,
+                    contactNormal = hasSurface ? (pos - surface).normalized : Vector3.zero,
+                };
+            }
+            dbg.probeCount = w;
+        }
+
+        // Nearest point on any target collider to _p (approx surface contact point for the gizmos).
+        private static Vector3 NearestSurfacePoint(Vector3 _p, HandSolveContext _ctx, out bool _hasSurface)
+        {
+            _hasSurface = false;
+            Vector3 best = _p;
+            float min = float.PositiveInfinity;
+            if (_ctx.targetColliders == null) return best;
+            foreach (var col in _ctx.targetColliders)
+            {
+                if (!col) continue;
+                Vector3 cp = col.ClosestPoint(_p);
+                float d = (cp - _p).sqrMagnitude;
+                if (d < min) { min = d; best = cp; _hasSurface = true; }
+            }
+            return best;
         }
 
         // closedPose is always candidate 0; extra closedPoses are appended (deduped, non-null).

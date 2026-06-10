@@ -43,6 +43,10 @@ namespace MikeNspired.XRIStarterKit
         public float triggerAnimationValue, gripAnimationValue;
         public bool isGrabbingObject;
 
+        // Last dynamic-solve telemetry for this hand, assigned by whoever solved (XRHandPoser grab or
+        // FreeHandContactDriver). Read by HandPoseSolveDebugDrawer for gizmos. Null when not solving / debugging.
+        public HandSolveDebug LastSolveDebug;
+
         public List<Transform> currentJoints = new List<Transform>();
         List<Transform> goalPoseJoints = new List<Transform>();
 
@@ -572,6 +576,35 @@ namespace MikeNspired.XRIStarterKit
 
             AnimateToPoseAnimation = AnimateToPoseOverTime(oldPose, newPose, _animationTime);
             StartCoroutine(AnimateToPoseAnimation);
+        }
+
+        /// <summary>
+        /// Applies a computed joint pose to the live joints immediately this frame — no blend coroutine.
+        /// Same name-matched mapping as <see cref="SetJointsDirect"/>, but writes transforms directly via
+        /// <see cref="SetNewJoint"/> (mirrors the per-frame writes in AnimateToPoseByValue2). Joints not
+        /// present in the supplied data are left untouched. Intended for per-frame drivers (free-hand touch).
+        /// </summary>
+        public void SetJointsImmediate(PoseScriptableObject.JointData[] _jointData)
+        {
+            if (_jointData == null || _jointData.Length == 0) return;
+
+            if (currentJoints.Count == 0 || !currentJoints[0])
+                SetBones();
+
+            for (int i = 0; i < currentJoints.Count; i++)
+            {
+                var joint = currentJoints[i];
+                if (!joint) continue;
+
+                for (int j = 0; j < _jointData.Length; j++)
+                {
+                    if (_jointData[j].jointName == joint.name)
+                    {
+                        SetNewJoint(ref joint, _jointData[j].localPosition, _jointData[j].localRotation);
+                        break;
+                    }
+                }
+            }
         }
 
         /// <summary>
