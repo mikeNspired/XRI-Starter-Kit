@@ -242,9 +242,17 @@ Out of scope: polish. Open a PR with the acceptance steps restated; do not start
 >   pivot is tested once to keep the grasp-contact gate honest, and the tip is posed by continuing the
 >   finger's curl. New tunable `distalFollowCurl` (HandSolveContext default 0.33; `dynamicDistalFollowCurl`
 >   in HandPoserSettings + XRHandPoser override + HandGraspProbe), mirroring `noContactCurl` plumbing.
->   Known remaining (deferred, needs in-editor iteration): during the pre-contact *search* a proximal
->   joint that misses still closes to `t=1`, so a small object held only at the fingertips can over-fist
->   the base — proper fix is a gross-close-then-distal-wrap two-pass, larger than this surgical change.
+> - **Two-pass solver redesign (follow-up).** Replaced the base→tip single sweep with: **Pass A — gross
+>   close**, curling the whole finger as a unit (every joint shares one `t`) until any segment first
+>   contacts, which places a natural uniform curve up to the contact instead of sweeping the base alone
+>   and fisting it when the object sits further out (the "base-slam" that over-fisted the knuckle on
+>   fingertip-held objects); then **Pass B — distal wrap**, curling each joint past the contact further,
+>   one at a time, until its own segment meets the surface, with the gentle follow-spiral retained for
+>   distal joints that reach nothing and the leaf-pivot handling retained for the degenerate fingertip.
+>   Same `IHandPoseSolver` surface, candidate (fist/pinch) selection, contact gate, and debug telemetry.
+>   Remaining honest limit: still no IK, so a uniform gross close can't reach a small fingertip target
+>   without some base curl — but it never hard-fists the base now. `CurlSweepSolver` (non-default) and
+>   the authored path are untouched.
 > - **Hardening pass (post-reframe review):** committed the 4 missing `.cs.meta` files (solver interface/context,
 >   CurlSweepSolver, DynamicPoseTester); both solvers now skip `Collider.ClosestPoint` on unsupported colliders
 >   (non-convex mesh/terrain — was a per-call Unity error + gap=0 corrupting candidate pick); grab + tester

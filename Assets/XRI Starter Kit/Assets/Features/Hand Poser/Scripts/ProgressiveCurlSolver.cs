@@ -4,12 +4,14 @@ using UnityEngine;
 namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
-    /// Per-joint progressive curl. For each finger, curls one joint at a time from the base outward:
-    /// a joint advances toward its closed pose until the segment it drives contacts the target, then
-    /// it freezes and the next (more distal) joint continues. This lets the fingertip wrap down onto a
+    /// Per-finger contact posing in two passes. First a GROSS close curls the whole finger as a unit
+    /// (every joint shares one blend t) until any part first touches the target — placing a natural
+    /// uniform curve up to the contact. Then a DISTAL WRAP curls each joint past the contact further,
+    /// one at a time, until its own segment meets the surface, so the fingertip wraps down onto a
     /// surface even when the knuckle is already resting against it — something a single blend value per
-    /// finger cannot do. When multiple closed poses are supplied, each finger keeps whichever candidate
-    /// ends with its fingertip closest to the target.
+    /// finger cannot do. A joint past the grip that reaches nothing follows a gentle spiral rather than
+    /// snapping to a fist (no distal "claw"). When multiple closed poses are supplied, each finger keeps
+    /// whichever candidate ends with its fingertip closest to the target.
     ///
     /// Kinematic only — sphere tests + direct transform writes. No physics, no IK, no ArticulationBodies.
     /// </summary>
@@ -137,8 +139,13 @@ namespace MikeNspired.XRIStarterKit
 
         #region Solve helpers
 
-        // Curls one finger joint-by-joint (base→tip), freezing each joint when the segment it drives
-        // contacts the target. Leaves the finger transforms at the solved pose and returns per-joint t.
+        // Poses one finger in two passes:
+        //   A) Gross close — curl the whole finger as a unit (every joint shares one t) until any part
+        //      first contacts. This places a natural uniform curve up to the contact, instead of
+        //      sweeping the base alone and fisting it when the object sits further out ("base-slam").
+        //   B) Distal wrap — past the contact joint, curl each remaining joint further until ITS own
+        //      segment meets the surface, so the fingertip wraps onto/around the object.
+        // Leaves the finger transforms at the solved pose and returns per-joint t. Kinematic only.
         private float[] CurlFinger(
             HandSolveContext _ctx,
             List<Transform> _chain,
@@ -150,101 +157,140 @@ namespace MikeNspired.XRIStarterKit
             int n = _chain.Count;
             var tj = new float[n];
             _contacted = false;
-
-            // Start the whole finger open so each joint sweep is independent of the last pose.
-            for (int i = 0; i < n; i++)
-                ApplyJoint(_chain[i], _openDict, _closedDict, 0f);
+            if (_jointHit != null)
+                for (int i = 0; i < n && i < _jointHit.Length; i++) _jointHit[i] = false;
 
             float follow = Mathf.Max(0f, _ctx.distalFollowCurl);
 
-            for (int i = 0; i < n; i++)
+            // ── Pass A — gross close ──────────────────────────────────────────────────────────
+            ApplyAll(_chain, _openDict, _closedDict, 0f); // open, independent of the previous candidate
+
+            float tGross = 0f;
+            int contactJoint = -1;
+            float prevT = 0f;
+            for (int step = 1; step <= _ctx.stepCount; step++)
             {
-                // The most distal joint is a leaf: rotating it moves only geometry below it, and there
-                // is none in the chain to sphere-test — its own pivot stays put. A contact sweep there
-                // is degenerate (it can only snap the tip fully open or fully closed), so instead test
-                // the pivot ONCE to keep the grasp/contact gate honest, and pose the tip by continuing
-                // the finger's natural curl rather than the binary open/closed it produced before.
-                if (i == n - 1)
+                float t = (float)step / _ctx.stepCount;
+                ApplyAll(_chain, _openDict, _closedDict, t);
+
+                if (FirstContactingJoint(_chain, _ctx) >= 0)
                 {
-                    bool leafHit = SegmentOverlaps(_chain, i, i, _ctx);
-                    float baseLeaf = i > 0 ? tj[i - 1] : Mathf.Clamp01(_ctx.noContactCurl);
-                    // Pivot already on the surface → hold at the parent's curl (don't drive the tip
-                    // through it). Else, if the finger gripped upstream, let the tip follow a little
-                    // further to wrap; if nothing gripped, this is overwritten by the relax pass below.
-                    tj[i] = leafHit ? baseLeaf : (_contacted ? Mathf.Min(1f, baseLeaf + follow) : baseLeaf);
-                    ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]);
-                    if (leafHit) _contacted = true;
-                    if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = leafHit;
-                    continue;
-                }
-
-                // Curling joint i rotates the segment toward joint i+1.
-                int probeIdx = i + 1;
-
-                float prevT = 0f;
-                bool jointHit = false;
-                for (int step = 1; step <= _ctx.stepCount; step++)
-                {
-                    float t = (float)step / _ctx.stepCount;
-                    ApplyJoint(_chain[i], _openDict, _closedDict, t);
-
-                    if (SegmentOverlaps(_chain, i, probeIdx, _ctx))
+                    // Refine the uniform t between prevT (whole finger clear) and t (something touches).
+                    float lo = prevT, hi = t;
+                    for (int k = 0; k < RefineIterations; k++)
                     {
-                        // Refine between prevT (clear) and t (overlapping) so the joint sits snug
-                        // against the surface instead of a coarse sweep-step short of it.
-                        float lo = prevT, hi = t;
-                        for (int k = 0; k < RefineIterations; k++)
-                        {
-                            float mid = (lo + hi) * 0.5f;
-                            ApplyJoint(_chain[i], _openDict, _closedDict, mid);
-                            if (SegmentOverlaps(_chain, i, probeIdx, _ctx)) hi = mid; else lo = mid;
-                        }
-                        prevT = lo;
-                        jointHit = true;
-                        break;
+                        float mid = (lo + hi) * 0.5f;
+                        ApplyAll(_chain, _openDict, _closedDict, mid);
+                        if (FirstContactingJoint(_chain, _ctx) >= 0) hi = mid; else lo = mid;
                     }
-                    prevT = t;
+                    // Identify the touching joint at the just-contact pose (hi), then settle at lo (clear).
+                    ApplyAll(_chain, _openDict, _closedDict, hi);
+                    contactJoint = FirstContactingJoint(_chain, _ctx);
+                    tGross = lo;
+                    ApplyAll(_chain, _openDict, _closedDict, tGross);
+                    break;
                 }
-
-                if (jointHit)
-                {
-                    tj[i] = prevT;            // lock just before penetration
-                    _contacted = true;
-                }
-                else if (_contacted)
-                {
-                    // The finger is already gripping upstream but this joint reached nothing. Continue
-                    // the curl as a gentle natural spiral from the previous joint instead of slamming
-                    // to a full fist — that distal "claw" was the main source of unnatural grab poses.
-                    // Still monotonic, so it wraps a thin object over a couple joints yet never hard-
-                    // fists past a thick one.
-                    tj[i] = Mathf.Min(1f, tj[i - 1] + follow);
-                }
-                else
-                {
-                    // Nothing has gripped yet: keep closing toward the fist so a more distal joint can
-                    // still find the object. A finger that ends up touching nothing relaxes below.
-                    tj[i] = 1f;
-                }
-                ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]); // freeze at the chosen amount
-                if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = jointHit;
+                prevT = t;
             }
 
-            // Only when the finger touched nothing at all does it relax to a gentle rest curl
-            // (not a full fist), so a finger that reaches nothing reads as natural rather than clawed.
-            // A finger that contacted anywhere keeps the wrap computed above.
-            if (!_contacted)
+            // Touched nothing anywhere → relax to a gentle rest curl (natural, not a fist/claw).
+            if (contactJoint < 0)
             {
                 float rest = Mathf.Clamp01(_ctx.noContactCurl);
                 for (int i = 0; i < n; i++)
                 {
                     tj[i] = rest;
                     ApplyJoint(_chain[i], _openDict, _closedDict, rest);
-                    if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = false;
                 }
+                return tj;
+            }
+
+            _contacted = true;
+
+            // Joints up to and including the contact joint hold the gross curl: they form the natural
+            // curve up to where the finger meets the object, and the contact joint sits against it.
+            for (int i = 0; i <= contactJoint && i < n; i++) tj[i] = tGross; // already applied at tGross
+            if (_jointHit != null && contactJoint < _jointHit.Length) _jointHit[contactJoint] = true;
+
+            // ── Pass B — distal wrap ──────────────────────────────────────────────────────────
+            for (int i = contactJoint + 1; i < n; i++)
+            {
+                float tStart = tj[i - 1]; // continue from the previous joint's curl (monotonic spiral)
+
+                // Leaf: its own rotation moves nothing we can sphere-test, so a sweep is degenerate.
+                // Test its pivot once for the contact gate, and pose it by continuing the curl.
+                if (i == n - 1)
+                {
+                    bool leafHit = SegmentOverlaps(_chain, i, i, _ctx);
+                    tj[i] = leafHit ? tStart : Mathf.Min(1f, tStart + follow);
+                    ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]);
+                    if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = leafHit;
+                    continue;
+                }
+
+                int probeIdx = i + 1;
+                ApplyJoint(_chain[i], _openDict, _closedDict, tStart);
+
+                bool jointHit;
+                if (SegmentOverlaps(_chain, i, probeIdx, _ctx))
+                {
+                    jointHit = true; // already touching at the start curl — lock there
+                    tj[i] = tStart;
+                }
+                else
+                {
+                    float lockedT = tStart;
+                    jointHit = false;
+                    for (int step = 1; step <= _ctx.stepCount; step++)
+                    {
+                        float t = Mathf.Lerp(tStart, 1f, (float)step / _ctx.stepCount);
+                        ApplyJoint(_chain[i], _openDict, _closedDict, t);
+                        if (SegmentOverlaps(_chain, i, probeIdx, _ctx))
+                        {
+                            float lo = lockedT, hi = t;
+                            for (int k = 0; k < RefineIterations; k++)
+                            {
+                                float mid = (lo + hi) * 0.5f;
+                                ApplyJoint(_chain[i], _openDict, _closedDict, mid);
+                                if (SegmentOverlaps(_chain, i, probeIdx, _ctx)) hi = mid; else lo = mid;
+                            }
+                            lockedT = lo;
+                            jointHit = true;
+                            break;
+                        }
+                        lockedT = t;
+                    }
+                    // Contact → snug lock; no contact → gentle follow spiral (never a distal claw).
+                    tj[i] = jointHit ? lockedT : Mathf.Min(1f, tStart + follow);
+                }
+                ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]);
+                if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = jointHit;
             }
 
             return tj;
+        }
+
+        // Curl every joint in the finger to the same blend t (the uniform gross close).
+        private static void ApplyAll(
+            List<Transform> _chain,
+            Dictionary<string, PoseScriptableObject.JointData> _openDict,
+            Dictionary<string, PoseScriptableObject.JointData> _closedDict,
+            float _t)
+        {
+            for (int i = 0; i < _chain.Count; i++)
+                ApplyJoint(_chain[i], _openDict, _closedDict, _t);
+        }
+
+        // Index of the most-proximal joint whose driven segment overlaps the target, or -1 if none.
+        private static int FirstContactingJoint(List<Transform> _chain, HandSolveContext _ctx)
+        {
+            int n = _chain.Count;
+            for (int i = 0; i < n; i++)
+            {
+                int probeIdx = Mathf.Min(i + 1, n - 1); // last joint tests its own pivot
+                if (SegmentOverlaps(_chain, i, probeIdx, _ctx)) return i;
+            }
+            return -1;
         }
 
         // Re-poses the finger at its chosen per-joint t and records each joint's world position,
