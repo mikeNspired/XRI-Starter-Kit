@@ -36,7 +36,7 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private int   dynamicStepCount   = 15;
         [SerializeField] private float dynamicProbeRadius = 0.02f;
         [SerializeField, Range(1, 4)] private int dynamicSamplesPerFinger = 2;
-        [SerializeField, Range(0, 1)] private float dynamicNoContactCurl = 0.4f;
+        [SerializeField, Range(0, 1)] private float dynamicNoContactCurl = 0.7f;
         [SerializeField] private bool  graspRequireThumb  = true;
         [SerializeField, Range(0, 4)] private int graspRequiredFingers = 2;
         [SerializeField] private FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;

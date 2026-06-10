@@ -56,9 +56,10 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Use the per-joint progressive-curl solver (fingertips wrap onto surfaces even when " +
                  "the knuckle rests on the object). Off uses the simpler single-t-per-finger curl sweep.")]
         public bool useProgressiveSolver = true;
-        [Tooltip("Curl applied to a finger joint that touches nothing (progressive solver). 1 = full " +
-                 "fist; lower relaxes fingers that reach nothing to a natural rest instead of clawing.")]
-        [Range(0, 1)] public float dynamicNoContactCurl = 0.4f;
+        [Tooltip("Curl for a finger that touches nothing (progressive solver). Like a human grabbing, " +
+                 "non-gripping fingers settle into a relaxed fist instead of splaying open. " +
+                 "1 = full fist, 0 = fully open; ~0.7 reads as a natural relaxed grip.")]
+        [Range(0, 1)] public float dynamicNoContactCurl = 0.7f;
 
         [Header("Dynamic Grasp — Global Defaults")]
         [Tooltip("Require the thumb to make contact for a dynamic grasp to hold.")]
