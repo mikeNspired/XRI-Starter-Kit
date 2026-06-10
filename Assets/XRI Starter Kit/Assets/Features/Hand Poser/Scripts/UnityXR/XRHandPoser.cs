@@ -205,7 +205,7 @@ namespace MikeNspired.XRIStarterKit
                 probeRadius     = DynamicProbeRadius,
                 samplesPerFinger = SamplesPerFinger,
                 noContactCurl    = NoContactCurl,
-                collectDebug     = Settings.drawSolveDebug,
+                collectDebug     = Settings.drawSolveDebug || hand.requestSolveDebug,
             };
 
             poseSolver ??= Settings.useProgressiveSolver

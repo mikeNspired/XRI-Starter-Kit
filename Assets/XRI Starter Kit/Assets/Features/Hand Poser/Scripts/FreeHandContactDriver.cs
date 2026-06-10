@@ -39,6 +39,11 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Max world colliders considered per frame (reused buffer; no per-frame allocation here).")]
         [SerializeField] private int maxColliders = 32;
 
+        [Tooltip("Colliders anywhere under this transform are ignored, so a broad World Mask can never make " +
+                 "the hand collide with itself, the arm, or the other hand. Leave empty to auto-use this " +
+                 "hand's hierarchy root (the XR rig) at runtime.")]
+        [SerializeField] private Transform ignoreColliderRoot;
+
         [Header("Solver (kept low for per-frame cost)")]
         [Tooltip("Use the per-joint progressive solver (independent fingers / edge drape). " +
                  "Off uses the simpler single-t-per-finger curl sweep.")]
@@ -57,6 +62,10 @@ namespace MikeNspired.XRIStarterKit
                  "instead of splaying open. 1 = fist, 0 = open.")]
         [SerializeField, Range(0, 1)] private float noContactCurl = 0.5f;
 
+        [Tooltip("Per-frame smoothing time-constant (seconds). 0 = snap instantly to the solved pose; " +
+                 "small values (e.g. 0.05) damp solver jitter so fingers settle instead of flicking.")]
+        [SerializeField, Range(0f, 0.3f)] private float smoothing = 0.04f;
+
         [Tooltip("When the hand leaves all surfaces, snap once back to the idle pose so it doesn't freeze " +
                  "in the last touched shape.")]
         [SerializeField] private bool returnToIdleWhenClear = true;
@@ -68,6 +77,8 @@ namespace MikeNspired.XRIStarterKit
         private IHandPoseSolver solver;
         private HandSolveContext ctx;
         private Collider[] colliders;
+        private Transform ignoreRoot;   // resolved hand/rig root whose colliders are skipped
+        private bool ignoreRootResolved;
         private bool isPosing;          // wrote a touched pose last evaluated frame
         private bool warned;
 
@@ -96,11 +107,13 @@ namespace MikeNspired.XRIStarterKit
             if (!Ready()) return;
 
             Vector3 center = (probeCenter ? probeCenter : transform).position;
-            int count = Physics.OverlapSphereNonAlloc(center, reachRadius, colliders, worldMask,
-                                                      QueryTriggerInteraction.Ignore);
-            // Drop stale references beyond the live hits so they can't match during the solve.
-            for (int i = count; i < colliders.Length; i++) colliders[i] = null;
+            int hits = Physics.OverlapSphereNonAlloc(center, reachRadius, colliders, worldMask,
+                                                     QueryTriggerInteraction.Ignore);
 
+            // Compact out the hand/player's own colliders so a broad mask can't self-collide, and null the
+            // tail so stale references can't match. The solver's contact test only counts colliders that
+            // remain in this buffer, so excluding them here fully prevents the hand grabbing itself.
+            int count = FilterOwnColliders(hits);
             if (count == 0)
             {
                 ReleasePosing();
@@ -113,7 +126,8 @@ namespace MikeNspired.XRIStarterKit
 
             if (result != null && result.Length > 0)
             {
-                handAnimator.SetJointsImmediate(result);
+                float lerp = smoothing <= 0f ? 1f : 1f - Mathf.Exp(-Time.deltaTime / smoothing);
+                handAnimator.SetJointsImmediate(result, lerp);
                 isPosing = true;
             }
         }
@@ -152,7 +166,36 @@ namespace MikeNspired.XRIStarterKit
             ctx.probeRadius      = probeRadius;
             ctx.samplesPerFinger = samplesPerFinger;
             ctx.noContactCurl    = noContactCurl;
-            ctx.collectDebug     = HandPoserSettings.Instance && HandPoserSettings.Instance.drawSolveDebug;
+            ctx.collectDebug     = handAnimator.requestSolveDebug ||
+                                   (HandPoserSettings.Instance && HandPoserSettings.Instance.drawSolveDebug);
+        }
+
+        // Keeps only colliders NOT under the ignore root (hand / rig), compacting them to the front of the
+        // buffer and nulling the rest. Returns the count of real world colliders to solve against.
+        private int FilterOwnColliders(int _hits)
+        {
+            var root = IgnoreRoot();
+            int w = 0;
+            for (int i = 0; i < _hits; i++)
+            {
+                var col = colliders[i];
+                if (!col) continue;
+                if (root && col.transform.IsChildOf(root)) continue;
+                colliders[w++] = col; // w <= i, so this never clobbers an unread entry
+            }
+            for (int i = w; i < colliders.Length; i++) colliders[i] = null;
+            return w;
+        }
+
+        private Transform IgnoreRoot()
+        {
+            if (ignoreColliderRoot) return ignoreColliderRoot;
+            if (!ignoreRootResolved)
+            {
+                ignoreRoot = handAnimator ? handAnimator.transform.root : null;
+                ignoreRootResolved = true;
+            }
+            return ignoreRoot;
         }
 
         // Hand has left all surfaces (or driver disabled / grabbing): hand back to normal posing.

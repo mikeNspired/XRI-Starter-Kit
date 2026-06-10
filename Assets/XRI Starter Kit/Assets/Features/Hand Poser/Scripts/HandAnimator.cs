@@ -46,6 +46,9 @@ namespace MikeNspired.XRIStarterKit
         // Last dynamic-solve telemetry for this hand, assigned by whoever solved (XRHandPoser grab or
         // FreeHandContactDriver). Read by HandPoseSolveDebugDrawer for gizmos. Null when not solving / debugging.
         public HandSolveDebug LastSolveDebug;
+        // Set by a HandPoseSolveDebugDrawer to ask the solver to record telemetry this hand can visualize.
+        // Solve consumers OR this with the global HandPoserSettings.drawSolveDebug switch.
+        [System.NonSerialized] public bool requestSolveDebug;
 
         public List<Transform> currentJoints = new List<Transform>();
         List<Transform> goalPoseJoints = new List<Transform>();
@@ -583,14 +586,17 @@ namespace MikeNspired.XRIStarterKit
         /// Same name-matched mapping as <see cref="SetJointsDirect"/>, but writes transforms directly via
         /// <see cref="SetNewJoint"/> (mirrors the per-frame writes in AnimateToPoseByValue2). Joints not
         /// present in the supplied data are left untouched. Intended for per-frame drivers (free-hand touch).
+        /// <paramref name="_lerp"/> 1 = snap to the supplied pose; &lt;1 eases from the current pose toward it
+        /// (per-frame exponential smoothing supplied by the caller) to damp single-frame solver jitter.
         /// </summary>
-        public void SetJointsImmediate(PoseScriptableObject.JointData[] _jointData)
+        public void SetJointsImmediate(PoseScriptableObject.JointData[] _jointData, float _lerp = 1f)
         {
             if (_jointData == null || _jointData.Length == 0) return;
 
             if (currentJoints.Count == 0 || !currentJoints[0])
                 SetBones();
 
+            bool snap = _lerp >= 1f;
             for (int i = 0; i < currentJoints.Count; i++)
             {
                 var joint = currentJoints[i];
@@ -600,7 +606,12 @@ namespace MikeNspired.XRIStarterKit
                 {
                     if (_jointData[j].jointName == joint.name)
                     {
-                        SetNewJoint(ref joint, _jointData[j].localPosition, _jointData[j].localRotation);
+                        if (snap)
+                            SetNewJoint(ref joint, _jointData[j].localPosition, _jointData[j].localRotation);
+                        else
+                            SetNewJoint(ref joint,
+                                Vector3.Lerp(joint.localPosition, _jointData[j].localPosition, _lerp),
+                                Quaternion.Slerp(joint.localRotation, _jointData[j].localRotation, _lerp));
                         break;
                     }
                 }

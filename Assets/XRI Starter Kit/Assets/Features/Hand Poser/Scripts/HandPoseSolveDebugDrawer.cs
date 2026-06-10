@@ -19,8 +19,9 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("The hand whose last solve to visualize. Auto-filled from this GameObject if left empty.")]
         [SerializeField] private HandAnimator handAnimator;
 
-        [Tooltip("Local switch for this hand's gizmos. The global 'Draw Solve Debug' on HandPoserSettings " +
-                 "must also be on for any telemetry to exist.")]
+        [Tooltip("Master switch for this hand's solve debug. When on, the next dynamic solve (a grab or a " +
+                 "free-hand touch) records telemetry and it is drawn here. Nothing draws until the hand " +
+                 "actually solves against something — an open hand touching nothing has nothing to show.")]
         [SerializeField] private bool draw = true;
 
         [Tooltip("Length (m) of the cyan contact-normal lines.")]
@@ -30,6 +31,19 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private float fallbackRadius = 0.008f;
 
         private void Reset() => handAnimator = GetComponent<HandAnimator>();
+
+        // Ask the solver to record telemetry while this drawer wants to show it. Runs every frame so the
+        // 'draw' toggle is the single switch — flip it and the next solve starts/stops collecting.
+        private void Update()
+        {
+            if (!handAnimator) TryGetComponent(out handAnimator);
+            if (handAnimator) handAnimator.requestSolveDebug = draw;
+        }
+
+        private void OnDisable()
+        {
+            if (handAnimator) handAnimator.requestSolveDebug = false;
+        }
 
         private void OnDrawGizmos()
         {
