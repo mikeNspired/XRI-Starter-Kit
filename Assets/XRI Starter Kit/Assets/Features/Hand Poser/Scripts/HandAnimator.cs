@@ -29,6 +29,11 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Fist/grip pose used as the closed end of the per-finger curl sweep (t=1). Assign in the Inspector.")]
         public PoseScriptableObject ClosedPose;
 
+        [Tooltip("Optional extra closed poses (e.g. a precision/pinch shape alongside the fist). The dynamic " +
+                 "solver sweeps each finger against every candidate and keeps the one whose fingertip ends " +
+                 "closest to the object. ClosedPose is always included as the first candidate.")]
+        public List<PoseScriptableObject> ClosedPoses = new List<PoseScriptableObject>();
+
         [Tooltip("Time hand skeleton animates to next pose")]
         public float animationTimeToNewPose = .1f;
 
@@ -83,6 +88,18 @@ namespace MikeNspired.XRIStarterKit
         public void StartAnimationPosing() => StartAnimationByButtonValue(ControllerButtons.Trigger);
         public void StartSecondaryPosing() => StartAnimationByButtonValue(ControllerButtons.Grip);
         public void SetSecondaryValue(float val) => gripAnimationValue = val;
+
+        // Stops the live grip/trigger value-driven animation in place (without changing the current
+        // pose), so a system like dynamic posing can take over from the hand's current shape instead
+        // of the grip clench continuing to fist the hand for a frame before the solved pose lands.
+        public void StopButtonValueAnimation()
+        {
+            if (AnimateByTriggerValue != null)
+            {
+                StopCoroutine(AnimateByTriggerValue);
+                AnimateByTriggerValue = null;
+            }
+        }
 
         public void ReturnToDefaultPosing()
         {

@@ -4,7 +4,7 @@ Paste **one block per fresh Claude Code session** (start a new session each phas
 
 Workflow per phase: paste the block → let it implement and open a PR → pull the branch into Unity → test against the acceptance checklist → merge or comment the specific failure for it to iterate.
 
-> Tip: for the heavier phases (2, 4, 5) set the model to Opus 4.7.
+> Tip: for the heavier phases (2, 4, 5, 6) set the model to Opus 4.7. Phase 5 (dynamic attach) is investigation-heavy — read its handoff note first.
 
 ---
 
@@ -123,10 +123,74 @@ Out of scope: free-hand world touch, multi-sample polish. Open a PR with the acc
 
 ---
 
-## Phase 5 — Free-hand world touch
+## Phase 5 — Dynamic attach / snap suppression
+
+> **Handoff from the Phase 3+4 session (branch `claude/loving-sagan-dQxQu`).** Read this before writing any code.
+>
+> **What's already shipped on that branch:** the decision gate (AUTHORED vs DYNAMIC), the grab-time curl-sweep solver for no-pose / off-axis grabs, and a dedicated `OpenPose` field on `HandAnimator` used as the sweep's t=0 anchor (falls back to `DefaultPose` if unassigned — author one per hand). `SetJointsDirect`, `IHandPoseSolver`, `CurlSweepSolver`, `HandSolveContext` all exist and work.
+>
+> **The unsolved problem this phase owns:** when a player grabs an *authored* object off-axis (e.g. a rifle by the barrel), the object still snaps so its authored grip lands in the palm, defeating the dynamic solve. Phase 4 left this in deliberately.
+>
+> **A snap-suppression attempt was already tried and reverted — do NOT just retry it.** The naive approach was: make `XRHandPoser.IsGrabDynamic` public and have `HandReference.OnGrab` early-return (skip its attach write) when the grab is dynamic. It did NOT stop the snap — the rifle still spun to the authored grip. Conclusion: `HandReference` is **not the only** thing setting the grab pose. There is at least one other actor (the `XRGrabInteractable`'s own `attachTransform`, a grab transformer, and/or a script that assigns the attach transform on Awake/OnEnable). The revert is in git history if you want to read the diff (commits around the "Phase 5 — suppress HandReference snap" revert).
 
 ```
-Implement ONLY Phase 5. Branch: phase-5-free-hand-touch.
+Implement ONLY Phase 5. Branch: phase-5-dynamic-attach.
+
+Goal: on the DYNAMIC branch, stop the grabbed object from snapping its authored grip into
+the palm, so the hand holds the object where it was actually grabbed and the curl solver
+wraps the fingers there. The AUTHORED (near-attach) path must be byte-for-byte unchanged.
+
+FIRST, investigate before changing anything (this is the hard part — budget most of the phase here):
+- Map EVERY place the grab pose / attach transform is set for a grabbed object: HandReference.OnGrab,
+  XRGrabInteractable.attachTransform, any XRBaseGrabTransformer in the project, useDynamicAttach,
+  and any script that sets an attach transform in Awake/OnEnable/Start. Search the repo, don't assume.
+- Determine, with logging, which actor actually produces the off-axis snap (the reverted attempt proved
+  HandReference alone is not it). Confirm the XRI grab pose pipeline order for this project's setup.
+- Only then choose the interception point. Prefer the swappable, least-invasive seam; keep the solver
+  behind IHandPoseSolver per the standing rules.
+
+Constraints: never break the authored happy path. No physics forces / ArticulationBodies / IK.
+Do not wire in the physical-presence collider feature. Additive over rewrites.
+
+Acceptance (human verifies in Unity): grab a gun at its grip -> AUTHORED, snaps to authored pose
+exactly as before. Grab the same gun by the barrel -> DYNAMIC, the gun does NOT teleport its handle
+into the palm; it stays where grabbed and fingers curl onto the barrel. No-pose object -> DYNAMIC,
+no snap. Release / re-grab / play-mode-exit are clean.
+
+Out of scope: free-hand world touch (Phase 6), solver polish / per-finger calibration (Phase 7).
+Open a PR with the acceptance steps restated; do not start Phase 6.
+```
+
+> **Phase 5 outcome (branch `claude/beautiful-euler-RaccO` / `phase-5`).** Snap suppression shipped and
+> works: on a DYNAMIC grab the object is held where it was grabbed (interactor attach aligned to the
+> object's current attach pose) instead of snapping its authored grip into the palm; the AUTHORED path
+> is unchanged. The session also pulled a lot of solver work forward beyond the snap scope — treat all
+> of this as provisional and up for a proper dial-in pass in Phase 7:
+> - **Pose policy** per object on `XRHandPoser`: `Auto` / `AuthoredOnly` (e.g. a handgun) / `DynamicOnly`
+>   (e.g. a cube) / `NoPosing`.
+> - **Global + per-object settings**: thresholds, probe radius, step count, samples, grasp rule, and a
+>   failed-grasp response (`Drop` / `FallbackToAuthored`) live on the `HandPoserSettings` asset with a
+>   per-object override toggle on `XRHandPoser`.
+> - **Graspability gate**: a dynamic grab must reach thumb + N fingers or it drops / falls back, so a
+>   sphere-cast grab can't leave an object floating.
+> - **ProgressiveCurlSolver** (new `IHandPoseSolver`, default on via `useProgressiveSolver`): per-joint
+>   base→tip curl with bisection-refined contact; non-gripping fingers settle into a relaxed fist
+>   (`noContactCurl`). `CurlSweepSolver` retained as the single-`t`-per-finger fallback. Multi closed-pose
+>   selection exists but is largely redundant with the progressive solver.
+> - **Grab transition**: dynamic now applies on the grab frame like the authored path (no clench/flail).
+>
+> **Known-not-good, deferred to Phase 7:** the actual grab *shapes* are still often unnatural (fingers
+> overshoot/under-reach, odd straight-vs-curled joints, occasional wild poses). `OpenPose` must be authored
+> per hand or the sweep falls back to the relaxed `DefaultPose`. `HoldInPlaceOnGrab` (the Phase 5a isolation
+> test component) is still in the repo as a sandbox aid — remove or keep as desired.
+
+
+---
+
+## Phase 6 — Free-hand world touch
+
+```
+Implement ONLY Phase 6. Branch: phase-6-free-hand-touch.
 
 Goal: run the sweep continuously while the hand is NOT grabbing, against world geometry.
 
@@ -140,26 +204,57 @@ Constraints: bounded per-frame cost (cap fingers x steps x samples, reuse buffer
 
 Acceptance (I will verify in Unity): toggle on, open hand, no grab — lowering onto a table rests the fingers on the surface; sliding to the edge curls fingers past the lip down over it while fingers on the table stay flat; toggle off returns to normal.
 
-Out of scope: polish. Open a PR with the acceptance steps restated; do not start Phase 6.
+Out of scope: polish. Open a PR with the acceptance steps restated; do not start Phase 7.
 ```
 
 ---
 
-## Phase 6 — Polish + extension seam
+## Phase 7 — Solver dial-in, object seating, and visual debugging
+
+> This is the dedicated "make it read like a real hand" pass. Phases 2–5 stood the solver up and proved
+> the snap suppression; the grab *shapes* are still rough and were intentionally left for here. Expect to
+> iterate against many real objects in-editor. **Build the visual debugging FIRST** — without it we are
+> guessing at why a finger posed the way it did.
 
 ```
-Implement ONLY Phase 6. Branch: phase-6-polish.
+Implement ONLY Phase 7. Branch: phase-7-polish.
 
-Goal: make it read like a real hand and lock the extension points.
+Goal: make dynamic grabs look natural across many objects, and give us the tools to see why.
 
-Build:
-- Multi-sample per finger: sample contact at 2-3 points along each finger (not just the tip) so edge-wrap reads as a drape, not a claw.
-- Preferred-angle bias: a finger that contacts nothing drifts toward a gentle rest curl (preferredT per finger blended by preferredWeight) instead of fully open/closed.
-- Per-finger enable mask: allow specific fingers to stay on the authored pose while others solve.
-- Optional HandJointLimits asset: per-joint min/max clamp, behind a null check, for cases where the fist pose alone isn't a tight enough limit.
-- Finalize IHandPoseSolver / HandSolveContext so a future PenetrationContactSolver could drop in without touching any driver.
+Build (visual debugging first — it unblocks all the tuning below):
+- Per-finger solve visualization that runs on REAL grabs (XRHandPoser), not just DynamicPoseTester.
+  Drive it from a debug toggle. For each finger draw, distinctly coloured:
+    * contacted vs non-contacted fingers (e.g. green = contacted, red = no contact, yellow = relaxed-fist
+      fallback) — right now every sphere is red and unreadable.
+    * the probe sphere at each SAMPLED joint (not just the tip), at the t where the joint locked, so we can
+      see which segment actually stopped the finger.
+    * the chosen closed pose per finger (when multiple) and the final per-joint t (label or colour ramp).
+    * the contact point / surface normal that halted each joint.
+  Goal: from the Scene view alone, explain why each finger is straight vs curled.
 
-Acceptance (I will verify in Unity): edge drape looks like a hand wrapping a lip; a pinky reaching nothing rests gently rather than clawing; disabling a finger in the mask leaves it on the authored pose while the rest solve.
+Then the solver dial-in (all behind the existing settings, no new mechanism unless needed):
+- Per-finger calibration: reach limits / anti-overshoot so a finger stops ON a surface instead of curling
+  through or past it into air (the lower-fingers-hang-below-the-object case); per-finger probe radius /
+  bias to fix the pinky/ring under- or over-closing.
+- Preferred-angle / relaxed-fist bias: tune the non-gripping-finger rest so it reads as a natural grip
+  (started in Phase 5 as noContactCurl); make it a real preferred pose if a single curl value isn't enough.
+- Per-finger enable mask: let specific fingers stay on the authored pose while others solve.
+- Optional HandJointLimits asset: per-joint min/max clamp, behind a null check, for when the fist pose
+  alone isn't a tight enough limit.
+- Multi-sample / drape quality so an edge-wrap reads as a drape, not a claw.
+
+Then object seating (reduce unnatural grabs at the source, not just in the fingers):
+- Let a grabbed object nudge/orient itself into a more natural spot in the hand before/with the solve
+  (small position+rotation settle toward the palm or a nearest-graspable feature), instead of pure
+  hold-where-grabbed. Keep it kinematic and additive; must not reintroduce the authored-grip snap.
+
+Finalize: lock IHandPoseSolver / HandSolveContext so a future PenetrationContactSolver could drop in
+without touching any driver.
+
+Acceptance (I will verify in Unity): the debug view clearly shows which fingers contacted and why each is
+posed as it is; fingers stop on surfaces instead of passing through/under; a finger reaching nothing rests
+in a natural relaxed grip; disabling a finger in the mask leaves it authored while the rest solve; grabs
+across a handful of varied objects look plausible rather than wild.
 
 Open a PR with the acceptance steps restated.
 ```

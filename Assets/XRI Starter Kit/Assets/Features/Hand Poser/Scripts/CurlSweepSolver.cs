@@ -32,61 +32,78 @@ namespace MikeNspired.XRIStarterKit
                 snapshotRot[i] = joints[i].localRotation;
             }
 
+            // Candidate closed poses: closedPose first, then any extras (deduped). Each finger
+            // independently keeps whichever candidate ends with its fingertip closest to the target.
+            var candidates = BuildCandidates(_ctx);
+
             var tFinals = new float[5];
+            var chosenClosed = new PoseScriptableObject[5];
 
             try
             {
-                // Start every finger at open pose so sweeps are independent
-                for (int i = 0; i < 5; i++)
-                    _ctx.hand.SetFingerCurl(i, 0f, _ctx.openPose, _ctx.closedPose);
-
                 for (int fingerIdx = 0; fingerIdx < 5; fingerIdx++)
                 {
                     var chain = _ctx.fingerMap.Finger(fingerIdx);
                     if (chain == null || chain.Count == 0)
                     {
                         tFinals[fingerIdx] = 0f;
+                        chosenClosed[fingerIdx] = candidates[0];
                         LastSolveProbePositions[fingerIdx] = Vector3.zero;
                         LastSolveContacted[fingerIdx] = false;
                         continue;
                     }
 
-                    // Probe at the deepest joint (actual fingertip bone)
+                    // Sample the last N joints (fingertip inward). Multi-sampling catches a
+                    // finger that wraps the object even when the tip slips past the side.
                     var tip = chain[chain.Count - 1];
-                    float prevT = 0f;
-                    Vector3 prevProbePos = tip.position;
-                    bool contacted = false;
+                    int samples = Mathf.Clamp(_ctx.samplesPerFinger, 1, chain.Count);
+                    int sampleStart = chain.Count - samples;
 
-                    for (int step = 1; step <= _ctx.stepCount; step++)
+                    bool bestContacted = false;
+                    float bestGap = float.PositiveInfinity;
+                    float bestT = 1f;
+                    Vector3 bestProbe = tip.position;
+                    var bestPose = candidates[0];
+                    bool anyEvaluated = false;
+
+                    foreach (var cp in candidates)
                     {
-                        float t = (float)step / _ctx.stepCount;
-                        _ctx.hand.SetFingerCurl(fingerIdx, t, _ctx.openPose, _ctx.closedPose);
-
-                        Vector3 probePos = tip.position;
-
-                        if (OverlapsTarget(probePos, _ctx))
+                        // Sweep this candidate from open to closed, stopping before first contact.
+                        bool contacted = false;
+                        float prevT = 0f;
+                        for (int step = 1; step <= _ctx.stepCount; step++)
                         {
-                            // Lock at the last position before contact
-                            tFinals[fingerIdx] = prevT;
-                            LastSolveProbePositions[fingerIdx] = prevProbePos;
-                            LastSolveContacted[fingerIdx] = true;
-                            contacted = true;
-                            break;
+                            float t = (float)step / _ctx.stepCount;
+                            _ctx.hand.SetFingerCurl(fingerIdx, t, _ctx.openPose, cp);
+
+                            if (AnySampleOverlaps(chain, sampleStart, _ctx)) { contacted = true; break; }
+                            prevT = t;
                         }
 
-                        prevT = t;
-                        prevProbePos = probePos;
+                        float lockedT = contacted ? prevT : 1f;
+                        _ctx.hand.SetFingerCurl(fingerIdx, lockedT, _ctx.openPose, cp);
+                        Vector3 probeAtLocked = tip.position;
+                        float gap = TipGap(probeAtLocked, _ctx);
+
+                        // Prefer a candidate that makes contact; among equals, the snugger fingertip.
+                        if (!anyEvaluated || IsBetter(contacted, gap, bestContacted, bestGap))
+                        {
+                            anyEvaluated   = true;
+                            bestContacted  = contacted;
+                            bestGap        = gap;
+                            bestT          = lockedT;
+                            bestProbe      = probeAtLocked;
+                            bestPose       = cp;
+                        }
+
+                        // Reset this finger to open before the next candidate so sweeps are independent.
+                        _ctx.hand.SetFingerCurl(fingerIdx, 0f, _ctx.openPose, cp);
                     }
 
-                    if (!contacted)
-                    {
-                        tFinals[fingerIdx] = 1f;
-                        LastSolveProbePositions[fingerIdx] = tip.position;
-                        LastSolveContacted[fingerIdx] = false;
-                    }
-
-                    // Reset before the next finger's sweep so chains don't interfere
-                    _ctx.hand.SetFingerCurl(fingerIdx, 0f, _ctx.openPose, _ctx.closedPose);
+                    tFinals[fingerIdx]              = bestT;
+                    chosenClosed[fingerIdx]         = bestPose;
+                    LastSolveProbePositions[fingerIdx] = bestProbe;
+                    LastSolveContacted[fingerIdx]   = bestContacted;
                 }
             }
             finally
@@ -101,10 +118,54 @@ namespace MikeNspired.XRIStarterKit
                 }
             }
 
-            return BuildJointData(_ctx, tFinals);
+            return BuildJointData(_ctx, tFinals, chosenClosed);
+        }
+
+        // closedPose is always candidate 0; extra closedPoses are appended (deduped, non-null).
+        private static List<PoseScriptableObject> BuildCandidates(HandSolveContext _ctx)
+        {
+            var list = new List<PoseScriptableObject> { _ctx.closedPose };
+            if (_ctx.closedPoses != null)
+                foreach (var cp in _ctx.closedPoses)
+                    if (cp && !list.Contains(cp)) list.Add(cp);
+            return list;
+        }
+
+        // Contact beats no-contact; among equals, the smaller fingertip gap wins.
+        private static bool IsBetter(bool _contacted, float _gap, bool _bestContacted, float _bestGap)
+        {
+            if (_contacted != _bestContacted) return _contacted;
+            return _gap < _bestGap;
+        }
+
+        // Distance from the fingertip to the nearest point on any target collider.
+        private static float TipGap(Vector3 _tipPos, HandSolveContext _ctx)
+        {
+            if (_ctx.targetColliders == null || _ctx.targetColliders.Length == 0)
+                return float.PositiveInfinity;
+
+            float min = float.PositiveInfinity;
+            foreach (var col in _ctx.targetColliders)
+            {
+                if (!col) continue;
+                float d = Vector3.Distance(_tipPos, col.ClosestPoint(_tipPos));
+                if (d < min) min = d;
+            }
+            return min;
         }
 
         #region Private Helpers
+
+        // True if any of the sampled joints (sampleStart..tip) overlaps the target this step.
+        private static bool AnySampleOverlaps(List<Transform> _chain, int _sampleStart, HandSolveContext _ctx)
+        {
+            for (int j = _sampleStart; j < _chain.Count; j++)
+            {
+                var joint = _chain[j];
+                if (joint && OverlapsTarget(joint.position, _ctx)) return true;
+            }
+            return false;
+        }
 
         private static bool OverlapsTarget(Vector3 _center, HandSolveContext _ctx)
         {
@@ -121,13 +182,13 @@ namespace MikeNspired.XRIStarterKit
             return false;
         }
 
-        private static PoseScriptableObject.JointData[] BuildJointData(HandSolveContext _ctx, float[] _tFinals)
+        private static PoseScriptableObject.JointData[] BuildJointData(HandSolveContext _ctx, float[] _tFinals, PoseScriptableObject[] _chosenClosed)
         {
             var openDict = new Dictionary<string, PoseScriptableObject.JointData>(_ctx.openPose.joints.Length);
             foreach (var jd in _ctx.openPose.joints) openDict[jd.jointName] = jd;
 
-            var closedDict = new Dictionary<string, PoseScriptableObject.JointData>(_ctx.closedPose.joints.Length);
-            foreach (var jd in _ctx.closedPose.joints) closedDict[jd.jointName] = jd;
+            // Each finger may use a different closed pose; cache the lookup per pose.
+            var closedDicts = new Dictionary<PoseScriptableObject, Dictionary<string, PoseScriptableObject.JointData>>();
 
             var result = new List<PoseScriptableObject.JointData>();
             var seen = new HashSet<string>();
@@ -137,6 +198,16 @@ namespace MikeNspired.XRIStarterKit
                 float t = _tFinals[i];
                 var chain = _ctx.fingerMap.Finger(i);
                 if (chain == null) continue;
+
+                var closedPose = _chosenClosed[i] ? _chosenClosed[i] : _ctx.closedPose;
+                if (!closedPose) continue;
+
+                if (!closedDicts.TryGetValue(closedPose, out var closedDict))
+                {
+                    closedDict = new Dictionary<string, PoseScriptableObject.JointData>(closedPose.joints.Length);
+                    foreach (var jd in closedPose.joints) closedDict[jd.jointName] = jd;
+                    closedDicts[closedPose] = closedDict;
+                }
 
                 foreach (var joint in chain)
                 {

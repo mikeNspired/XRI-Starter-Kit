@@ -22,6 +22,19 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty currentRightHand;
         private SerializedProperty interactable;
 
+        // Dynamic posing config
+        private SerializedProperty posePolicy;
+        private SerializedProperty overrideGlobalSettings;
+        private SerializedProperty positionThreshold;
+        private SerializedProperty rotationThreshold;
+        private SerializedProperty dynamicStepCount;
+        private SerializedProperty dynamicProbeRadius;
+        private SerializedProperty dynamicSamplesPerFinger;
+        private SerializedProperty dynamicNoContactCurl;
+        private SerializedProperty graspRequireThumb;
+        private SerializedProperty graspRequiredFingers;
+        private SerializedProperty failedGraspResponse;
+
         private bool hasLeftHand;
         private bool hasRightHand;
         private AnimBool customizeValues;
@@ -44,6 +57,18 @@ namespace MikeNspired.XRIStarterKit.Editor
             currentLeftHand = serializedObject.FindProperty("currentLeftHand");
             currentRightHand = serializedObject.FindProperty("currentRightHand");
             interactable = serializedObject.FindProperty("interactable");
+
+            posePolicy = serializedObject.FindProperty("posePolicy");
+            overrideGlobalSettings = serializedObject.FindProperty("overrideGlobalSettings");
+            positionThreshold = serializedObject.FindProperty("positionThreshold");
+            rotationThreshold = serializedObject.FindProperty("rotationThreshold");
+            dynamicStepCount = serializedObject.FindProperty("dynamicStepCount");
+            dynamicProbeRadius = serializedObject.FindProperty("dynamicProbeRadius");
+            dynamicSamplesPerFinger = serializedObject.FindProperty("dynamicSamplesPerFinger");
+            dynamicNoContactCurl = serializedObject.FindProperty("dynamicNoContactCurl");
+            graspRequireThumb = serializedObject.FindProperty("graspRequireThumb");
+            graspRequiredFingers = serializedObject.FindProperty("graspRequiredFingers");
+            failedGraspResponse = serializedObject.FindProperty("failedGraspResponse");
         }
 
         public override void OnInspectorGUI()
@@ -124,6 +149,55 @@ namespace MikeNspired.XRIStarterKit.Editor
                 labelToolTip = new GUIContent("Ease In Time Override",
                     "Time till maintain pose starts");
                 handPoseScript.easeInTimeOverride = EditorGUILayout.FloatField(labelToolTip, handPoseScript.easeInTimeOverride);
+            }
+
+            DrawDynamicPosingFields();
+        }
+
+        private void DrawDynamicPosingFields()
+        {
+            GUILayout.Space(8);
+            GUILayout.Label("Dynamic Posing", EditorStyles.boldLabel);
+
+            EditorGUILayout.PropertyField(posePolicy, new GUIContent("Pose Policy",
+                "Auto: authored near the grip, dynamic fallback off-axis. AuthoredOnly: never solve " +
+                "(e.g. a handgun). DynamicOnly: always solve (e.g. a cube). NoPosing: no hand posing."));
+
+            EditorGUILayout.PropertyField(overrideGlobalSettings, new GUIContent("Override Global Settings",
+                "When off, this object uses the global defaults on the HandPoserSettings asset. " +
+                "Turn on to override the thresholds and grasp rule below for this object only."));
+
+            if (overrideGlobalSettings.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(positionThreshold, new GUIContent("Position Threshold",
+                    "How far (m) a grab can land from the authored grip before it counts as off-axis (DYNAMIC)."));
+                EditorGUILayout.PropertyField(rotationThreshold, new GUIContent("Rotation Threshold",
+                    "How far (deg) a grab can rotate from the authored grip before it counts as off-axis (DYNAMIC)."));
+                EditorGUILayout.PropertyField(dynamicStepCount, new GUIContent("Step Count",
+                    "Curl-sweep resolution: number of t steps per finger."));
+                EditorGUILayout.PropertyField(dynamicProbeRadius, new GUIContent("Probe Radius",
+                    "Fingertip probe sphere radius (m) used to detect contact during the sweep."));
+                EditorGUILayout.PropertyField(dynamicSamplesPerFinger, new GUIContent("Samples Per Finger",
+                    "Curl-sweep solver only. Joints from the fingertip inward to sphere-test each step. " +
+                    "1 = tip only; 2+ catches a finger wrapping the object even when the tip slips past it."));
+                EditorGUILayout.PropertyField(dynamicNoContactCurl, new GUIContent("No-Contact Curl",
+                    "Progressive solver only. Curl for a finger that touches nothing — non-gripping " +
+                    "fingers settle into a relaxed fist instead of opening. 1 = full fist; ~0.7 natural."));
+                EditorGUILayout.PropertyField(graspRequireThumb, new GUIContent("Grasp Require Thumb",
+                    "Require the thumb to make contact for a dynamic grasp to hold."));
+                EditorGUILayout.PropertyField(graspRequiredFingers, new GUIContent("Grasp Required Fingers",
+                    "Number of non-thumb fingers that must contact for a dynamic grasp to hold."));
+                EditorGUILayout.PropertyField(failedGraspResponse, new GUIContent("Failed Grasp Response",
+                    "What to do when a dynamic grasp fails its contact test."));
+                EditorGUI.indentLevel--;
+            }
+            else
+            {
+                EditorGUILayout.HelpBox(
+                    "Using global dynamic-pose defaults from the HandPoserSettings asset " +
+                    "(Resources/HandPoserSettings). Enable Override Global Settings to tune this object.",
+                    MessageType.None);
             }
         }
         private void DrawPoseSection()
