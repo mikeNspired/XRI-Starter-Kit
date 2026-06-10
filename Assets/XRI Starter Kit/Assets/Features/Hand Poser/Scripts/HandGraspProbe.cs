@@ -3,20 +3,36 @@ using UnityEngine;
 namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
-    /// Free (non-grabbing) hand world touch. While the hand is empty, runs the dynamic
-    /// <see cref="IHandPoseSolver"/> every frame against a configurable world <see cref="LayerMask"/> and
-    /// writes the result straight onto the joints (no blend coroutine), so fingers rest on surfaces and
-    /// drape over edges. The progressive solver resolves each finger independently — fingers over a table
-    /// edge curl down while fingers still on the surface stay flat.
+    /// How <see cref="HandGraspProbe"/> decides when to solve a grasp onto nearby world geometry.
+    /// </summary>
+    public enum GraspProbeMode
+    {
+        /// Editor-only dial-in: solve continuously while the hand is empty and an object is in reach,
+        /// so you can tune the grab settings live without an actual XRI grab. Never runs in a build.
+        AutoGraspTest,
+
+        /// Runtime: solve only while the grip button is held and a non-grabbable object is in reach,
+        /// so the hand poses onto a surface (e.g. a table) the player cannot normally grab.
+        GripHoldPose,
+    }
+
+    /// <summary>
+    /// Drives the dynamic grab solver against nearby world geometry while the hand is NOT holding anything,
+    /// and applies the result straight onto the joints (no blend coroutine). This is the *grasp* mechanic —
+    /// fingers curl toward the surface — used here as a testing/utility tool, NOT the free-hand world
+    /// reaction (that pushback feature is a separate, deferred script).
+    ///
+    /// Two modes (see <see cref="GraspProbeMode"/>): an editor-only continuous "auto grasp" for dialing in
+    /// grab settings, and a runtime "grip-hold pose" that poses the hand onto a surface while the grip is held.
     ///
     /// Kinematic only: sphere queries + direct transform writes. No physics forces, ArticulationBodies, or IK.
     /// Pauses entirely while grabbing (the Phase 5 grab path owns the pose then). Off by default.
     ///
-    /// Contact-owner rule: this driver and any persistent physical-presence finger colliders must not both
-    /// own contact. While Enable Free Hand Touch is on, disable those colliders or set them to triggers.
-    /// This driver intentionally does NOT wire that feature in — it runs its own queries against the World Mask.
+    /// Contact-owner rule: this and any persistent physical-presence finger colliders must not both own
+    /// contact. While this runs, disable those colliders or set them to triggers. This driver does NOT wire
+    /// that feature in — it runs its own queries and ignores the hand's own colliders (see Ignore Collider Root).
     /// </summary>
-    public class FreeHandContactDriver : MonoBehaviour
+    public class HandGraspProbe : MonoBehaviour
     {
         #region Inspector
 
@@ -24,10 +40,23 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private HandAnimator handAnimator;
 
         [Tooltip("Master toggle. Off = the hand poses normally and this component does nothing.")]
-        [SerializeField] private bool enableFreeHandTouch = false;
+        [SerializeField] private bool enableProbe = false;
 
-        [Tooltip("Only geometry on these layers is touched. Set this to your world/environment layer(s) — " +
-                 "never include the player body or the other hand.")]
+        [Tooltip("AutoGraspTest: editor-only, solves continuously to dial in grab settings. " +
+                 "GripHoldPose: runtime, solves only while the grip button is held near a surface.")]
+        [SerializeField] private GraspProbeMode mode = GraspProbeMode.GripHoldPose;
+
+        [Header("Grip (GripHoldPose mode)")]
+        [Tooltip("Grip input source. Auto-found in parents if empty. Falls back to the hand's grip animation " +
+                 "value when none is assigned.")]
+        [SerializeField] private XRControllerButtons controllerButtons;
+
+        [Tooltip("Grip value (0..1) at/above which GripHoldPose mode is considered 'held'.")]
+        [SerializeField, Range(0f, 1f)] private float gripThreshold = 0.5f;
+
+        [Header("World Query")]
+        [Tooltip("Only geometry on these layers is posed onto. Set to your non-grabbable environment layer(s) — " +
+                 "never include the player body or the other hand. (Own colliders are excluded regardless.)")]
         [SerializeField] private LayerMask worldMask;
 
         [Tooltip("Center of the reach query. Defaults to this transform (the hand) if empty.")]
@@ -66,8 +95,8 @@ namespace MikeNspired.XRIStarterKit
                  "small values (e.g. 0.05) damp solver jitter so fingers settle instead of flicking.")]
         [SerializeField, Range(0f, 0.3f)] private float smoothing = 0.04f;
 
-        [Tooltip("When the hand leaves all surfaces, snap once back to the idle pose so it doesn't freeze " +
-                 "in the last touched shape.")]
+        [Tooltip("When the trigger condition ends (released / nothing in reach), snap once back to the idle " +
+                 "pose so the hand doesn't freeze in the last solved shape.")]
         [SerializeField] private bool returnToIdleWhenClear = true;
 
         #endregion
@@ -79,7 +108,7 @@ namespace MikeNspired.XRIStarterKit
         private Collider[] colliders;
         private Transform ignoreRoot;   // resolved hand/rig root whose colliders are skipped
         private bool ignoreRootResolved;
-        private bool isPosing;          // wrote a touched pose last evaluated frame
+        private bool isPosing;          // wrote a solved pose last evaluated frame
         private bool warned;
 
         #endregion
@@ -91,6 +120,7 @@ namespace MikeNspired.XRIStarterKit
         private void Awake()
         {
             if (!handAnimator) TryGetComponent(out handAnimator);
+            if (!controllerButtons) controllerButtons = GetComponentInParent<XRControllerButtons>();
             colliders = new Collider[Mathf.Max(1, maxColliders)];
         }
 
@@ -98,7 +128,7 @@ namespace MikeNspired.XRIStarterKit
         // update phase). When this skips a frame, those animations naturally reassert the idle pose.
         private void LateUpdate()
         {
-            if (!enableFreeHandTouch || !handAnimator || handAnimator.isGrabbingObject)
+            if (!enableProbe || !handAnimator || handAnimator.isGrabbingObject || !ShouldSolveThisFrame())
             {
                 ReleasePosing();
                 return;
@@ -136,6 +166,23 @@ namespace MikeNspired.XRIStarterKit
 
         #region Private Methods
 
+        // Mode-specific trigger gate.
+        private bool ShouldSolveThisFrame() => mode switch
+        {
+            // Editor-only dial-in tool: never solve in a player build.
+            GraspProbeMode.AutoGraspTest => Application.isEditor,
+            GraspProbeMode.GripHoldPose  => GripHeld(),
+            _                            => false,
+        };
+
+        private bool GripHeld()
+        {
+            if (controllerButtons)
+                return controllerButtons.IsGripped || controllerButtons.gripValue >= gripThreshold;
+            // Fallback: the hand's grip animation value is fed by the same input wiring.
+            return handAnimator.gripAnimationValue >= gripThreshold;
+        }
+
         private bool Ready()
         {
             if (handAnimator.ClosedPose && (handAnimator.OpenPose || handAnimator.DefaultPose))
@@ -143,8 +190,8 @@ namespace MikeNspired.XRIStarterKit
 
             if (!warned)
             {
-                Debug.LogWarning($"[FreeHandContactDriver] {name} — assign ClosedPose and an OpenPose/DefaultPose " +
-                                 "on the HandAnimator to enable free-hand touch.", this);
+                Debug.LogWarning($"[HandGraspProbe] {name} — assign ClosedPose and an OpenPose/DefaultPose " +
+                                 "on the HandAnimator to enable the grasp probe.", this);
                 warned = true;
             }
             return false;
@@ -198,9 +245,9 @@ namespace MikeNspired.XRIStarterKit
             return ignoreRoot;
         }
 
-        // Hand has left all surfaces (or driver disabled / grabbing): hand back to normal posing.
-        // Writes DefaultPose directly (no coroutine stop) so a held trigger/grip animation keeps control
-        // and simply overwrites this on its next frame; only matters when nothing else is driving the hand.
+        // Trigger ended (disabled / grabbing / grip released / nothing in reach): hand back to normal posing.
+        // Writes DefaultPose directly (no coroutine stop) so a held trigger/grip animation keeps control and
+        // simply overwrites this on its next frame; only matters when nothing else is driving the hand.
         private void ReleasePosing()
         {
             if (!isPosing) return;
@@ -217,7 +264,7 @@ namespace MikeNspired.XRIStarterKit
 #if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = enableFreeHandTouch ? Color.cyan : Color.gray;
+            Gizmos.color = enableProbe ? Color.cyan : Color.gray;
             Vector3 center = (probeCenter ? probeCenter : transform).position;
             Gizmos.DrawWireSphere(center, reachRadius);
         }

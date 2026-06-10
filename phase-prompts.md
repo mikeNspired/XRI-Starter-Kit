@@ -207,23 +207,31 @@ Acceptance (I will verify in Unity): toggle on, open hand, no grab — lowering 
 Out of scope: polish. Open a PR with the acceptance steps restated; do not start Phase 7.
 ```
 
-> **Phase 6 outcome (branch `claude/wonderful-maxwell-fkrrtx`).** Shipped in two staged commits, and the
-> **per-finger solve visualization was pulled forward from Phase 7** (built first) so we can see what the
-> solver is doing while testing free-hand touch:
+> **Phase 6 outcome (branch `claude/wonderful-maxwell-fkrrtx`).** The **per-finger solve visualization was
+> pulled forward from Phase 7** (built first) so we can see what the solver is doing. A first "free-hand
+> touch" attempt revealed a scope misread (see below) and was reframed into three sub-features:
 > - **Solve telemetry + debug viz:** `HandSolveDebug` (per-finger state + reused per-joint probe buffer:
 >   world position, locked t, contact flag, approx contact point/normal). `IHandPoseSolver` gains
 >   `LastSolveDebug`; `HandSolveContext` gains a `collectDebug` opt-in (zero cost when off). Both solvers
 >   record it. `HandPoseSolveDebugDrawer` (on the hand) gizmo-draws the last solve on **real** interactions
 >   — a sphere per sampled joint, green=contacted / red=no-contact / yellow=relaxed-fist, contact normals,
->   and per-finger labels (locked t + chosen pose). Global master switch `HandPoserSettings.drawSolveDebug`.
-> - **Free-hand touch:** `FreeHandContactDriver` (on the hand, `enableFreeHandTouch` off by default) runs
->   the solver each `LateUpdate` while empty, against a serialized World Mask, applying immediately via the
->   new `HandAnimator.SetJointsImmediate` (no coroutine). Progressive solver gives per-finger independence
->   (edge drape). Pauses while grabbing. Contact-owner rule documented (don't double-own contact with the
->   physical-presence colliders).
-> - **Known-not-good, deferred to Phase 7:** `IHandPoseSolver.Solve` still allocates per call, so a
->   buffer-reuse pass is needed before free-hand is GC-clean every frame (driver-level buffers already
->   reused). Free-hand rest *shapes* are unjudged (no Unity here) and share the same dial-in needs as grabs.
+>   and per-finger labels (locked t + chosen pose). The drawer's `draw` toggle drives collection per-hand
+>   (sets `HandAnimator.requestSolveDebug`), OR'd with the global `HandPoserSettings.drawSolveDebug`.
+> - **Scope correction:** running the *grab* solver continuously on the free hand makes it try to **grasp
+>   everything** in range (a flashlight by the palm gets wrapped) — that is the grasp mechanic, not world
+>   reaction. The real Phase 6 goal (a resting hand that only reacts when geometry *touches* a finger and
+>   pushes it) needs displacement + penetration resolution (`Physics.ComputePenetration` / IK), which
+>   `CLAUDE.md` defers. That true world-reaction is **deferred to its own future script** pending a decision
+>   to relax that rule.
+> - **Kept as `HandGraspProbe`** (renamed from the misnamed `FreeHandContactDriver`; on the hand,
+>   `enableProbe` off by default). Drives the grab solver against nearby world geometry and applies it via
+>   the new `HandAnimator.SetJointsImmediate` (no coroutine), with smoothing. Two modes: **AutoGraspTest**
+>   (editor-only, continuous — a live dial-in tool for grab settings) and **GripHoldPose** (runtime — solves
+>   only while the grip button is held + a non-grabbable object is in reach, e.g. pressing the hand onto a
+>   table). Excludes the hand/rig's own colliders so a broad mask can't self-collide; pauses while grabbing.
+> - **Known-not-good / deferred:** the true world-reaction pushback (Feature 1); `IHandPoseSolver.Solve`
+>   still allocates per call (buffer-reuse pass needed before per-frame use is GC-clean; driver-level buffers
+>   already reused); grasp *shapes* are unjudged here (no Unity) and share the Phase 7 dial-in needs.
 
 ---
 

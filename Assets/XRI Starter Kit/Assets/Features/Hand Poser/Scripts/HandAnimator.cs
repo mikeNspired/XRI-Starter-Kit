@@ -44,7 +44,7 @@ namespace MikeNspired.XRIStarterKit
         public bool isGrabbingObject;
 
         // Last dynamic-solve telemetry for this hand, assigned by whoever solved (XRHandPoser grab or
-        // FreeHandContactDriver). Read by HandPoseSolveDebugDrawer for gizmos. Null when not solving / debugging.
+        // HandGraspProbe). Read by HandPoseSolveDebugDrawer for gizmos. Null when not solving / debugging.
         public HandSolveDebug LastSolveDebug;
         // Set by a HandPoseSolveDebugDrawer to ask the solver to record telemetry this hand can visualize.
         // Solve consumers OR this with the global HandPoserSettings.drawSolveDebug switch.
