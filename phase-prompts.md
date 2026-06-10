@@ -207,14 +207,33 @@ Acceptance (I will verify in Unity): toggle on, open hand, no grab — lowering 
 Out of scope: polish. Open a PR with the acceptance steps restated; do not start Phase 7.
 ```
 
+> **Phase 6 outcome (branch `claude/wonderful-maxwell-fkrrtx`).** Shipped in two staged commits, and the
+> **per-finger solve visualization was pulled forward from Phase 7** (built first) so we can see what the
+> solver is doing while testing free-hand touch:
+> - **Solve telemetry + debug viz:** `HandSolveDebug` (per-finger state + reused per-joint probe buffer:
+>   world position, locked t, contact flag, approx contact point/normal). `IHandPoseSolver` gains
+>   `LastSolveDebug`; `HandSolveContext` gains a `collectDebug` opt-in (zero cost when off). Both solvers
+>   record it. `HandPoseSolveDebugDrawer` (on the hand) gizmo-draws the last solve on **real** interactions
+>   — a sphere per sampled joint, green=contacted / red=no-contact / yellow=relaxed-fist, contact normals,
+>   and per-finger labels (locked t + chosen pose). Global master switch `HandPoserSettings.drawSolveDebug`.
+> - **Free-hand touch:** `FreeHandContactDriver` (on the hand, `enableFreeHandTouch` off by default) runs
+>   the solver each `LateUpdate` while empty, against a serialized World Mask, applying immediately via the
+>   new `HandAnimator.SetJointsImmediate` (no coroutine). Progressive solver gives per-finger independence
+>   (edge drape). Pauses while grabbing. Contact-owner rule documented (don't double-own contact with the
+>   physical-presence colliders).
+> - **Known-not-good, deferred to Phase 7:** `IHandPoseSolver.Solve` still allocates per call, so a
+>   buffer-reuse pass is needed before free-hand is GC-clean every frame (driver-level buffers already
+>   reused). Free-hand rest *shapes* are unjudged (no Unity here) and share the same dial-in needs as grabs.
+
 ---
 
 ## Phase 7 — Solver dial-in, object seating, and visual debugging
 
 > This is the dedicated "make it read like a real hand" pass. Phases 2–5 stood the solver up and proved
 > the snap suppression; the grab *shapes* are still rough and were intentionally left for here. Expect to
-> iterate against many real objects in-editor. **Build the visual debugging FIRST** — without it we are
-> guessing at why a finger posed the way it did.
+> iterate against many real objects in-editor. The visual debugging foundation (per-finger solve viz on
+> real interactions) was **already pulled forward into Phase 6** — extend/refine it here rather than
+> rebuilding, and focus this phase on the dial-in, object seating, and interface lock.
 
 ```
 Implement ONLY Phase 7. Branch: phase-7-polish.
