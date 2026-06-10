@@ -162,25 +162,22 @@ namespace MikeNspired.XRIStarterKit
             RegisterGrabbingHand(hand);    // so Release() can return the hand on un-grab
             hand.isGrabbingObject = true;  // gate the grip-hold animation from (re)starting
             hand.AnimationPose = null;     // gate the trigger animation; ReturnAnimationsToOriginal restores it on release
-            hand.StopButtonValueAnimation(); // freeze at the current grab shape so the grip clench
-                                             // can't keep fisting the hand during the one-frame solve wait
-            if (dynamicSolveRoutine != null) StopCoroutine(dynamicSolveRoutine);
-            dynamicSolveRoutine = StartCoroutine(SolveDynamicPoseRoutine(hand, interactor));
+            hand.StopButtonValueAnimation(); // stop the grip squeeze in place so it can't keep closing the hand
+
+            // Solve and apply on THIS frame, exactly like the authored path. Phase 5 holds the object
+            // where it was grabbed (it does not ease toward the hand), so the geometry is already in
+            // place — there is nothing to wait for. Applying synchronously means one blend from the
+            // current grab shape straight to the solved pose; waiting a frame first let the grip
+            // squeeze close the hand to a fist before the pose landed (the "closes then poses" glitch).
+            SolveAndApplyDynamicPose(hand, interactor);
         }
 
-        private IEnumerator SolveDynamicPoseRoutine(HandAnimator hand, IXRSelectInteractor interactor)
+        private void SolveAndApplyDynamicPose(HandAnimator hand, IXRSelectInteractor interactor)
         {
-            // Phase 5 holds the object where it was grabbed (it does not ease toward the hand), so
-            // the geometry is already in place — no need to wait out attachEaseInTime. One frame lets
-            // the grab's attach write and transform sync settle, then we solve and apply a single
-            // blend from the current pose straight to the solved pose (like the authored path), with
-            // no intermediate open/fist flailing.
-            yield return null;
-
             if (!hand || !hand.ClosedPose || !hand.DefaultPose)
             {
                 Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve skipped: hand, ClosedPose, or DefaultPose is not assigned.");
-                yield break;
+                return;
             }
 
             var colliders = interactable.GetComponentsInChildren<Collider>();
@@ -219,7 +216,7 @@ namespace MikeNspired.XRIStarterKit
             {
                 Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve returned no joint data; treating as failed grasp.");
                 HandleFailedGrasp(hand, interactor);
-                yield break;
+                return;
             }
 
             // Graspability gate: a sphere-cast grab can catch an object the hand only floated past.
@@ -229,11 +226,10 @@ namespace MikeNspired.XRIStarterKit
             {
                 Debug.Log($"[XRHandPoser] {gameObject.name} — dynamic grasp failed contact test ({DescribeContacts(poseSolver.LastSolveContacted)}); {FailedGraspResponse}.");
                 HandleFailedGrasp(hand, interactor);
-                yield break;
+                return;
             }
 
-            // Grasp holds: apply the solved pose. (Animation gating was set in BeginDynamicPose so
-            // the hand doesn't fist up during the solve wait.)
+            // Grasp holds: apply the solved pose — a single blend from the current grab shape.
             hand.SetJointsDirect(result, hand.animationTimeToNewPose);
         }
 
@@ -268,9 +264,18 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            // Drop: force-release so the object can't hang in the air. The select-exit chain
-            // (TryReleaseHand + HandReference.ResetAttachTransform) returns the hand and attach.
+            // Drop: force-release so the object can't hang in the air. Deferred one frame — we are
+            // inside the selectEntered callback and XRI does not allow a re-entrant SelectExit. The
+            // select-exit chain (TryReleaseHand + HandReference.ResetAttachTransform) returns the
+            // hand and attach.
             if (interactor != null && interactable && interactable.interactionManager)
+                dynamicSolveRoutine = StartCoroutine(DropNextFrame(interactor));
+        }
+
+        private IEnumerator DropNextFrame(IXRSelectInteractor interactor)
+        {
+            yield return null;
+            if (interactor != null && interactable && interactable.interactionManager && interactable.isSelected)
                 interactable.interactionManager.SelectExit(interactor, (IXRSelectInteractable)interactable);
         }
 
