@@ -249,6 +249,56 @@ namespace MikeNspired.XRIStarterKit.Editor
                 SavePose();
 
             GUILayout.EndHorizontal();
+
+            GUI.enabled = mainScript.RootBone;
+            var tipTip = new GUIContent("Create Fingertip Probes",
+                "Generates a solver-only probe transform just past each finger's last joint (named *_Ignore " +
+                "so poses skip it). Needed on skeletons with no tip joint. Nudge each onto the fingertip pad, " +
+                "then save the prefab.");
+            if (GUILayout.Button(tipTip, GUILayout.MinWidth(buttonWidth)))
+                CreateFingertipProbes();
+            GUI.enabled = true;
+        }
+
+        // Generates (or reuses) a fingertip probe per finger and assigns the HandAnimator fields. Idempotent:
+        // an already-assigned field or an existing "*Ignore" child is kept rather than duplicated.
+        private void CreateFingertipProbes()
+        {
+            if (!mainScript.RootBone)
+            {
+                Debug.LogWarning("[HandAnimator] Assign a RootBone before creating fingertip probes.", mainScript);
+                return;
+            }
+
+            mainScript.SetBones(); // refresh finger chains so the extrapolation uses the current skeleton
+
+            mainScript.thumbTipProbe  = EnsureTipProbe(mainScript.fingerMap.thumb,  "Thumb",  mainScript.thumbTipProbe);
+            mainScript.indexTipProbe  = EnsureTipProbe(mainScript.fingerMap.index,  "Index",  mainScript.indexTipProbe);
+            mainScript.middleTipProbe = EnsureTipProbe(mainScript.fingerMap.middle, "Middle", mainScript.middleTipProbe);
+            mainScript.ringTipProbe   = EnsureTipProbe(mainScript.fingerMap.ring,   "Ring",   mainScript.ringTipProbe);
+            mainScript.pinkyTipProbe  = EnsureTipProbe(mainScript.fingerMap.pinky,  "Pinky",  mainScript.pinkyTipProbe);
+
+            EditorUtility.SetDirty(mainScript);
+            mainScript.SetBones(); // re-resolve fingerMap.tips from the freshly-assigned probes
+            Debug.Log("[HandAnimator] Fingertip probes ready. Nudge each onto the fingertip pad and save the prefab.", mainScript);
+        }
+
+        private Transform EnsureTipProbe(List<Transform> chain, string fingerName, Transform existingField)
+        {
+            if (existingField) return existingField; // already wired — leave it
+            if (chain == null || chain.Count == 0) return null;
+
+            var found = HandAnimator.FindIgnoredTipChild(chain[chain.Count - 1]);
+            if (found) return found;
+
+            var probe = HandAnimator.CreateTipProbe(chain, fingerName + "_TipProbe");
+            if (!probe)
+            {
+                Debug.LogWarning($"[HandAnimator] {fingerName}: finger chain too short to place a fingertip probe.", mainScript);
+                return null;
+            }
+            Undo.RegisterCreatedObjectUndo(probe.gameObject, "Create Fingertip Probe");
+            return probe;
         }
 
 

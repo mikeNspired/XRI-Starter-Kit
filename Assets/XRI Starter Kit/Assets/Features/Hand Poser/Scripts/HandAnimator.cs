@@ -70,6 +70,13 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject defaultPose, goalPose;
         public Transform thumbTopTransform, indexTopTransform, middleTopTransform, ringTopTransform, pinkyTopTransform;
 
+        [Header("Fingertip Probes (solver only)")]
+        [Tooltip("Optional probe transforms placed just past each finger's last joint, used ONLY by the " +
+                 "dynamic solver to seat the fingertip on a surface. Needed on skeletons with no tip joint " +
+                 "(the last bone is the distal knuckle). Their names MUST end in 'Ignore' so the pose system " +
+                 "skips them. Use the 'Create Fingertip Probes' button, or leave empty to auto-generate at runtime.")]
+        public Transform thumbTipProbe, indexTipProbe, middleTipProbe, ringTipProbe, pinkyTipProbe;
+
         public void AnimateToCurrent() => AnimateInstantly(DefaultPose);
 
         void Awake()
@@ -127,6 +134,11 @@ namespace MikeNspired.XRIStarterKit
             {
                 0 => thumb, 1 => index, 2 => middle, 3 => ring, 4 => pinky, _ => null
             };
+
+            // Optional solver-only fingertip probe per finger (thumb=0 … pinky=4), sitting just past the
+            // finger's last joint. Null when the skeleton has a real tip joint or the chain is too short.
+            public readonly Transform[] tips = new Transform[5];
+            public Transform Tip(int i) => (i >= 0 && i < 5) ? tips[i] : null;
         }
 
         public HandFingerMap fingerMap = new HandFingerMap();
@@ -151,6 +163,64 @@ namespace MikeNspired.XRIStarterKit
             BuildFingerChain(middleTopTransform, "middle", fingerMap.middle);
             BuildFingerChain(ringTopTransform,   "ring",   fingerMap.ring);
             BuildFingerChain(pinkyTopTransform,  "pinky",  fingerMap.pinky);
+
+            ResolveFingerTip(0, thumbTipProbe,  fingerMap.thumb,  "Thumb");
+            ResolveFingerTip(1, indexTipProbe,  fingerMap.index,  "Index");
+            ResolveFingerTip(2, middleTipProbe, fingerMap.middle, "Middle");
+            ResolveFingerTip(3, ringTipProbe,   fingerMap.ring,   "Ring");
+            ResolveFingerTip(4, pinkyTipProbe,  fingerMap.pinky,  "Pinky");
+        }
+
+        /// <summary>
+        /// Resolves the solver-only fingertip probe for a finger: an explicitly-assigned field, else an
+        /// existing "*Ignore" child of the last joint, else (at runtime only) a freshly created probe
+        /// extrapolated past the last bone. Leaves the tip null when the chain is too short to extrapolate.
+        /// Edit-time creation is the inspector "Create Fingertip Probes" button — never spawned here.
+        /// </summary>
+        void ResolveFingerTip(int index, Transform explicitProbe, List<Transform> chain, string fingerName)
+        {
+            fingerMap.tips[index] = null;
+            if (explicitProbe) { fingerMap.tips[index] = explicitProbe; return; }
+            if (chain == null || chain.Count == 0) return;
+
+            // Reuse an authored / previously-created probe child so repeated SetBones() is idempotent.
+            var existing = FindIgnoredTipChild(chain[chain.Count - 1]);
+            if (existing) { fingerMap.tips[index] = existing; return; }
+
+            if (!Application.isPlaying) return; // runtime fallback only; no edit-time scene/prefab pollution
+
+            var probe = CreateTipProbe(chain, fingerName + "_TipProbe");
+            if (probe) fingerMap.tips[index] = probe;
+        }
+
+        /// First direct child of <paramref name="parent"/> the pose system ignores (name ends in "Ignore").
+        public static Transform FindIgnoredTipChild(Transform parent)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+                if (parent.GetChild(i).name.EndsWith("Ignore")) return parent.GetChild(i);
+            return null;
+        }
+
+        /// <summary>
+        /// Creates a probe child just past a finger's last joint by extending the last bone segment (0.8×).
+        /// The name ends in "Ignore" so <see cref="JointUtility.ShouldSkipTransform"/> and pose saving skip
+        /// it. Returns null when the chain can't define a direction (needs ≥2 joints). Shared by the runtime
+        /// fallback and the editor button so both produce identical, mutually-recognized probes.
+        /// </summary>
+        public static Transform CreateTipProbe(List<Transform> chain, string name)
+        {
+            if (chain == null || chain.Count < 2) return null;
+            var last = chain[chain.Count - 1];
+            var prev = chain[chain.Count - 2];
+            Vector3 dir = last.position - prev.position;
+            float len = dir.magnitude;
+            if (len < 1e-5f) return null;
+
+            var probe = new GameObject(name + "_Ignore").transform;
+            probe.SetParent(last, false);
+            probe.position = last.position + dir / len * (len * 0.8f);
+            probe.localRotation = Quaternion.identity;
+            return probe;
         }
 
         /// <summary>

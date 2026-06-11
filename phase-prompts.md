@@ -253,6 +253,21 @@ Out of scope: polish. Open a PR with the acceptance steps restated; do not start
 >   Remaining honest limit: still no IK, so a uniform gross close can't reach a small fingertip target
 >   without some base curl — but it never hard-fists the base now. `CurlSweepSolver` (non-default) and
 >   the authored path are untouched.
+> - **Fingertip probes + grasp-probe feel (after first in-editor test — "10× better").** The robot hand
+>   skeleton has **no tip joint** (last bone is the distal knuckle), so the fingertip pad was unprobed and
+>   the leaf stayed degenerate. Added solver-only tip probes: a **"Create Fingertip Probes"** button on the
+>   `HandAnimator` inspector extrapolates a `*_Ignore` child past each finger's last joint (named so
+>   `JointUtility.ShouldSkipTransform` and pose-saving skip it — verified the same rule guards `SetBones`,
+>   `HandAnimatorEditor.GatherJointData`, and `PoseConverterWindow`); hands without authored probes
+>   auto-generate them at runtime. `HandFingerMap` gains `tips[5]`/`Tip(i)` (no `HandSolveContext` change —
+>   tips ride along on `fingerMap`). Both solvers test the leaf→tip segment, so the leaf is now a **real
+>   contact sweep** (rotating it moves the tip child) instead of the binary pivot test, and the debug drawer
+>   shows a sphere at the actual fingertip. Grab path benefits automatically. **Feel** on `HandGraspProbe`
+>   (fixes the spider-claw entry, instant snap-back, and crawl jitter the test surfaced): proximity-weighted
+>   blend from idle (reach edge) to full solve (within `fullPoseDistance`) via nearest-surface distance; a
+>   rotation/position **deadband** that freezes micro solver noise while passing deliberate motion; and a
+>   short **release fade** to idle instead of a snap. Grab start still hard-stops the probe (never fights the
+>   grab). The earlier headless-CI/test idea was dropped as impractical (no Unity in this environment).
 > - **Hardening pass (post-reframe review):** committed the 4 missing `.cs.meta` files (solver interface/context,
 >   CurlSweepSolver, DynamicPoseTester); both solvers now skip `Collider.ClosestPoint` on unsupported colliders
 >   (non-convex mesh/terrain — was a per-call Unity error + gap=0 corrupting candidate pick); grab + tester

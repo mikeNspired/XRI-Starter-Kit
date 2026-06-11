@@ -63,13 +63,17 @@ namespace MikeNspired.XRIStarterKit
                     // Sample the last N joints (fingertip inward). Multi-sampling catches a
                     // finger that wraps the object even when the tip slips past the side.
                     var tip = chain[chain.Count - 1];
+                    // Solver-only probe past the last joint (skeletons with no tip bone): the outermost
+                    // sample and the gap anchor when present, else fall back to the last joint.
+                    var tipProbe = _ctx.fingerMap != null ? _ctx.fingerMap.Tip(fingerIdx) : null;
+                    var gapTip = tipProbe ? tipProbe : tip;
                     int samples = Mathf.Clamp(_ctx.samplesPerFinger, 1, chain.Count);
                     int sampleStart = chain.Count - samples;
 
                     bool bestContacted = false;
                     float bestGap = float.PositiveInfinity;
                     float bestT = 1f;
-                    Vector3 bestProbe = tip.position;
+                    Vector3 bestProbe = gapTip.position;
                     var bestPose = candidates[0];
                     bool anyEvaluated = false;
 
@@ -83,13 +87,13 @@ namespace MikeNspired.XRIStarterKit
                             float t = (float)step / _ctx.stepCount;
                             _ctx.hand.SetFingerCurl(fingerIdx, t, _ctx.openPose, cp);
 
-                            if (AnySampleOverlaps(chain, sampleStart, _ctx)) { contacted = true; break; }
+                            if (AnySampleOverlaps(chain, sampleStart, tipProbe, _ctx)) { contacted = true; break; }
                             prevT = t;
                         }
 
                         float lockedT = contacted ? prevT : 1f;
                         _ctx.hand.SetFingerCurl(fingerIdx, lockedT, _ctx.openPose, cp);
-                        Vector3 probeAtLocked = tip.position;
+                        Vector3 probeAtLocked = gapTip.position;
                         float gap = TipGap(probeAtLocked, _ctx);
 
                         // Prefer a candidate that makes contact; among equals, the snugger fingertip.
@@ -241,14 +245,16 @@ namespace MikeNspired.XRIStarterKit
 
         #region Private Helpers
 
-        // True if any of the sampled joints (sampleStart..tip) overlaps the target this step.
-        private static bool AnySampleOverlaps(List<Transform> _chain, int _sampleStart, HandSolveContext _ctx)
+        // True if any of the sampled joints (sampleStart..tip), or the fingertip probe past the last joint,
+        // overlaps the target this step.
+        private static bool AnySampleOverlaps(List<Transform> _chain, int _sampleStart, Transform _tip, HandSolveContext _ctx)
         {
             for (int j = _sampleStart; j < _chain.Count; j++)
             {
                 var joint = _chain[j];
                 if (joint && OverlapsTarget(joint.position, _ctx)) return true;
             }
+            if (_tip && OverlapsTarget(_tip.position, _ctx)) return true;
             return false;
         }
 

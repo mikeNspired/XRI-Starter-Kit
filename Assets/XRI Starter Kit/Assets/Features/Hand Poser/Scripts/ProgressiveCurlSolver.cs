@@ -79,12 +79,16 @@ namespace MikeNspired.XRIStarterKit
                     }
 
                     var tip = chain[chain.Count - 1];
+                    // Solver-only probe past the last joint (skeletons with no tip bone). When present it is
+                    // the outermost contact point and the gap is measured from it; else fall back to the joint.
+                    var tipProbe = _ctx.fingerMap != null ? _ctx.fingerMap.Tip(fingerIdx) : null;
+                    var gapTip = tipProbe ? tipProbe : tip;
 
                     bool bestContacted = false;
                     float bestGap = float.PositiveInfinity;
                     float[] bestT = null;
                     var bestPose = candidates[0];
-                    Vector3 bestProbe = tip.position;
+                    Vector3 bestProbe = gapTip.position;
                     bool anyEvaluated = false;
 
                     foreach (var cp in candidates)
@@ -95,8 +99,8 @@ namespace MikeNspired.XRIStarterKit
                             closedDicts[cp] = closedDict;
                         }
 
-                        var tj = CurlFinger(_ctx, chain, openDict, closedDict, out bool contacted, jointHitScratch);
-                        float gap = TipGap(tip.position, _ctx);
+                        var tj = CurlFinger(_ctx, chain, tipProbe, openDict, closedDict, out bool contacted, jointHitScratch);
+                        float gap = TipGap(gapTip.position, _ctx);
 
                         if (!anyEvaluated || IsBetter(contacted, gap, bestContacted, bestGap))
                         {
@@ -105,7 +109,7 @@ namespace MikeNspired.XRIStarterKit
                             bestGap       = gap;
                             bestT         = tj;
                             bestPose      = cp;
-                            bestProbe     = tip.position;
+                            bestProbe     = gapTip.position;
                             if (_ctx.collectDebug)
                                 System.Array.Copy(jointHitScratch, bestJointHit, chain.Count);
                         }
@@ -117,7 +121,7 @@ namespace MikeNspired.XRIStarterKit
                     LastSolveContacted[fingerIdx] = bestContacted;
 
                     if (_ctx.collectDebug)
-                        RecordFingerDebug(fingerIdx, chain, bestT, bestJointHit, bestPose, bestContacted,
+                        RecordFingerDebug(fingerIdx, chain, tipProbe, bestT, bestJointHit, bestPose, bestContacted,
                                           openDict, closedDicts, _ctx);
                 }
             }
@@ -149,6 +153,7 @@ namespace MikeNspired.XRIStarterKit
         private float[] CurlFinger(
             HandSolveContext _ctx,
             List<Transform> _chain,
+            Transform _tip,           // solver-only fingertip probe past the last joint, or null
             Dictionary<string, PoseScriptableObject.JointData> _openDict,
             Dictionary<string, PoseScriptableObject.JointData> _closedDict,
             out bool _contacted,
@@ -173,7 +178,7 @@ namespace MikeNspired.XRIStarterKit
                 float t = (float)step / _ctx.stepCount;
                 ApplyAll(_chain, _openDict, _closedDict, t);
 
-                if (FirstContactingJoint(_chain, _ctx) >= 0)
+                if (FirstContactingJoint(_chain, _tip, _ctx) >= 0)
                 {
                     // Refine the uniform t between prevT (whole finger clear) and t (something touches).
                     float lo = prevT, hi = t;
@@ -181,11 +186,11 @@ namespace MikeNspired.XRIStarterKit
                     {
                         float mid = (lo + hi) * 0.5f;
                         ApplyAll(_chain, _openDict, _closedDict, mid);
-                        if (FirstContactingJoint(_chain, _ctx) >= 0) hi = mid; else lo = mid;
+                        if (FirstContactingJoint(_chain, _tip, _ctx) >= 0) hi = mid; else lo = mid;
                     }
                     // Identify the touching joint at the just-contact pose (hi), then settle at lo (clear).
                     ApplyAll(_chain, _openDict, _closedDict, hi);
-                    contactJoint = FirstContactingJoint(_chain, _ctx);
+                    contactJoint = FirstContactingJoint(_chain, _tip, _ctx);
                     tGross = lo;
                     ApplyAll(_chain, _openDict, _closedDict, tGross);
                     break;
@@ -216,10 +221,12 @@ namespace MikeNspired.XRIStarterKit
             for (int i = contactJoint + 1; i < n; i++)
             {
                 float tStart = tj[i - 1]; // continue from the previous joint's curl (monotonic spiral)
+                bool isLeaf = (i == n - 1);
 
-                // Leaf: its own rotation moves nothing we can sphere-test, so a sweep is degenerate.
-                // Test its pivot once for the contact gate, and pose it by continuing the curl.
-                if (i == n - 1)
+                // A leaf with NO tip probe is degenerate: rotating it moves nothing we can sphere-test.
+                // Test its pivot once for the contact gate and continue the curl (no real sweep possible).
+                // With a tip probe the leaf is sweepable (rotating it moves the tip), so fall through.
+                if (isLeaf && !_tip)
                 {
                     bool leafHit = SegmentOverlaps(_chain, i, i, _ctx);
                     tj[i] = leafHit ? tStart : Mathf.Min(1f, tStart + follow);
@@ -228,11 +235,10 @@ namespace MikeNspired.XRIStarterKit
                     continue;
                 }
 
-                int probeIdx = i + 1;
                 ApplyJoint(_chain[i], _openDict, _closedDict, tStart);
 
                 bool jointHit;
-                if (SegmentOverlaps(_chain, i, probeIdx, _ctx))
+                if (WrapOverlaps(_chain, i, _tip, _ctx))
                 {
                     jointHit = true; // already touching at the start curl — lock there
                     tj[i] = tStart;
@@ -245,14 +251,14 @@ namespace MikeNspired.XRIStarterKit
                     {
                         float t = Mathf.Lerp(tStart, 1f, (float)step / _ctx.stepCount);
                         ApplyJoint(_chain[i], _openDict, _closedDict, t);
-                        if (SegmentOverlaps(_chain, i, probeIdx, _ctx))
+                        if (WrapOverlaps(_chain, i, _tip, _ctx))
                         {
                             float lo = lockedT, hi = t;
                             for (int k = 0; k < RefineIterations; k++)
                             {
                                 float mid = (lo + hi) * 0.5f;
                                 ApplyJoint(_chain[i], _openDict, _closedDict, mid);
-                                if (SegmentOverlaps(_chain, i, probeIdx, _ctx)) hi = mid; else lo = mid;
+                                if (WrapOverlaps(_chain, i, _tip, _ctx)) hi = mid; else lo = mid;
                             }
                             lockedT = lo;
                             jointHit = true;
@@ -282,15 +288,33 @@ namespace MikeNspired.XRIStarterKit
         }
 
         // Index of the most-proximal joint whose driven segment overlaps the target, or -1 if none.
-        private static int FirstContactingJoint(List<Transform> _chain, HandSolveContext _ctx)
+        private static int FirstContactingJoint(List<Transform> _chain, Transform _tip, HandSolveContext _ctx)
         {
             int n = _chain.Count;
             for (int i = 0; i < n; i++)
-            {
-                int probeIdx = Mathf.Min(i + 1, n - 1); // last joint tests its own pivot
-                if (SegmentOverlaps(_chain, i, probeIdx, _ctx)) return i;
-            }
+                if (WrapOverlaps(_chain, i, _tip, _ctx)) return i;
             return -1;
+        }
+
+        // Does the segment driven by curling joint i overlap the target? For an interior joint that is the
+        // segment toward joint i+1; for the last joint WITH a tip probe it is the segment leaf-pivot→tip (so
+        // the fingertip is what seats on the surface); for the last joint without a tip it is the pivot only.
+        private static bool WrapOverlaps(List<Transform> _chain, int _i, Transform _tip, HandSolveContext _ctx)
+        {
+            int n = _chain.Count;
+            if (_i == n - 1)
+                return _tip ? TipSegmentOverlaps(_chain[n - 1], _tip, _ctx)
+                            : SegmentOverlaps(_chain, _i, _i, _ctx);
+            return SegmentOverlaps(_chain, _i, _i + 1, _ctx);
+        }
+
+        // Tests the segment from the last joint's pivot out to the tip probe (endpoint + midpoint).
+        private static bool TipSegmentOverlaps(Transform _leaf, Transform _tip, HandSolveContext _ctx)
+        {
+            if (!_tip) return false;
+            if (OverlapsTarget(_tip.position, _ctx)) return true;
+            if (_leaf && OverlapsTarget((_leaf.position + _tip.position) * 0.5f, _ctx)) return true;
+            return false;
         }
 
         // Re-poses the finger at its chosen per-joint t and records each joint's world position,
@@ -298,6 +322,7 @@ namespace MikeNspired.XRIStarterKit
         private void RecordFingerDebug(
             int _fingerIdx,
             List<Transform> _chain,
+            Transform _tip,
             float[] _tj,
             bool[] _jointHit,
             PoseScriptableObject _closedPose,
@@ -322,7 +347,9 @@ namespace MikeNspired.XRIStarterKit
             }
 
             int n = _chain.Count;
-            dbg.EnsureCapacity(n);
+            bool hasTip = _tip;
+            int total = hasTip ? n + 1 : n;   // append the tip probe as one extra sphere
+            dbg.EnsureCapacity(total);
             dbg.probeRadius  = _ctx.probeRadius;
             dbg.chosenClosed = closedPose;
             dbg.state        = _contacted ? FingerSolveState.Contacted : FingerSolveState.RelaxedFist;
@@ -346,7 +373,23 @@ namespace MikeNspired.XRIStarterKit
                     contactNormal = hasSurface ? (pos - surface).normalized : Vector3.zero,
                 };
             }
-            dbg.probeCount = n;
+
+            if (hasTip)
+            {
+                // The probe moved with the leaf during the re-pose above (it is its child), so its world
+                // position is current. Reuse the leaf's lock-t/contact flag for the label.
+                Vector3 tipPos = _tip.position;
+                Vector3 surface = NearestSurfacePoint(tipPos, _ctx, out bool hasSurface);
+                dbg.probes[n] = new JointProbe
+                {
+                    position      = tipPos,
+                    lockedT       = n - 1 < _tj.Length ? _tj[n - 1] : 1f,
+                    contacted     = _jointHit != null && n - 1 < _jointHit.Length && _jointHit[n - 1],
+                    contactPoint  = hasSurface ? surface : tipPos,
+                    contactNormal = hasSurface ? (tipPos - surface).normalized : Vector3.zero,
+                };
+            }
+            dbg.probeCount = total;
         }
 
         // Nearest point on any target collider to _p (approx surface contact point for the gizmos).
