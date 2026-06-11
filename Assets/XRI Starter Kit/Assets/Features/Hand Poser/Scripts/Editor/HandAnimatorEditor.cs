@@ -288,10 +288,11 @@ namespace MikeNspired.XRIStarterKit.Editor
             if (existingField) return existingField; // already wired — leave it
             if (chain == null || chain.Count == 0) return null;
 
-            var found = HandAnimator.FindIgnoredTipChild(chain[chain.Count - 1]);
+            // Only reuse an actual tip probe — never a "*Ignore" physics collider on the last joint.
+            var found = HandAnimator.FindTipProbeChild(chain[chain.Count - 1]);
             if (found) return found;
 
-            var probe = HandAnimator.CreateTipProbe(chain, fingerName + "_TipProbe");
+            var probe = HandAnimator.CreateTipProbe(chain, fingerName);
             if (!probe)
             {
                 Debug.LogWarning($"[HandAnimator] {fingerName}: finger chain too short to place a fingertip probe.", mainScript);

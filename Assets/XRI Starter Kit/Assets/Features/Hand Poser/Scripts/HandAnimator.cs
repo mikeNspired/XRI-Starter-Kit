@@ -183,31 +183,38 @@ namespace MikeNspired.XRIStarterKit
             if (explicitProbe) { fingerMap.tips[index] = explicitProbe; return; }
             if (chain == null || chain.Count == 0) return;
 
-            // Reuse an authored / previously-created probe child so repeated SetBones() is idempotent.
-            var existing = FindIgnoredTipChild(chain[chain.Count - 1]);
+            // Reuse an authored / previously-created tip probe so repeated SetBones() is idempotent.
+            var existing = FindTipProbeChild(chain[chain.Count - 1]);
             if (existing) { fingerMap.tips[index] = existing; return; }
 
             if (!Application.isPlaying) return; // runtime fallback only; no edit-time scene/prefab pollution
 
-            var probe = CreateTipProbe(chain, fingerName + "_TipProbe");
+            var probe = CreateTipProbe(chain, fingerName);
             if (probe) fingerMap.tips[index] = probe;
         }
 
-        /// First direct child of <paramref name="parent"/> the pose system ignores (name ends in "Ignore").
-        public static Transform FindIgnoredTipChild(Transform parent)
+        /// Marker substring identifying a solver tip probe. Distinct from the physical-presence finger
+        /// colliders, which are ALSO "*Ignore" children of the last joint — matching only this substring
+        /// keeps the solver from mistaking a distal capsule collider for the fingertip.
+        public const string TipProbeMarker = "TipProbe";
+
+        /// First child of <paramref name="parent"/> that is a solver tip probe (name contains "TipProbe").
+        /// Deliberately NOT a generic "*Ignore" match, so persistent finger colliders are never picked up.
+        public static Transform FindTipProbeChild(Transform parent)
         {
             for (int i = 0; i < parent.childCount; i++)
-                if (parent.GetChild(i).name.EndsWith("Ignore")) return parent.GetChild(i);
+                if (parent.GetChild(i).name.Contains(TipProbeMarker)) return parent.GetChild(i);
             return null;
         }
 
         /// <summary>
         /// Creates a probe child just past a finger's last joint by extending the last bone segment (0.8×).
-        /// The name ends in "Ignore" so <see cref="JointUtility.ShouldSkipTransform"/> and pose saving skip
-        /// it. Returns null when the chain can't define a direction (needs ≥2 joints). Shared by the runtime
-        /// fallback and the editor button so both produce identical, mutually-recognized probes.
+        /// The name is "&lt;finger&gt;_TipProbe_Ignore": the "TipProbe" marker distinguishes it from physics
+        /// colliders, and the "Ignore" suffix makes <see cref="JointUtility.ShouldSkipTransform"/> and pose
+        /// saving skip it. Returns null when the chain can't define a direction (needs ≥2 joints). Shared by
+        /// the runtime fallback and the editor button so both produce identical, mutually-recognized probes.
         /// </summary>
-        public static Transform CreateTipProbe(List<Transform> chain, string name)
+        public static Transform CreateTipProbe(List<Transform> chain, string fingerName)
         {
             if (chain == null || chain.Count < 2) return null;
             var last = chain[chain.Count - 1];
@@ -216,7 +223,7 @@ namespace MikeNspired.XRIStarterKit
             float len = dir.magnitude;
             if (len < 1e-5f) return null;
 
-            var probe = new GameObject(name + "_Ignore").transform;
+            var probe = new GameObject($"{fingerName}_{TipProbeMarker}_Ignore").transform;
             probe.SetParent(last, false);
             probe.position = last.position + dir / len * (len * 0.8f);
             probe.localRotation = Quaternion.identity;
