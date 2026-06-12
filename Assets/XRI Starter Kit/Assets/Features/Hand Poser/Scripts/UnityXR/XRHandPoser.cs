@@ -33,13 +33,7 @@ namespace MikeNspired.XRIStarterKit
         [Header("Per-Object Overrides (used only when Override Global Settings is on)")]
         [SerializeField] private float positionThreshold = 0.08f;
         [SerializeField] private float rotationThreshold = 45f;
-        [SerializeField] private int   dynamicStepCount   = 15;
-        [SerializeField] private float dynamicProbeRadius = 0.02f;
-        [SerializeField, Range(1, 4)] private int dynamicSamplesPerFinger = 2;
-        [SerializeField, Range(0, 1)] private float dynamicNoContactCurl = 0.7f;
-        [SerializeField, Range(0, 1)] private float dynamicDistalFollowCurl = 0.33f;
-        [SerializeField, Range(1, 5)] private int dynamicSamplesPerSegment = 2;
-        [SerializeField] private PerFingerSolveSettings fingerSettings = new PerFingerSolveSettings();
+        [SerializeField] private HandSolverSettings solverSettings = new HandSolverSettings();
         [SerializeField] private bool  graspRequireThumb  = true;
         [SerializeField, Range(0, 4)] private int graspRequiredFingers = 2;
         [SerializeField] private FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;
@@ -54,13 +48,7 @@ namespace MikeNspired.XRIStarterKit
         private HandPoserSettings Settings => HandPoserSettings.Instance;
         private float PositionThreshold     => overrideGlobalSettings ? positionThreshold     : Settings.dynamicPositionThreshold;
         private float RotationThreshold     => overrideGlobalSettings ? rotationThreshold     : Settings.dynamicRotationThreshold;
-        private int   DynamicStepCount      => overrideGlobalSettings ? dynamicStepCount      : Settings.dynamicStepCount;
-        private float DynamicProbeRadius    => overrideGlobalSettings ? dynamicProbeRadius    : Settings.dynamicProbeRadius;
-        private int   SamplesPerFinger      => overrideGlobalSettings ? dynamicSamplesPerFinger : Settings.dynamicSamplesPerFinger;
-        private float NoContactCurl         => overrideGlobalSettings ? dynamicNoContactCurl   : Settings.dynamicNoContactCurl;
-        private float DistalFollowCurl      => overrideGlobalSettings ? dynamicDistalFollowCurl : Settings.dynamicDistalFollowCurl;
-        private int   SamplesPerSegment     => overrideGlobalSettings ? dynamicSamplesPerSegment : Settings.dynamicSamplesPerSegment;
-        private PerFingerSolveSettings FingerSettings => overrideGlobalSettings ? fingerSettings : Settings.dynamicFingerSettings;
+        private HandSolverSettings Solver   => overrideGlobalSettings ? solverSettings        : Settings.dynamicSolver;
         private bool  GraspRequireThumb     => overrideGlobalSettings ? graspRequireThumb     : Settings.graspRequireThumb;
         private int   GraspRequiredFingers  => overrideGlobalSettings ? graspRequiredFingers  : Settings.graspRequiredFingers;
         private FailedGraspResponse FailedGraspResponse => overrideGlobalSettings ? failedGraspResponse : Settings.failedGraspResponse;
@@ -288,19 +276,13 @@ namespace MikeNspired.XRIStarterKit
                 relaxedPose     = dyn.RelaxedPose,
                 targetColliders = colliders,
                 targetMask      = mask,
-                stepCount       = DynamicStepCount,
-                probeRadius     = DynamicProbeRadius,
-                samplesPerFinger = SamplesPerFinger,
-                samplesPerSegment = SamplesPerSegment,
-                fingerSettings   = FingerSettings,
-                noContactCurl    = NoContactCurl,
-                distalFollowCurl = DistalFollowCurl,
-                collectDebug     = Settings.drawSolveDebug || hand.requestSolveDebug,
+                collectDebug    = Settings.drawSolveDebug || hand.requestSolveDebug,
             };
+            Solver.ApplyTo(ctx);
 
             // Re-created when the settings toggle changes so flipping useProgressiveSolver during
             // play-mode dial-in takes effect on the next grab (??= alone would pin the first choice).
-            bool wantProgressive = Settings.useProgressiveSolver;
+            bool wantProgressive = Solver.useProgressiveSolver;
             if (poseSolver == null || (poseSolver is ProgressiveCurlSolver) != wantProgressive)
                 poseSolver = wantProgressive ? (IHandPoseSolver)new ProgressiveCurlSolver() : new CurlSweepSolver();
             var result = poseSolver.Solve(ctx);
@@ -336,7 +318,7 @@ namespace MikeNspired.XRIStarterKit
         private PoseScriptableObject.JointData[] AppendAuthoredJointsForDisabledFingers(
             HandAnimator hand, PoseScriptableObject.JointData[] result)
         {
-            var settings = FingerSettings;
+            var settings = Solver.fingerSettings;
             var authored = hand.handType == LeftRight.Left ? leftHandPose : rightHandPose;
             if (!authored) return result;
 
@@ -374,7 +356,7 @@ namespace MikeNspired.XRIStarterKit
         private bool IsGraspValid(bool[] contacted)
         {
             if (contacted == null || contacted.Length < 5) return false;
-            var settings = FingerSettings;
+            var settings = Solver.fingerSettings;
 
             if (GraspRequireThumb && PerFingerSolveSettings.Get(settings, 0).solve && !contacted[0])
                 return false;

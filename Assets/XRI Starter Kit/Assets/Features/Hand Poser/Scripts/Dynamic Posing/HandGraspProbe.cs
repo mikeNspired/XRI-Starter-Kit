@@ -76,36 +76,26 @@ namespace MikeNspired.XRIStarterKit
                  "hand's hierarchy root (the XR rig) at runtime.")]
         [SerializeField] private Transform ignoreColliderRoot;
 
-        [Header("Solver (kept low for per-frame cost)")]
-        [Tooltip("Use the per-joint progressive solver (independent fingers / edge drape). " +
-                 "Off uses the simpler single-t-per-finger curl sweep.")]
-        [SerializeField] private bool useProgressiveSolver = true;
+        [Header("Solver")]
+        [Tooltip("Off = solve with the global solver settings from the HandPoserSettings asset (single " +
+                 "source of truth — the probe tracks whatever you dial in there). On = use the " +
+                 "probe-local block below, typically cheaper values since this can solve every frame.")]
+        [SerializeField] private bool overrideSolverSettings = false;
 
-        [Tooltip("Curl-sweep resolution per finger. Lower than the grab solver to bound per-frame cost.")]
-        [SerializeField, Range(4, 20)] private int stepCount = 8;
+        [Tooltip("Probe-local solver tuning, used only when Override Solver Settings is on. Defaults are " +
+                 "deliberately cheaper than the grab path (fewer steps, smaller radius, softer rest curl) " +
+                 "to bound per-frame cost.")]
+        [SerializeField] private HandSolverSettings solverSettings = new HandSolverSettings
+        {
+            stepCount = 8,
+            probeRadius = 0.012f,
+            noContactCurl = 0.5f,
+        };
 
-        [Tooltip("Probe sphere radius (m) for contact detection.")]
-        [SerializeField] private float probeRadius = 0.012f;
-
-        [Tooltip("Joints from the fingertip inward to sphere-test each step.")]
-        [SerializeField, Range(1, 4)] private int samplesPerFinger = 2;
-
-        [Tooltip("Curl for a finger that touches nothing (progressive solver), so it drapes naturally " +
-                 "instead of splaying open. 1 = fist, 0 = open.")]
-        [SerializeField, Range(0, 1)] private float noContactCurl = 0.5f;
-
-        [Tooltip("After a finger grips, how far each further-out joint keeps curling when it finds " +
-                 "nothing (a gentle wrap) instead of fisting. ~0.33 reads natural.")]
-        [SerializeField, Range(0, 1)] private float distalFollowCurl = 0.33f;
-
-        [Tooltip("Contact samples along each tested bone segment (progressive solver). 2 = midpoint + " +
-                 "endpoint; higher catches thin edges between samples. Multiplies per-frame query cost.")]
-        [SerializeField, Range(1, 5)] private int samplesPerSegment = 2;
-
-        [Tooltip("Per-finger calibration for the probe's solves: enable mask, probe-radius scale, " +
-                 "max-curl anti-overshoot clamp, press bias. A disabled finger keeps the normal " +
-                 "grip/trigger animation.")]
-        [SerializeField] private PerFingerSolveSettings fingerSettings = new PerFingerSolveSettings();
+        // Effective solver block: probe-local override, else the global asset (which may be absent
+        // in a stripped setup — then the local block is still a safe fallback).
+        private HandSolverSettings Solver =>
+            overrideSolverSettings || !HandPoserSettings.Instance ? solverSettings : HandPoserSettings.Instance.dynamicSolver;
 
         [Header("Feel")]
         [Tooltip("Distance (m) to the nearest surface at/under which the hand fully commits to the solved " +
@@ -424,10 +414,11 @@ namespace MikeNspired.XRIStarterKit
         {
             ctx ??= new HandSolveContext();
             // Re-created when the toggle changes so flipping it during play-mode dial-in takes effect.
-            if (solver == null || solverIsProgressive != useProgressiveSolver)
+            bool wantProgressive = Solver.useProgressiveSolver;
+            if (solver == null || solverIsProgressive != wantProgressive)
             {
-                solver = useProgressiveSolver ? (IHandPoseSolver)new ProgressiveCurlSolver() : new CurlSweepSolver();
-                solverIsProgressive = useProgressiveSolver;
+                solver = wantProgressive ? (IHandPoseSolver)new ProgressiveCurlSolver() : new CurlSweepSolver();
+                solverIsProgressive = wantProgressive;
             }
 
             ctx.hand             = handAnimator;
@@ -439,15 +430,9 @@ namespace MikeNspired.XRIStarterKit
             ctx.relaxedPose      = dyn.RelaxedPose;
             ctx.targetColliders  = colliders;
             ctx.targetMask       = worldMask;
-            ctx.stepCount        = stepCount;
-            ctx.probeRadius      = probeRadius;
-            ctx.samplesPerFinger = samplesPerFinger;
-            ctx.samplesPerSegment = samplesPerSegment;
-            ctx.fingerSettings   = fingerSettings;
-            ctx.noContactCurl    = noContactCurl;
-            ctx.distalFollowCurl = distalFollowCurl;
             ctx.collectDebug     = handAnimator.requestSolveDebug ||
                                    (HandPoserSettings.Instance && HandPoserSettings.Instance.drawSolveDebug);
+            Solver.ApplyTo(ctx);
         }
 
         // Keeps only colliders NOT under the ignore root (hand / rig), compacting them to the front of the
