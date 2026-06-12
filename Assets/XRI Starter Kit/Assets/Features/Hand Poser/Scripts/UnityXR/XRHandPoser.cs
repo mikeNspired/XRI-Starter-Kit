@@ -226,6 +226,7 @@ namespace MikeNspired.XRIStarterKit
                 closedPose      = dyn.ClosedPose,
                 closedPoses     = dyn.ClosedCandidates,
                 relaxedPose     = dyn.RelaxedPose,
+                jointLimits     = dyn.JointLimits,
                 targetColliders = colliders,
                 targetMask      = mask,
                 stepCount       = DynamicStepCount,

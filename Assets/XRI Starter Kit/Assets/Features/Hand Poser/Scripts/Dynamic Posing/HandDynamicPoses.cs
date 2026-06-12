@@ -46,6 +46,11 @@ namespace MikeNspired.XRIStarterKit
                  "toward the Closed pose by the No-Contact Curl amount, as before.")]
         [SerializeField] private PoseScriptableObject relaxedPose;
 
+        [Tooltip("Optional per-joint min/max clamp on the solve's curl t, for when the Closed pose alone " +
+                 "is not a tight enough limit. Joints matched by name; unlisted joints are unclamped. " +
+                 "Leave empty for no clamping.")]
+        [SerializeField] private HandJointLimits jointLimits;
+
         [Header("Fingertip Probes")]
         [Tooltip("Per-finger probe transform at the fingertip pad, just past the last joint. Leave empty to " +
                  "auto-generate at runtime, or use 'Create / Refresh Probes' and nudge into place. Must be a " +
@@ -64,6 +69,7 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject ClosedPose => closedPose;
         public List<PoseScriptableObject> ClosedCandidates => closedCandidates;
         public PoseScriptableObject RelaxedPose => relaxedPose;
+        public HandJointLimits JointLimits => jointLimits;
 
         /// Open pose for the sweep, falling back to the hand's DefaultPose when none is assigned.
         public PoseScriptableObject OpenOrDefault => openPose ? openPose : (Hand ? Hand.DefaultPose : null);
