@@ -31,6 +31,9 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty dynamicProbeRadius;
         private SerializedProperty dynamicSamplesPerFinger;
         private SerializedProperty dynamicNoContactCurl;
+        private SerializedProperty dynamicDistalFollowCurl;
+        private SerializedProperty dynamicSamplesPerSegment;
+        private SerializedProperty fingerSettings;
         private SerializedProperty graspRequireThumb;
         private SerializedProperty graspRequiredFingers;
         private SerializedProperty failedGraspResponse;
@@ -66,6 +69,9 @@ namespace MikeNspired.XRIStarterKit.Editor
             dynamicProbeRadius = serializedObject.FindProperty("dynamicProbeRadius");
             dynamicSamplesPerFinger = serializedObject.FindProperty("dynamicSamplesPerFinger");
             dynamicNoContactCurl = serializedObject.FindProperty("dynamicNoContactCurl");
+            dynamicDistalFollowCurl = serializedObject.FindProperty("dynamicDistalFollowCurl");
+            dynamicSamplesPerSegment = serializedObject.FindProperty("dynamicSamplesPerSegment");
+            fingerSettings = serializedObject.FindProperty("fingerSettings");
             graspRequireThumb = serializedObject.FindProperty("graspRequireThumb");
             graspRequiredFingers = serializedObject.FindProperty("graspRequiredFingers");
             failedGraspResponse = serializedObject.FindProperty("failedGraspResponse");
@@ -184,6 +190,15 @@ namespace MikeNspired.XRIStarterKit.Editor
                 EditorGUILayout.PropertyField(dynamicNoContactCurl, new GUIContent("No-Contact Curl",
                     "Progressive solver only. Curl for a finger that touches nothing — non-gripping " +
                     "fingers settle into a relaxed fist instead of opening. 1 = full fist; ~0.7 natural."));
+                EditorGUILayout.PropertyField(dynamicDistalFollowCurl, new GUIContent("Distal Follow Curl",
+                    "Progressive solver only. After a finger grips, how much each further-out joint keeps " +
+                    "curling when it finds nothing (gentle wrap) instead of fisting. ~0.33 natural."));
+                EditorGUILayout.PropertyField(dynamicSamplesPerSegment, new GUIContent("Samples Per Segment",
+                    "Progressive solver only. Contact samples along each tested bone segment. 2 = midpoint " +
+                    "+ endpoint; higher catches thin edges so wraps read as a drape."));
+                EditorGUILayout.PropertyField(fingerSettings, new GUIContent("Finger Calibration",
+                    "Per-finger solve calibration: enable mask (disabled = stays authored), probe-radius " +
+                    "scale, max-curl anti-overshoot clamp, and press bias."), true);
                 EditorGUILayout.PropertyField(graspRequireThumb, new GUIContent("Grasp Require Thumb",
                     "Require the thumb to make contact for a dynamic grasp to hold."));
                 EditorGUILayout.PropertyField(graspRequiredFingers, new GUIContent("Grasp Required Fingers",

@@ -98,6 +98,15 @@ namespace MikeNspired.XRIStarterKit
                  "nothing (a gentle wrap) instead of fisting. ~0.33 reads natural.")]
         [SerializeField, Range(0, 1)] private float distalFollowCurl = 0.33f;
 
+        [Tooltip("Contact samples along each tested bone segment (progressive solver). 2 = midpoint + " +
+                 "endpoint; higher catches thin edges between samples. Multiplies per-frame query cost.")]
+        [SerializeField, Range(1, 5)] private int samplesPerSegment = 2;
+
+        [Tooltip("Per-finger calibration for the probe's solves: enable mask, probe-radius scale, " +
+                 "max-curl anti-overshoot clamp, press bias. A disabled finger keeps the normal " +
+                 "grip/trigger animation.")]
+        [SerializeField] private PerFingerSolveSettings fingerSettings = new PerFingerSolveSettings();
+
         [Header("Feel")]
         [Tooltip("Distance (m) to the nearest surface at/under which the hand fully commits to the solved " +
                  "pose. Between this and Reach Radius the pose eases in by proximity, so the hand doesn't " +
@@ -432,6 +441,8 @@ namespace MikeNspired.XRIStarterKit
             ctx.stepCount        = stepCount;
             ctx.probeRadius      = probeRadius;
             ctx.samplesPerFinger = samplesPerFinger;
+            ctx.samplesPerSegment = samplesPerSegment;
+            ctx.fingerSettings   = fingerSettings;
             ctx.noContactCurl    = noContactCurl;
             ctx.distalFollowCurl = distalFollowCurl;
             ctx.collectDebug     = handAnimator.requestSolveDebug ||

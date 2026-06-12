@@ -38,6 +38,8 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField, Range(1, 4)] private int dynamicSamplesPerFinger = 2;
         [SerializeField, Range(0, 1)] private float dynamicNoContactCurl = 0.7f;
         [SerializeField, Range(0, 1)] private float dynamicDistalFollowCurl = 0.33f;
+        [SerializeField, Range(1, 5)] private int dynamicSamplesPerSegment = 2;
+        [SerializeField] private PerFingerSolveSettings fingerSettings = new PerFingerSolveSettings();
         [SerializeField] private bool  graspRequireThumb  = true;
         [SerializeField, Range(0, 4)] private int graspRequiredFingers = 2;
         [SerializeField] private FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;
@@ -54,6 +56,8 @@ namespace MikeNspired.XRIStarterKit
         private int   SamplesPerFinger      => overrideGlobalSettings ? dynamicSamplesPerFinger : Settings.dynamicSamplesPerFinger;
         private float NoContactCurl         => overrideGlobalSettings ? dynamicNoContactCurl   : Settings.dynamicNoContactCurl;
         private float DistalFollowCurl      => overrideGlobalSettings ? dynamicDistalFollowCurl : Settings.dynamicDistalFollowCurl;
+        private int   SamplesPerSegment     => overrideGlobalSettings ? dynamicSamplesPerSegment : Settings.dynamicSamplesPerSegment;
+        private PerFingerSolveSettings FingerSettings => overrideGlobalSettings ? fingerSettings : Settings.dynamicFingerSettings;
         private bool  GraspRequireThumb     => overrideGlobalSettings ? graspRequireThumb     : Settings.graspRequireThumb;
         private int   GraspRequiredFingers  => overrideGlobalSettings ? graspRequiredFingers  : Settings.graspRequiredFingers;
         private FailedGraspResponse FailedGraspResponse => overrideGlobalSettings ? failedGraspResponse : Settings.failedGraspResponse;
@@ -226,6 +230,8 @@ namespace MikeNspired.XRIStarterKit
                 stepCount       = DynamicStepCount,
                 probeRadius     = DynamicProbeRadius,
                 samplesPerFinger = SamplesPerFinger,
+                samplesPerSegment = SamplesPerSegment,
+                fingerSettings   = FingerSettings,
                 noContactCurl    = NoContactCurl,
                 distalFollowCurl = DistalFollowCurl,
                 collectDebug     = Settings.drawSolveDebug || hand.requestSolveDebug,
@@ -259,21 +265,68 @@ namespace MikeNspired.XRIStarterKit
             }
 
             // Grasp holds: apply the solved pose — a single blend from the current grab shape.
-            hand.SetJointsDirect(result, hand.animationTimeToNewPose);
+            // Fingers disabled in the per-finger calibration take the authored pose when one exists.
+            hand.SetJointsDirect(AppendAuthoredJointsForDisabledFingers(hand, result), hand.animationTimeToNewPose);
         }
 
-        // thumb = index 0; fingers 1..4 are index/middle/ring/pinky.
+        // A finger disabled in the per-finger calibration emits no solved joints. When this object has
+        // an authored pose for the hand, pose that finger from it so "disabled" reads as "stay authored
+        // while the rest solve". With no authored pose the finger simply keeps its current shape.
+        private PoseScriptableObject.JointData[] AppendAuthoredJointsForDisabledFingers(
+            HandAnimator hand, PoseScriptableObject.JointData[] result)
+        {
+            var settings = FingerSettings;
+            var authored = hand.handType == LeftRight.Left ? leftHandPose : rightHandPose;
+            if (!authored) return result;
+
+            System.Collections.Generic.List<PoseScriptableObject.JointData> extra = null;
+            for (int f = 0; f < 5; f++)
+            {
+                if (PerFingerSolveSettings.Get(settings, f).solve) continue;
+                var chain = hand.fingerMap.Finger(f);
+                if (chain == null) continue;
+                foreach (var joint in chain)
+                {
+                    if (!joint) continue;
+                    foreach (var jd in authored.joints)
+                    {
+                        if (jd.jointName != joint.name) continue;
+                        extra ??= new System.Collections.Generic.List<PoseScriptableObject.JointData>();
+                        extra.Add(jd);
+                        break;
+                    }
+                }
+            }
+            if (extra == null) return result;
+
+            // Solved joints first: SetJointsDirect matches by first name hit, so on a bone shared
+            // between an enabled and a disabled finger the solve wins.
+            var merged = new PoseScriptableObject.JointData[result.Length + extra.Count];
+            result.CopyTo(merged, 0);
+            extra.CopyTo(merged, result.Length);
+            return merged;
+        }
+
+        // thumb = index 0; fingers 1..4 are index/middle/ring/pinky. Fingers disabled in the
+        // per-finger calibration can never contact, so they are exempt from the requirement and
+        // the required count caps at the number of enabled fingers.
         private bool IsGraspValid(bool[] contacted)
         {
             if (contacted == null || contacted.Length < 5) return false;
+            var settings = FingerSettings;
 
-            if (GraspRequireThumb && !contacted[0]) return false;
+            if (GraspRequireThumb && PerFingerSolveSettings.Get(settings, 0).solve && !contacted[0])
+                return false;
 
-            int fingers = 0;
+            int fingers = 0, enabledFingers = 0;
             for (int i = 1; i < 5; i++)
+            {
+                if (!PerFingerSolveSettings.Get(settings, i).solve) continue;
+                enabledFingers++;
                 if (contacted[i]) fingers++;
+            }
 
-            return fingers >= GraspRequiredFingers;
+            return fingers >= Mathf.Min(GraspRequiredFingers, enabledFingers);
         }
 
         private static string DescribeContacts(bool[] contacted)

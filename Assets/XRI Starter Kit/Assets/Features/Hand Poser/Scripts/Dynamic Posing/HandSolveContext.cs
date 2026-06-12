@@ -23,6 +23,13 @@ namespace MikeNspired.XRIStarterKit
         // How many joints from the fingertip inward to sphere-test each step. 1 = tip only;
         // 2+ catches a finger wrapping the object even when the tip slips past it.
         public int samplesPerFinger = 2;
+        // Contact samples along each tested bone segment (progressive solver). 2 = midpoint + endpoint
+        // (the original behavior); higher catches thin geometry slipping between samples, so an
+        // edge-wrap reads as a drape instead of a claw. Bounded small — this multiplies query count.
+        public int samplesPerSegment = 2;
+        // Optional per-finger calibration: enable mask, probe-radius scale, max-curl clamp, press bias.
+        // Null = all fingers solve with defaults (see PerFingerSolveSettings.Get).
+        public PerFingerSolveSettings fingerSettings;
         // Curl for a finger that contacts nothing (progressive solver). Like a human grabbing, the
         // non-gripping fingers settle into a relaxed fist rather than splaying open. 1 = full fist,
         // 0 = fully open; ~0.7 reads as a natural relaxed grip.

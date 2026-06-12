@@ -66,6 +66,16 @@ namespace MikeNspired.XRIStarterKit
                  "nothing — a gentle wrap — instead of snapping to a fist (the distal 'claw'). " +
                  "0 = stop dead at the grip; ~0.33 reads natural. Progressive solver only.")]
         [Range(0, 1)] public float dynamicDistalFollowCurl = 0.33f;
+        [Tooltip("Contact samples along each tested bone segment (progressive solver). 2 = midpoint + " +
+                 "endpoint; higher catches thin geometry between samples so an edge-wrap reads as a " +
+                 "drape instead of a claw. Multiplies query cost — keep small.")]
+        [Range(1, 5)] public int dynamicSamplesPerSegment = 2;
+
+        [Header("Dynamic Pose — Per-Finger Calibration")]
+        [Tooltip("Per-finger solve calibration: enable mask (a disabled finger keeps the authored pose), " +
+                 "probe-radius scale, max-curl anti-overshoot clamp, and press bias. These are the global " +
+                 "defaults; XRHandPoser's Override Global Settings replaces the whole block per object.")]
+        public PerFingerSolveSettings dynamicFingerSettings = new PerFingerSolveSettings();
 
         [Header("Dynamic Pose — Debug")]
         [Tooltip("Master switch for the per-finger solve visualization. When on, dynamic solves record " +
