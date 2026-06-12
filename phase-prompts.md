@@ -8,6 +8,62 @@ Workflow per phase: paste the block → let it implement and open a PR → pull 
 
 ---
 
+## ⛳ Branch closeout — current state & remaining work (read first on the next branch)
+
+This is the handoff for closing the long Phase-6 branch (`claude/wonderful-maxwell-fkrrtx`) and opening a
+fresh one to finish the asset. The mechanism works in code; what remains is **in-editor verification, the
+Phase 7 dial-in, and a clarity/cleanup pass** so a new buyer isn't lost. Tackle these as separate, focused
+branches/PRs — do not bundle them.
+
+### Where things stand
+- **Authored posing:** unchanged and intact. `HandAnimator` is back to authored-only after the dynamic
+  config moved out.
+- **Dynamic posing:** fully wired in code — decision gate, snap suppression, two solvers (`ProgressiveCurlSolver`
+  default), grasp probe, fingertip probes, debug viz. All dynamic inputs now live on the opt-in
+  **`HandDynamicPoses`** component (Open / Closed / Closed Candidates + fingertip probes). A hand without it
+  is authored-only.
+- **Not yet verified in Unity:** the `HandDynamicPoses` migration. No prefab currently has the component or
+  the old fields assigned, so dynamic posing is effectively unconfigured in-scene right now.
+
+### Remaining work — functional (the asset isn't "done" until these pass)
+1. **In-editor setup + smoke test (do this first).** On each hand: add `HandDynamicPoses`, assign Open and
+   Closed (+ any pinch Candidates), click **Create / Refresh Probes**, nudge probes onto the pads, save the
+   prefab. Then confirm: authored grabs are byte-for-byte unchanged; an off-axis / unauthored grab curls
+   onto geometry; a hand with no component falls back to authored cleanly.
+2. **Phase 7 — solver dial-in.** Still the big one (see the Phase 7 block below). Grab *shapes* are rough:
+   fingers overshoot/under-reach, occasional claw poses. This needs iteration against many real objects with
+   the debug viz on. Nothing below should start before this looks right.
+3. **Per-call allocation pass.** `IHandPoseSolver.Solve` still allocates per call; make it GC-clean before
+   any per-frame (free-hand) use.
+
+### Remaining work — clarity & cleanup (the "new user is confused" problem)
+The `Scripts/` folder mixes five audiences with no signposting, which is the root of "what does what."
+Proposed cleanup branch:
+1. **Add a `Scripts/README.md` "start here" map** — the single highest-value fix. One screen: which
+   component goes on the hand (`HandAnimator`, optionally `HandDynamicPoses` / `HandGraspProbe` / `HandReference`),
+   which on the grabbable (`HandPoser` / `XRHandPoser`), where authored vs dynamic diverge, and which folders
+   are internal/never-touch. (Additive, low-risk — could even land before Phase 7.)
+2. **Consider regrouping by audience, not topic:** public components vs internal machinery (solvers, shared
+   types) vs editor vs debug/dev. Today `HandDynamicPoses` (user-facing) sits beside `IHandPoseSolver`
+   (never-touch). Do this with `git mv` so GUIDs/refs survive.
+3. **Resolve the two flagged scripts.** `HoldInPlaceOnGrab` — **delete** (zero code refs; only a comment
+   mention in `HandReference.cs:60`, remove that clause too). `DynamicPoseTester` — it is the **only** Hand
+   Poser script importing Odin/Sirenix, so it **breaks compile for any buyer without Odin**; either strip the
+   Odin attributes (plain `[SerializeField]` + a custom editor button) or move it out of the shipped asset.
+   *(This one is a clean-import risk, not cosmetic — worth doing early.)*
+4. **Decide whether `Physics Colliders/` and `Helpers/` belong under Hand Poser at all.** Per our own standing
+   rules the physical-presence colliders are a *separate track*; nesting them here makes people assume they're
+   part of posing. `Helpers/` (audio, `Note`) isn't posing either.
+5. **Naming collisions to revisit:** `HandAnimator` vs `HandPoser` vs `XRHandPoser` (nothing signals hand-side
+   vs grabbable-side); `Pose` vs `PoseScriptableObject` vs `TransformStruct`. Rename only with GUID-safe moves
+   and a clear migration note.
+
+### Verified clean at closeout
+No orphaned `.cs.meta`; the `HandFingertipProbes`→`HandDynamicPoses` GUID was preserved; no prefab/scene still
+serializes the removed `HandAnimator` fields. The refactor left no loose ends in code.
+
+---
+
 ## Phase 0 — `SetJointsDirect`
 
 ```
@@ -292,10 +348,12 @@ Out of scope: polish. Open a PR with the acceptance steps restated; do not start
 >   **authored-only** — `IsGrabDynamic`/`ShouldUseDynamic` return false and `DynamicOnly` logs and falls back,
 >   so snap suppression and the grab path stay consistent. GUID preserved on the rename, so a hand that
 >   already had the component keeps it. **Setup required in-editor:** add `HandDynamicPoses` to each hand,
->   assign Open/Closed (+ candidates), and click Create / Refresh Probes. `HandFingerMap` gains `tips[5]`/`Tip(i)` (no `HandSolveContext` change —
->   tips ride along on `fingerMap`). Both solvers test the leaf→tip segment, so the leaf is now a **real
->   contact sweep** (rotating it moves the tip child) instead of the binary pivot test, and the debug drawer
->   shows a sphere at the actual fingertip. Grab path benefits automatically. **Feel** on `HandGraspProbe`
+>   assign Open/Closed (+ candidates), and click Create / Refresh Probes.
+> - **Leaf/fingertip contact sweep + grasp-probe feel.** With real tip probes (now owned by
+>   `HandDynamicPoses`, passed to solvers via `HandSolveContext.tipProbes`), both solvers test the leaf→tip
+>   segment, so the leaf is now a **real contact sweep** (rotating it moves the tip child) instead of the
+>   binary pivot test, and the debug drawer shows a sphere at the actual fingertip. Grab path benefits
+>   automatically. **Feel** on `HandGraspProbe`
 >   (fixes the spider-claw entry, instant snap-back, and crawl jitter the test surfaced): proximity-weighted
 >   blend from idle (reach edge) to full solve (within `fullPoseDistance`) via nearest-surface distance; a
 >   rotation/position **deadband** that freezes micro solver noise while passing deliberate motion; and a

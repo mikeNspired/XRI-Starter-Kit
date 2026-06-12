@@ -5,6 +5,13 @@
 
 Standing context for the dynamic hand posing feature. These rules apply to every task touching this work, in addition to everything above.
 
+> **Current status (2026-06-12):** mechanism complete in code; all dynamic config lives on the opt-in
+> `HandDynamicPoses` component (`HandAnimator` is authored-only again). **Not yet verified in Unity.** Before
+> starting new work, read the **"Branch closeout — current state & remaining work"** section at the top of
+> `phase-prompts.md`: it lists what's left (in-editor smoke test, Phase 7 solver dial-in, allocation pass) and
+> the clarity/cleanup recommendations (Scripts README, regroup by audience, delete `HoldInPlaceOnGrab`, fix the
+> Odin compile dependency in `DynamicPoseTester`).
+
 ### What we're building
 
 A procedural fallback for the Hand Poser. Today, grabbing snaps the hand to an authored `PoseScriptableObject`. We're adding: when a player grabs an object **far from its authored grab point**, or grabs an object with **no authored pose**, the fingers curl procedurally until they contact the object's geometry and stop. A later phase extends the same solver to the **free (non-grabbing) hand** so it can rest on surfaces and drape over edges.
