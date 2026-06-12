@@ -131,8 +131,8 @@ namespace MikeNspired.XRIStarterKit
 
         private IHandPoseSolver solver;
         private bool solverIsProgressive;
-        private HandFingertipProbes fingertips; // optional, resolved once from the hand
-        private bool fingertipsResolved;
+        private HandDynamicPoses dyn;          // solver poses + fingertip probes, resolved once from the hand
+        private bool dynResolved;
         private HandSolveContext ctx;
         private Collider[] colliders;
         private Transform ignoreRoot;   // resolved hand/rig root whose colliders are skipped
@@ -388,16 +388,27 @@ namespace MikeNspired.XRIStarterKit
                 return false;
             }
 
-            if (handAnimator.ClosedPose && (handAnimator.OpenPose || handAnimator.DefaultPose))
+            if (Dyn() && dyn.HasRequiredPoses)
                 return true;
 
             if (!warned)
             {
-                Debug.LogWarning($"[HandGraspProbe] {name} — assign ClosedPose and an OpenPose/DefaultPose " +
-                                 "on the HandAnimator to enable the grasp probe.", this);
+                Debug.LogWarning($"[HandGraspProbe] {name} — add a HandDynamicPoses component with a Closed " +
+                                 "pose (and an Open/Default) to the hand to enable the grasp probe.", this);
                 warned = true;
             }
             return false;
+        }
+
+        // Resolves the hand's HandDynamicPoses once (solver poses + fingertip probes). May be null.
+        private HandDynamicPoses Dyn()
+        {
+            if (!dynResolved)
+            {
+                dyn = handAnimator ? handAnimator.GetComponent<HandDynamicPoses>() : null;
+                dynResolved = true;
+            }
+            return dyn;
         }
 
         private void BuildContext()
@@ -410,18 +421,12 @@ namespace MikeNspired.XRIStarterKit
                 solverIsProgressive = useProgressiveSolver;
             }
 
-            if (!fingertipsResolved)
-            {
-                fingertips = handAnimator.GetComponent<HandFingertipProbes>();
-                fingertipsResolved = true;
-            }
-
             ctx.hand             = handAnimator;
             ctx.fingerMap        = handAnimator.fingerMap;
-            ctx.tipProbes        = fingertips ? fingertips.Tips : null;
-            ctx.openPose         = handAnimator.OpenPose ? handAnimator.OpenPose : handAnimator.DefaultPose;
-            ctx.closedPose       = handAnimator.ClosedPose;
-            ctx.closedPoses      = handAnimator.ClosedPoses;
+            ctx.tipProbes        = dyn ? dyn.Tips : null;
+            ctx.openPose         = dyn.OpenOrDefault;
+            ctx.closedPose       = dyn.ClosedPose;
+            ctx.closedPoses      = dyn.ClosedCandidates;
             ctx.targetColliders  = colliders;
             ctx.targetMask       = worldMask;
             ctx.stepCount        = stepCount;

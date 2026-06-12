@@ -5,26 +5,43 @@ using UnityEngine;
 namespace MikeNspired.XRIStarterKit
 {
     /// <summary>
-    /// Solver-only fingertip probes for the DYNAMIC posing system. On skeletons whose last finger bone is
-    /// the distal knuckle (no tip joint), the actual fingertip pad has no transform to contact-test, so the
-    /// dynamic solvers can't seat the tip on a surface. This component owns one probe transform per finger,
-    /// placed just past the last joint.
+    /// Everything the DYNAMIC posing system needs for one hand, in a single opt-in component: the solver's
+    /// open/closed reference poses, optional extra closed candidates, and the fingertip probes. Add this to a
+    /// hand (next to <see cref="HandAnimator"/>) ONLY when you want procedural grabbing — without it,
+    /// HandAnimator does authored posing alone and none of these fields clutter its inspector.
     ///
-    /// Deliberately separate from <see cref="HandAnimator"/>: authored poses never use these — they exist
-    /// only for the dynamic grab/grasp solve. Put this on the hand (next to HandAnimator). Leave the fields
-    /// empty to auto-generate probes at runtime, or use the inspector's "Create / Refresh Probes" button to
-    /// create persistent ones you can nudge onto the fingertip pads and save into the prefab.
+    /// Solver poses: the per-finger solve sweeps each finger from the Open pose (t=0) to the Closed fist
+    /// (t=1) and stops where the finger contacts the object. Closed Candidates are extra closed shapes
+    /// (e.g. a pinch) the solver also tries per finger, keeping whichever seats that finger closest.
     ///
-    /// Probe names are "&lt;finger&gt;_TipProbe_Ignore": the "Ignore" suffix keeps the entire pose system
-    /// (SetBones, finger chains, pose saving) away from them, and the "TipProbe" marker distinguishes them
-    /// from the physical-presence feature's "*_DistalCollider_Ignore" capsules, which also live under the
-    /// last joints. A probe is a bare transform — anything with a Collider is rejected as a probe.
+    /// Fingertip probes: on skeletons whose last finger bone is the distal knuckle (no tip joint), the
+    /// fingertip pad has no transform to contact-test. This owns one probe transform per finger, just past
+    /// the last joint. Probe names are "&lt;finger&gt;_TipProbe_Ignore": the "Ignore" suffix keeps the whole
+    /// pose system off them, and the "TipProbe" marker distinguishes them from the physical-presence
+    /// feature's "*_DistalCollider_Ignore" capsules (also "*Ignore" children of the last joints). A probe is
+    /// a bare transform — anything carrying a Collider is rejected.
     /// </summary>
-    public class HandFingertipProbes : MonoBehaviour
+    public class HandDynamicPoses : MonoBehaviour
     {
-        [Tooltip("Hand whose fingers these probes belong to. Auto-filled from this GameObject if empty.")]
+        [Tooltip("Hand these dynamic poses belong to. Auto-filled from this GameObject if empty.")]
         [SerializeField] private HandAnimator handAnimator;
 
+        [Header("Solver Poses")]
+        [Tooltip("Fully-open/splayed pose — the t=0 (open) end of the per-finger curl sweep. Kept distinct " +
+                 "from the HandAnimator DefaultPose so the solver has full finger range. Falls back to " +
+                 "DefaultPose when empty.")]
+        [SerializeField] private PoseScriptableObject openPose;
+
+        [Tooltip("Fist/grip pose — the t=1 (closed) end of the per-finger curl sweep. Required for dynamic " +
+                 "posing; without it this hand can only use authored poses.")]
+        [SerializeField] private PoseScriptableObject closedPose;
+
+        [Tooltip("Optional extra closed shapes the solver also tries per finger (e.g. a pinch alongside the " +
+                 "fist), keeping whichever seats that finger's tip closest to the object. The Closed Pose " +
+                 "above is always tried first. Leave empty for fist-only — zero cost.")]
+        [SerializeField] private List<PoseScriptableObject> closedCandidates = new List<PoseScriptableObject>();
+
+        [Header("Fingertip Probes")]
         [Tooltip("Per-finger probe transform at the fingertip pad, just past the last joint. Leave empty to " +
                  "auto-generate at runtime, or use 'Create / Refresh Probes' and nudge into place. Must be a " +
                  "bare transform named *_Ignore (never a physics collider).")]
@@ -37,11 +54,24 @@ namespace MikeNspired.XRIStarterKit
         // Resolved per-finger probes (thumb=0 … pinky=4); entries may be null (chain too short / no hand).
         private readonly Transform[] tips = new Transform[5];
 
+        // ─── Solver-pose accessors (read by the grab path, HandGraspProbe, the tester) ───
+        public PoseScriptableObject OpenPose  => openPose;
+        public PoseScriptableObject ClosedPose => closedPose;
+        public List<PoseScriptableObject> ClosedCandidates => closedCandidates;
+
+        /// Open pose for the sweep, falling back to the hand's DefaultPose when none is assigned.
+        public PoseScriptableObject OpenOrDefault => openPose ? openPose : (Hand ? Hand.DefaultPose : null);
+
+        /// True when this hand has the minimum poses the solver needs (a closed fist + an open/default).
+        public bool HasRequiredPoses => closedPose && OpenOrDefault;
+
         /// Resolved probe for a finger (thumb=0 … pinky=4), or null. Read by the solve drivers.
         public Transform Tip(int i) => (i >= 0 && i < 5) ? tips[i] : null;
 
         /// The resolved per-finger array handed to <see cref="HandSolveContext.tipProbes"/>.
         public Transform[] Tips => tips;
+
+        private HandAnimator Hand => handAnimator ? handAnimator : (handAnimator = GetComponent<HandAnimator>());
 
         private void Reset() => handAnimator = GetComponent<HandAnimator>();
 
@@ -58,9 +88,9 @@ namespace MikeNspired.XRIStarterKit
         /// </summary>
         public void Resolve(bool createMissing, Action<GameObject> onCreated = null)
         {
-            if (!handAnimator && !TryGetComponent(out handAnimator))
+            if (!Hand)
             {
-                Debug.LogWarning($"[HandFingertipProbes] {name} — no HandAnimator found; probes disabled.", this);
+                Debug.LogWarning($"[HandDynamicPoses] {name} — no HandAnimator found; probes disabled.", this);
                 return;
             }
 
@@ -83,7 +113,7 @@ namespace MikeNspired.XRIStarterKit
             if (assigned)
             {
                 if (!assigned.GetComponent<Collider>()) return assigned;
-                Debug.LogWarning($"[HandFingertipProbes] {name} — '{assigned.name}' assigned as the {fingerName} " +
+                Debug.LogWarning($"[HandDynamicPoses] {name} — '{assigned.name}' assigned as the {fingerName} " +
                                  "tip probe has a Collider; that is a physics collider, not a probe. Ignoring it.", this);
             }
 

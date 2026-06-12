@@ -279,8 +279,20 @@ Out of scope: polish. Open a PR with the acceptance steps restated; do not start
 >   `Helpers/` (audio/animation/Note), `UnityXR/` (+ HandReference, which is XRI-coupled), `Editor/`.
 >   Usage audit by GUID: every script is referenced except `HoldInPlaceOnGrab` (Phase 5 proof mechanic,
 >   superseded by HandReference snap suppression — flagged for deletion, awaiting user) and
->   `DynamicPoseTester` (dev-only; depends on gitignored Odin). **Setup required in-editor:** add
->   `HandFingertipProbes` to each hand prefab and click Create / Refresh Probes. `HandFingerMap` gains `tips[5]`/`Tip(i)` (no `HandSolveContext` change —
+>   `DynamicPoseTester` (dev-only; depends on gitignored Odin).
+> - **All dynamic config off HandAnimator → one `HandDynamicPoses` component (user review).** HandAnimator
+>   is the *authored*-pose component every asset user touches, yet it carried the dynamic-solver inputs
+>   (`OpenPose`/`ClosedPose`/`ClosedPoses`) — confusing and forced on people who never use dynamic posing.
+>   Renamed `HandFingertipProbes` → **`HandDynamicPoses`** and folded the solver poses in: it now holds
+>   `Open`, `Closed`, `Closed Candidates` (renamed from the opaque "ClosedPoses", with a clear tooltip) and
+>   the fingertip probes, plus Preview Open/Closed and Create/Refresh Probes buttons. `HandAnimator` lost all
+>   three fields (and the editor that drew them); it's back to authored posing only. Consumers
+>   (`XRHandPoser`, `HandGraspProbe`, `DynamicPoseTester`) read the poses + tips via
+>   `GetComponent<HandDynamicPoses>()`; a hand without the component (or without a Closed pose) is treated as
+>   **authored-only** — `IsGrabDynamic`/`ShouldUseDynamic` return false and `DynamicOnly` logs and falls back,
+>   so snap suppression and the grab path stay consistent. GUID preserved on the rename, so a hand that
+>   already had the component keeps it. **Setup required in-editor:** add `HandDynamicPoses` to each hand,
+>   assign Open/Closed (+ candidates), and click Create / Refresh Probes. `HandFingerMap` gains `tips[5]`/`Tip(i)` (no `HandSolveContext` change —
 >   tips ride along on `fingerMap`). Both solvers test the leaf→tip segment, so the leaf is now a **real
 >   contact sweep** (rotating it moves the tip child) instead of the binary pivot test, and the debug drawer
 >   shows a sphere at the actual fingertip. Grab path benefits automatically. **Feel** on `HandGraspProbe`

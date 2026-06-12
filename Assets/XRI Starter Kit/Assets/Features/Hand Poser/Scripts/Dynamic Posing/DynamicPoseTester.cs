@@ -132,14 +132,11 @@ namespace MikeNspired.XRIStarterKit
                 Debug.LogError("[DynamicPoseTester] Assign a target GameObject to m_Target.");
                 return;
             }
-            if (!m_HandAnimator.ClosedPose)
+            var dyn = m_HandAnimator.GetComponent<HandDynamicPoses>();
+            if (!dyn || !dyn.HasRequiredPoses)
             {
-                Debug.LogError("[DynamicPoseTester] HandAnimator.ClosedPose is not assigned. Assign a fist pose.");
-                return;
-            }
-            if (!m_HandAnimator.DefaultPose)
-            {
-                Debug.LogError("[DynamicPoseTester] HandAnimator.DefaultPose is not assigned.");
+                Debug.LogError("[DynamicPoseTester] Add a HandDynamicPoses component with a Closed pose " +
+                               "(and an Open/Default) to the hand.");
                 return;
             }
 
@@ -151,15 +148,14 @@ namespace MikeNspired.XRIStarterKit
             if (colliders.Length == 0)
                 Debug.LogWarning($"[DynamicPoseTester] '{m_Target.name}' has no solid Colliders — solver will fully close all fingers.");
 
-            var fingertips = m_HandAnimator.GetComponent<HandFingertipProbes>();
-
             var ctx = new HandSolveContext
             {
                 hand            = m_HandAnimator,
                 fingerMap       = m_HandAnimator.fingerMap,
-                tipProbes       = fingertips ? fingertips.Tips : null,
-                openPose        = m_HandAnimator.DefaultPose,
-                closedPose      = m_HandAnimator.ClosedPose,
+                tipProbes       = dyn.Tips,
+                openPose        = dyn.OpenOrDefault,
+                closedPose      = dyn.ClosedPose,
+                closedPoses     = dyn.ClosedCandidates,
                 targetColliders = colliders,
                 targetMask      = 1 << m_Target.layer,
                 stepCount       = m_SolverStepCount,

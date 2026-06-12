@@ -112,9 +112,18 @@ namespace MikeNspired.XRIStarterKit
             {
                 case HandPosePolicy.NoPosing:     return false;
                 case HandPosePolicy.AuthoredOnly: return false;
-                case HandPosePolicy.DynamicOnly:  return true;
+                case HandPosePolicy.DynamicOnly:  return HasDynamicConfig(hand);
                 default:                          return IsGrabDynamic(hand);
             }
+        }
+
+        // A hand can only pose dynamically if it carries a HandDynamicPoses component with the solver's
+        // open/closed reference poses. Without it, every grab falls back to the authored path.
+        private static bool HasDynamicConfig(HandAnimator hand)
+        {
+            if (!hand) return false;
+            var dyn = hand.GetComponent<HandDynamicPoses>();
+            return dyn && dyn.HasRequiredPoses;
         }
 
         // Returns true when the grab should use the dynamic solver. Public so the interactor-side
@@ -122,6 +131,14 @@ namespace MikeNspired.XRIStarterKit
         // logDecision gates the console output so HandReference's query doesn't double-log.
         public bool IsGrabDynamic(HandAnimator hand, bool logDecision = false)
         {
+            // No dynamic-pose component → never dynamic, regardless of attach offset.
+            if (!HasDynamicConfig(hand))
+            {
+                if (logDecision)
+                    Debug.Log($"[XRHandPoser] {gameObject.name} | AUTHORED — no HandDynamicPoses config on {hand.handType} hand");
+                return false;
+            }
+
             if (!CheckIfPoseExistForHand(hand))
             {
                 if (logDecision)
@@ -176,9 +193,11 @@ namespace MikeNspired.XRIStarterKit
 
         private void SolveAndApplyDynamicPose(HandAnimator hand, IXRSelectInteractor interactor)
         {
-            if (!hand || !hand.ClosedPose || !hand.DefaultPose)
+            var dyn = hand ? hand.GetComponent<HandDynamicPoses>() : null;
+            if (!hand || !dyn || !dyn.HasRequiredPoses)
             {
-                Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve skipped: hand, ClosedPose, or DefaultPose is not assigned.");
+                Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve skipped: the hand needs a " +
+                                 "HandDynamicPoses component with a Closed pose (and an Open/Default).");
                 return;
             }
 
@@ -194,22 +213,14 @@ namespace MikeNspired.XRIStarterKit
             int mask = 0;
             foreach (var c in colliders) mask |= 1 << c.gameObject.layer;
 
-            // Sweep from the dedicated max-open pose so fingers have full range and start clear
-            // of the target. Falls back to the relaxed DefaultPose on hands without an OpenPose
-            // authored yet, preserving prior behavior.
-            var openPose = hand.OpenPose ? hand.OpenPose : hand.DefaultPose;
-
-            // Optional fingertip probes (skeletons whose last bone is the distal knuckle).
-            var fingertips = hand.GetComponent<HandFingertipProbes>();
-
             var ctx = new HandSolveContext
             {
                 hand            = hand,
                 fingerMap       = hand.fingerMap,
-                tipProbes       = fingertips ? fingertips.Tips : null,
-                openPose        = openPose,
-                closedPose      = hand.ClosedPose,
-                closedPoses     = hand.ClosedPoses,
+                tipProbes       = dyn.Tips,
+                openPose        = dyn.OpenOrDefault,
+                closedPose      = dyn.ClosedPose,
+                closedPoses     = dyn.ClosedCandidates,
                 targetColliders = colliders,
                 targetMask      = mask,
                 stepCount       = DynamicStepCount,

@@ -308,7 +308,7 @@ namespace MikeNspired.XRIStarterKit
             return SegmentOverlaps(_chain, _i, _i + 1, _ctx);
         }
 
-        // The finger's tip probe from the context (supplied by HandFingertipProbes), or null.
+        // The finger's tip probe from the context (supplied by HandDynamicPoses), or null.
         private static Transform TipProbe(HandSolveContext _ctx, int _fingerIdx) =>
             _ctx.tipProbes != null && _fingerIdx < _ctx.tipProbes.Length ? _ctx.tipProbes[_fingerIdx] : null;
 

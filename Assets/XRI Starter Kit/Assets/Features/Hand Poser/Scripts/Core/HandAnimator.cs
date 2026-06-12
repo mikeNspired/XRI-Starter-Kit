@@ -23,17 +23,6 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject AnimationPose;
         public PoseScriptableObject SecondButtonPose;
 
-        [Tooltip("Fully-open/splayed pose used as the open end of the per-finger curl sweep (t=0). Kept distinct from DefaultPose (the relaxed idle) so the solver has full finger range and fingertips start clear of the target. Falls back to DefaultPose if left unassigned.")]
-        public PoseScriptableObject OpenPose;
-
-        [Tooltip("Fist/grip pose used as the closed end of the per-finger curl sweep (t=1). Assign in the Inspector.")]
-        public PoseScriptableObject ClosedPose;
-
-        [Tooltip("Optional extra closed poses (e.g. a precision/pinch shape alongside the fist). The dynamic " +
-                 "solver sweeps each finger against every candidate and keeps the one whose fingertip ends " +
-                 "closest to the object. ClosedPose is always included as the first candidate.")]
-        public List<PoseScriptableObject> ClosedPoses = new List<PoseScriptableObject>();
-
         [Tooltip("Time hand skeleton animates to next pose")]
         public float animationTimeToNewPose = .1f;
 
@@ -598,16 +587,10 @@ namespace MikeNspired.XRIStarterKit
         }
 
         /// <summary>
-        /// Immediately poses a single finger to the lerp between DefaultPose (t=0) and ClosedPose (t=1).
-        /// fingerIndex: 0=thumb, 1=index, 2=middle, 3=ring, 4=pinky.
-        /// Delegates to the explicit-pose overload using the hand's own DefaultPose / ClosedPose.
-        /// </summary>
-        public void SetFingerCurl(int fingerIndex, float t) => SetFingerCurl(fingerIndex, t, DefaultPose, ClosedPose);
-
-        /// <summary>
         /// Poses a single finger to the lerp between openPose (t=0) and closedPose (t=1) using
-        /// explicitly-supplied poses. A solver sweeps with this so the poses it curls through are
-        /// exactly the poses it lerps the final result from (no reliance on the hand's live fields).
+        /// explicitly-supplied poses (the dynamic solver's Open/Closed from HandDynamicPoses). A solver
+        /// sweeps with this so the poses it curls through are exactly the poses it lerps the result from.
+        /// fingerIndex: 0=thumb, 1=index, 2=middle, 3=ring, 4=pinky.
         /// </summary>
         public void SetFingerCurl(int fingerIndex, float t, PoseScriptableObject openPose, PoseScriptableObject closedPose)
         {
