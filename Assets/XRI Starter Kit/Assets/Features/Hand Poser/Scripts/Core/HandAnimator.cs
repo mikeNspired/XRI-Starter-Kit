@@ -23,17 +23,6 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject AnimationPose;
         public PoseScriptableObject SecondButtonPose;
 
-        [Tooltip("Fully-open/splayed pose used as the open end of the per-finger curl sweep (t=0). Kept distinct from DefaultPose (the relaxed idle) so the solver has full finger range and fingertips start clear of the target. Falls back to DefaultPose if left unassigned.")]
-        public PoseScriptableObject OpenPose;
-
-        [Tooltip("Fist/grip pose used as the closed end of the per-finger curl sweep (t=1). Assign in the Inspector.")]
-        public PoseScriptableObject ClosedPose;
-
-        [Tooltip("Optional extra closed poses (e.g. a precision/pinch shape alongside the fist). The dynamic " +
-                 "solver sweeps each finger against every candidate and keeps the one whose fingertip ends " +
-                 "closest to the object. ClosedPose is always included as the first candidate.")]
-        public List<PoseScriptableObject> ClosedPoses = new List<PoseScriptableObject>();
-
         [Tooltip("Time hand skeleton animates to next pose")]
         public float animationTimeToNewPose = .1f;
 
@@ -42,6 +31,13 @@ namespace MikeNspired.XRIStarterKit
 
         public float triggerAnimationValue, gripAnimationValue;
         public bool isGrabbingObject;
+
+        // Last dynamic-solve telemetry for this hand, assigned by whoever solved (XRHandPoser grab or
+        // HandGraspProbe). Read by HandPoseSolveDebugDrawer for gizmos. Null when not solving / debugging.
+        public HandSolveDebug LastSolveDebug;
+        // Set by a HandPoseSolveDebugDrawer to ask the solver to record telemetry this hand can visualize.
+        // Solve consumers OR this with the global HandPoserSettings.drawSolveDebug switch.
+        [System.NonSerialized] public bool requestSolveDebug;
 
         public List<Transform> currentJoints = new List<Transform>();
         List<Transform> goalPoseJoints = new List<Transform>();
@@ -374,27 +370,6 @@ namespace MikeNspired.XRIStarterKit
             transform.SetPositionAndRotation(newTransform.position, newTransform.rotation);
         }
 
-        IEnumerator AnimateHandTransformLocal(float animationLength, TransformStruct newTransform)
-        {
-            float timer = 0;
-            var startPos = transform.localPosition;
-            var startRot = transform.localRotation;
-
-            while (timer < animationLength + Time.deltaTime)
-            {
-                var newPosition = Vector3.Lerp(startPos, newTransform.position, timer / animationLength);
-                var newRotation = Quaternion.Lerp(startRot, newTransform.rotation, timer / animationLength);
-
-                transform.localPosition = newPosition;
-                transform.localRotation = newRotation;
-
-                yield return new WaitForSeconds(Time.deltaTime);
-                timer += Time.deltaTime;
-            }
-            transform.localPosition = newTransform.position;
-            transform.localRotation = newTransform.rotation;
-        }
-
         void StartHandPositionTracking(Transform target)
         {
             setPosition = true;
@@ -575,16 +550,47 @@ namespace MikeNspired.XRIStarterKit
         }
 
         /// <summary>
-        /// Immediately poses a single finger to the lerp between DefaultPose (t=0) and ClosedPose (t=1).
-        /// fingerIndex: 0=thumb, 1=index, 2=middle, 3=ring, 4=pinky.
-        /// Delegates to the explicit-pose overload using the hand's own DefaultPose / ClosedPose.
+        /// Applies a computed joint pose to the live joints immediately this frame — no blend coroutine.
+        /// Same name-matched mapping as <see cref="SetJointsDirect"/>, but writes transforms directly via
+        /// <see cref="SetNewJoint"/> (mirrors the per-frame writes in AnimateToPoseByValue2). Joints not
+        /// present in the supplied data are left untouched. Intended for per-frame drivers (free-hand touch).
+        /// <paramref name="_lerp"/> 1 = snap to the supplied pose; &lt;1 eases from the current pose toward it
+        /// (per-frame exponential smoothing supplied by the caller) to damp single-frame solver jitter.
         /// </summary>
-        public void SetFingerCurl(int fingerIndex, float t) => SetFingerCurl(fingerIndex, t, DefaultPose, ClosedPose);
+        public void SetJointsImmediate(PoseScriptableObject.JointData[] _jointData, float _lerp = 1f)
+        {
+            if (_jointData == null || _jointData.Length == 0) return;
+
+            if (currentJoints.Count == 0 || !currentJoints[0])
+                SetBones();
+
+            bool snap = _lerp >= 1f;
+            for (int i = 0; i < currentJoints.Count; i++)
+            {
+                var joint = currentJoints[i];
+                if (!joint) continue;
+
+                for (int j = 0; j < _jointData.Length; j++)
+                {
+                    if (_jointData[j].jointName == joint.name)
+                    {
+                        if (snap)
+                            SetNewJoint(ref joint, _jointData[j].localPosition, _jointData[j].localRotation);
+                        else
+                            SetNewJoint(ref joint,
+                                Vector3.Lerp(joint.localPosition, _jointData[j].localPosition, _lerp),
+                                Quaternion.Slerp(joint.localRotation, _jointData[j].localRotation, _lerp));
+                        break;
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Poses a single finger to the lerp between openPose (t=0) and closedPose (t=1) using
-        /// explicitly-supplied poses. A solver sweeps with this so the poses it curls through are
-        /// exactly the poses it lerps the final result from (no reliance on the hand's live fields).
+        /// explicitly-supplied poses (the dynamic solver's Open/Closed from HandDynamicPoses). A solver
+        /// sweeps with this so the poses it curls through are exactly the poses it lerps the result from.
+        /// fingerIndex: 0=thumb, 1=index, 2=middle, 3=ring, 4=pinky.
         /// </summary>
         public void SetFingerCurl(int fingerIndex, float t, PoseScriptableObject openPose, PoseScriptableObject closedPose)
         {
@@ -599,21 +605,6 @@ namespace MikeNspired.XRIStarterKit
 
             // chain[0] is the finger's base joint; SetPoseByValue walks its descendants
             SetPoseByValue(chain[0], openPose, closedPose, t);
-        }
-
-        /// <summary>
-        /// Convenience overload: pose all five fingers at once.
-        /// t must have at least 5 elements (thumb=0, index=1, middle=2, ring=3, pinky=4).
-        /// </summary>
-        public void SetFingerCurls(float[] t)
-        {
-            if (t == null || t.Length < 5)
-            {
-                Debug.LogWarning("[HandAnimator] SetFingerCurls requires an array of at least 5 values.");
-                return;
-            }
-            for (int i = 0; i < 5; i++)
-                SetFingerCurl(i, t[i]);
         }
 
         #endregion

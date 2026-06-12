@@ -207,14 +207,119 @@ Acceptance (I will verify in Unity): toggle on, open hand, no grab — lowering 
 Out of scope: polish. Open a PR with the acceptance steps restated; do not start Phase 7.
 ```
 
+> **Phase 6 outcome (branch `claude/wonderful-maxwell-fkrrtx`).** The **per-finger solve visualization was
+> pulled forward from Phase 7** (built first) so we can see what the solver is doing. A first "free-hand
+> touch" attempt revealed a scope misread (see below) and was reframed into three sub-features:
+> - **Solve telemetry + debug viz:** `HandSolveDebug` (per-finger state + reused per-joint probe buffer:
+>   world position, locked t, contact flag, approx contact point/normal). `IHandPoseSolver` gains
+>   `LastSolveDebug`; `HandSolveContext` gains a `collectDebug` opt-in (zero cost when off). Both solvers
+>   record it. `HandPoseSolveDebugDrawer` (on the hand) gizmo-draws the last solve on **real** interactions
+>   — a sphere per sampled joint, green=contacted / red=no-contact / yellow=relaxed-fist, contact normals,
+>   and per-finger labels (locked t + chosen pose). The drawer's `draw` toggle drives collection per-hand
+>   (sets `HandAnimator.requestSolveDebug`), OR'd with the global `HandPoserSettings.drawSolveDebug`.
+> - **Scope correction:** running the *grab* solver continuously on the free hand makes it try to **grasp
+>   everything** in range (a flashlight by the palm gets wrapped) — that is the grasp mechanic, not world
+>   reaction. The real Phase 6 goal (a resting hand that only reacts when geometry *touches* a finger and
+>   pushes it) needs displacement + penetration resolution (`Physics.ComputePenetration` / IK), which
+>   `CLAUDE.md` defers. That true world-reaction is **deferred to its own future script** pending a decision
+>   to relax that rule.
+> - **Kept as `HandGraspProbe`** (renamed from the misnamed `FreeHandContactDriver`; on the hand,
+>   `enableProbe` off by default). Drives the grab solver against nearby world geometry and applies it via
+>   the new `HandAnimator.SetJointsImmediate` (no coroutine), with smoothing. Two modes: **AutoGraspTest**
+>   (editor-only, continuous — a live dial-in tool for grab settings) and **GripHoldPose** (runtime — solves
+>   only while the grip button is held + a non-grabbable object is in reach, e.g. pressing the hand onto a
+>   table). Excludes the hand/rig's own colliders so a broad mask can't self-collide; pauses while grabbing.
+> - **Known-not-good / deferred:** the true world-reaction pushback (Feature 1); `IHandPoseSolver.Solve`
+>   still allocates per call (buffer-reuse pass needed before per-frame use is GC-clean; driver-level buffers
+>   already reused); grasp *shapes* are unjudged here (no Unity) and share the Phase 7 dial-in needs.
+> - **Solver-quality pass (`ProgressiveCurlSolver`, the default).** Two structural causes of the "claw"
+>   grab poses, both kinematic-only fixes: (1) a joint that found no contact snapped straight to a full
+>   fist (`t=1`), so a finger resting its knuckle on an object slammed its fingertip closed — now, once a
+>   finger has gripped upstream, each further-out no-contact joint continues as a gentle monotonic spiral
+>   (`tj[i] = min(1, tj[i-1] + distalFollowCurl)`), wrapping thin objects over a couple joints without
+>   hard-fisting past thick ones; (2) the most-distal joint is a leaf whose contact sweep is degenerate
+>   (rotating it doesn't move its own pivot, so it could only snap the tip fully open/closed) — now its
+>   pivot is tested once to keep the grasp-contact gate honest, and the tip is posed by continuing the
+>   finger's curl. New tunable `distalFollowCurl` (HandSolveContext default 0.33; `dynamicDistalFollowCurl`
+>   in HandPoserSettings + XRHandPoser override + HandGraspProbe), mirroring `noContactCurl` plumbing.
+> - **Two-pass solver redesign (follow-up).** Replaced the base→tip single sweep with: **Pass A — gross
+>   close**, curling the whole finger as a unit (every joint shares one `t`) until any segment first
+>   contacts, which places a natural uniform curve up to the contact instead of sweeping the base alone
+>   and fisting it when the object sits further out (the "base-slam" that over-fisted the knuckle on
+>   fingertip-held objects); then **Pass B — distal wrap**, curling each joint past the contact further,
+>   one at a time, until its own segment meets the surface, with the gentle follow-spiral retained for
+>   distal joints that reach nothing and the leaf-pivot handling retained for the degenerate fingertip.
+>   Same `IHandPoseSolver` surface, candidate (fist/pinch) selection, contact gate, and debug telemetry.
+>   Remaining honest limit: still no IK, so a uniform gross close can't reach a small fingertip target
+>   without some base curl — but it never hard-fists the base now. `CurlSweepSolver` (non-default) and
+>   the authored path are untouched.
+> - **Fingertip probes + grasp-probe feel (after first in-editor test — "10× better").** The robot hand
+>   skeleton has **no tip joint** (last bone is the distal knuckle), so the fingertip pad was unprobed and
+>   the leaf stayed degenerate. Added solver-only tip probes: a **"Create Fingertip Probes"** button on the
+>   `HandAnimator` inspector extrapolates a `<finger>_TipProbe_Ignore` child past each finger's last joint.
+>   The `Ignore` suffix makes `JointUtility.ShouldSkipTransform` and pose-saving skip it (verified the same
+>   rule guards `SetBones`, `HandAnimatorEditor.GatherJointData`, and `PoseConverterWindow`); hands without
+>   authored probes auto-generate them at runtime. **Detection matches the `TipProbe` marker, NOT any
+>   `*Ignore` child** — the physical-presence feature's distal finger colliders (`*_DistalCollider_Ignore`)
+>   are also `Ignore` children of the last joint, and an earlier broad match grabbed those capsule colliders
+>   instead of creating a probe. The physics feature enumerates `currentJoints` (which excludes `*Ignore`),
+>   so it never sees the probe; the two tracks stay decoupled.
+> - **Tip probes moved to their own component + codebase cleanup (user review).** The probes "still didn't
+>   work" because the first (buggy) button run had already saved the distal colliders into the HandAnimator
+>   tip fields, and the fixed button kept any assigned field. Root fix + the user's architectural point
+>   (tips are a *dynamic*-posing concern, not authored posing): new **`HandFingertipProbes`** MonoBehaviour
+>   (on the hand, optional) owns the 5 probes, with a "Create / Refresh Probes" inspector button, runtime
+>   auto-create, and **collider rejection** (an assigned transform with a Collider is warned about and
+>   ignored — the exact prior failure). Solvers read `HandSolveContext.tipProbes` (filled by XRHandPoser /
+>   HandGraspProbe / DynamicPoseTester via `GetComponent<HandFingertipProbes>()`); HandAnimator lost all tip
+>   code, plus dead members `SetFingerCurls` and `AnimateHandTransformLocal` (no callers). `ClosedPoses` was
+>   audited and KEPT — it is the wired multi-candidate (fist vs pinch) picker, zero cost when empty.
+>   **Scripts folder reorganized** (git mv, GUIDs preserved → scene/prefab refs survive): `Core/` (authored
+>   posing + shared types), `Dynamic Posing/` (solvers, drivers, debug, testers), `Physics Colliders/`,
+>   `Helpers/` (audio/animation/Note), `UnityXR/` (+ HandReference, which is XRI-coupled), `Editor/`.
+>   Usage audit by GUID: every script is referenced except `HoldInPlaceOnGrab` (Phase 5 proof mechanic,
+>   superseded by HandReference snap suppression — flagged for deletion, awaiting user) and
+>   `DynamicPoseTester` (dev-only; depends on gitignored Odin).
+> - **All dynamic config off HandAnimator → one `HandDynamicPoses` component (user review).** HandAnimator
+>   is the *authored*-pose component every asset user touches, yet it carried the dynamic-solver inputs
+>   (`OpenPose`/`ClosedPose`/`ClosedPoses`) — confusing and forced on people who never use dynamic posing.
+>   Renamed `HandFingertipProbes` → **`HandDynamicPoses`** and folded the solver poses in: it now holds
+>   `Open`, `Closed`, `Closed Candidates` (renamed from the opaque "ClosedPoses", with a clear tooltip) and
+>   the fingertip probes, plus Preview Open/Closed and Create/Refresh Probes buttons. `HandAnimator` lost all
+>   three fields (and the editor that drew them); it's back to authored posing only. Consumers
+>   (`XRHandPoser`, `HandGraspProbe`, `DynamicPoseTester`) read the poses + tips via
+>   `GetComponent<HandDynamicPoses>()`; a hand without the component (or without a Closed pose) is treated as
+>   **authored-only** — `IsGrabDynamic`/`ShouldUseDynamic` return false and `DynamicOnly` logs and falls back,
+>   so snap suppression and the grab path stay consistent. GUID preserved on the rename, so a hand that
+>   already had the component keeps it. **Setup required in-editor:** add `HandDynamicPoses` to each hand,
+>   assign Open/Closed (+ candidates), and click Create / Refresh Probes. `HandFingerMap` gains `tips[5]`/`Tip(i)` (no `HandSolveContext` change —
+>   tips ride along on `fingerMap`). Both solvers test the leaf→tip segment, so the leaf is now a **real
+>   contact sweep** (rotating it moves the tip child) instead of the binary pivot test, and the debug drawer
+>   shows a sphere at the actual fingertip. Grab path benefits automatically. **Feel** on `HandGraspProbe`
+>   (fixes the spider-claw entry, instant snap-back, and crawl jitter the test surfaced): proximity-weighted
+>   blend from idle (reach edge) to full solve (within `fullPoseDistance`) via nearest-surface distance; a
+>   rotation/position **deadband** that freezes micro solver noise while passing deliberate motion; and a
+>   short **release fade** to idle instead of a snap. Grab start still hard-stops the probe (never fights the
+>   grab). The earlier headless-CI/test idea was dropped as impractical (no Unity in this environment).
+> - **Hardening pass (post-reframe review):** committed the 4 missing `.cs.meta` files (solver interface/context,
+>   CurlSweepSolver, DynamicPoseTester); both solvers now skip `Collider.ClosestPoint` on unsupported colliders
+>   (non-convex mesh/terrain — was a per-call Unity error + gap=0 corrupting candidate pick); grab + tester
+>   collider gathers filter trigger/disabled colliders; `HandGraspProbe` smooths against its **own last output**
+>   instead of the live joints (the grip/trigger value animations write joints every Update and were diluting
+>   the solve to ~25% per frame), warns on an empty World Mask, and releases cleanly when not Ready;
+>   `useProgressiveSolver` toggles now take effect live (solver was pinned by `??=`); `XRControllerButtons`
+>   unsubscribes the same delegate instances it subscribed (was leaking handlers onto the shared InputAction);
+>   `HandPoserSettings` auto-create no longer makes a folder named `…asset` and lands in `Assets/Resources`.
+
 ---
 
 ## Phase 7 — Solver dial-in, object seating, and visual debugging
 
 > This is the dedicated "make it read like a real hand" pass. Phases 2–5 stood the solver up and proved
 > the snap suppression; the grab *shapes* are still rough and were intentionally left for here. Expect to
-> iterate against many real objects in-editor. **Build the visual debugging FIRST** — without it we are
-> guessing at why a finger posed the way it did.
+> iterate against many real objects in-editor. The visual debugging foundation (per-finger solve viz on
+> real interactions) was **already pulled forward into Phase 6** — extend/refine it here rather than
+> rebuilding, and focus this phase on the dial-in, object seating, and interface lock.
 
 ```
 Implement ONLY Phase 7. Branch: phase-7-polish.

@@ -132,27 +132,30 @@ namespace MikeNspired.XRIStarterKit
                 Debug.LogError("[DynamicPoseTester] Assign a target GameObject to m_Target.");
                 return;
             }
-            if (!m_HandAnimator.ClosedPose)
+            var dyn = m_HandAnimator.GetComponent<HandDynamicPoses>();
+            if (!dyn || !dyn.HasRequiredPoses)
             {
-                Debug.LogError("[DynamicPoseTester] HandAnimator.ClosedPose is not assigned. Assign a fist pose.");
-                return;
-            }
-            if (!m_HandAnimator.DefaultPose)
-            {
-                Debug.LogError("[DynamicPoseTester] HandAnimator.DefaultPose is not assigned.");
+                Debug.LogError("[DynamicPoseTester] Add a HandDynamicPoses component with a Closed pose " +
+                               "(and an Open/Default) to the hand.");
                 return;
             }
 
-            var colliders = m_Target.GetComponentsInChildren<Collider>();
+            // Solid colliders only, matching XRHandPoser's gather: triggers can't stop fingers and
+            // would corrupt the fingertip-gap measurements.
+            var colliders = System.Array.FindAll(
+                m_Target.GetComponentsInChildren<Collider>(),
+                c => c.enabled && !c.isTrigger);
             if (colliders.Length == 0)
-                Debug.LogWarning($"[DynamicPoseTester] '{m_Target.name}' has no Colliders — solver will fully close all fingers.");
+                Debug.LogWarning($"[DynamicPoseTester] '{m_Target.name}' has no solid Colliders — solver will fully close all fingers.");
 
             var ctx = new HandSolveContext
             {
                 hand            = m_HandAnimator,
                 fingerMap       = m_HandAnimator.fingerMap,
-                openPose        = m_HandAnimator.DefaultPose,
-                closedPose      = m_HandAnimator.ClosedPose,
+                tipProbes       = dyn.Tips,
+                openPose        = dyn.OpenOrDefault,
+                closedPose      = dyn.ClosedPose,
+                closedPoses     = dyn.ClosedCandidates,
                 targetColliders = colliders,
                 targetMask      = 1 << m_Target.layer,
                 stepCount       = m_SolverStepCount,

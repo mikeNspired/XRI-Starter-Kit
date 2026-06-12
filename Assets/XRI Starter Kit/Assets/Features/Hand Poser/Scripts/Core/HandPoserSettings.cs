@@ -23,10 +23,12 @@ namespace MikeNspired.XRIStarterKit
                 _instance = CreateInstance<HandPoserSettings>();
 
 #if UNITY_EDITOR
-                string assetPath = System.IO.Path.Combine("Assets", "HandPoserSettings.asset");
-                if (Directory.Exists(assetPath) == false)
-                    Directory.CreateDirectory(assetPath);
-                UnityEditor.AssetDatabase.CreateAsset(_instance, assetPath);
+                // Create inside a Resources folder so the Resources.Load above finds it next time.
+                string resourcesDir = System.IO.Path.Combine("Assets", "Resources");
+                if (Directory.Exists(resourcesDir) == false)
+                    Directory.CreateDirectory(resourcesDir);
+                UnityEditor.AssetDatabase.CreateAsset(_instance,
+                    System.IO.Path.Combine(resourcesDir, "HandPoserSettings.asset"));
                 UnityEditor.AssetDatabase.SaveAssets();
 #endif
                 ShowNotSetupWarning();
@@ -60,6 +62,17 @@ namespace MikeNspired.XRIStarterKit
                  "non-gripping fingers settle into a relaxed fist instead of splaying open. " +
                  "1 = full fist, 0 = fully open; ~0.7 reads as a natural relaxed grip.")]
         [Range(0, 1)] public float dynamicNoContactCurl = 0.7f;
+        [Tooltip("After a finger grips, how much each further-out joint keeps curling when it finds " +
+                 "nothing — a gentle wrap — instead of snapping to a fist (the distal 'claw'). " +
+                 "0 = stop dead at the grip; ~0.33 reads natural. Progressive solver only.")]
+        [Range(0, 1)] public float dynamicDistalFollowCurl = 0.33f;
+
+        [Header("Dynamic Pose — Debug")]
+        [Tooltip("Master switch for the per-finger solve visualization. When on, dynamic solves record " +
+                 "telemetry and a HandPoseSolveDebugDrawer on the hand draws, per finger: a sphere at each " +
+                 "sampled joint (green = contacted, red = no contact, yellow = relaxed-fist), the locked t, " +
+                 "the chosen closed pose, and the contact normal. Off = zero overhead.")]
+        public bool drawSolveDebug = false;
 
         [Header("Dynamic Grasp — Global Defaults")]
         [Tooltip("Require the thumb to make contact for a dynamic grasp to hold.")]

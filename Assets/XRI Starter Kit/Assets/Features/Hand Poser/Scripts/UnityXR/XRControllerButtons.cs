@@ -25,21 +25,33 @@ namespace MikeNspired.XRIStarterKit
         public bool IsGripped { get; private set; }
         public bool IsTriggered { get; private set; }
 
+        // Stored so OnDestroy can unsubscribe the SAME delegate instances that Awake subscribed.
+        // Inline lambdas in -= create new instances and silently remove nothing, leaving the
+        // shared InputAction invoking handlers on a destroyed component after scene changes.
+        private System.Action<InputAction.CallbackContext> triggerPerformed, triggerCanceled;
+        private System.Action<InputAction.CallbackContext> gripPerformed, gripCanceled;
+
         private void Awake()
         {
             ValidateInputs();
+
+            triggerPerformed = ctx => Triggered(true);
+            triggerCanceled  = ctx => Triggered(false);
+            gripPerformed    = ctx => Gripped(true);
+            gripCanceled     = ctx => Gripped(false);
+
             // Subscribe to trigger actions
             if (triggerAction?.action != null)
             {
-                triggerAction.action.performed += ctx => Triggered(true);
-                triggerAction.action.canceled += ctx => Triggered(false);
+                triggerAction.action.performed += triggerPerformed;
+                triggerAction.action.canceled += triggerCanceled;
             }
 
             // Subscribe to grip actions
             if (gripAction?.action != null)
             {
-                gripAction.action.performed += ctx => Gripped(true);
-                gripAction.action.canceled += ctx => Gripped(false);
+                gripAction.action.performed += gripPerformed;
+                gripAction.action.canceled += gripCanceled;
             }
         }
 
@@ -62,15 +74,15 @@ namespace MikeNspired.XRIStarterKit
             // Unsubscribe from trigger actions
             if (triggerAction?.action != null)
             {
-                triggerAction.action.performed -= ctx => Triggered(true);
-                triggerAction.action.canceled -= ctx => Triggered(false);
+                triggerAction.action.performed -= triggerPerformed;
+                triggerAction.action.canceled -= triggerCanceled;
             }
 
             // Unsubscribe from grip actions
             if (gripAction?.action != null)
             {
-                gripAction.action.performed -= ctx => Gripped(true);
-                gripAction.action.canceled -= ctx => Gripped(false);
+                gripAction.action.performed -= gripPerformed;
+                gripAction.action.canceled -= gripCanceled;
             }
         }
 

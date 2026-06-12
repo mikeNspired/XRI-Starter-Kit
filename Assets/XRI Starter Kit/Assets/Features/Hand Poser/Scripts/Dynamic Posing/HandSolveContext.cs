@@ -14,6 +14,10 @@ namespace MikeNspired.XRIStarterKit
         public List<PoseScriptableObject> closedPoses;
         public Collider[] targetColliders;
         public LayerMask targetMask;
+        // Optional solver-only fingertip probes (thumb=0 … pinky=4, entries may be null), supplied by a
+        // HandDynamicPoses component on the hand. Used as the outermost contact point on skeletons whose
+        // last finger bone is the distal knuckle. Null when the hand has no dynamic-poses component.
+        public Transform[] tipProbes;
         public int stepCount = 15;
         public float probeRadius = 0.01f;
         // How many joints from the fingertip inward to sphere-test each step. 1 = tip only;
@@ -23,5 +27,12 @@ namespace MikeNspired.XRIStarterKit
         // non-gripping fingers settle into a relaxed fist rather than splaying open. 1 = full fist,
         // 0 = fully open; ~0.7 reads as a natural relaxed grip.
         public float noContactCurl = 0.7f;
+        // After a finger has gripped upstream, how much each further-out joint keeps curling when it
+        // finds nothing — a gentle wrap continuing the finger's spiral — instead of snapping straight
+        // to a full fist (the distal "claw"). 0 = stop dead at the last grip; ~0.33 reads natural.
+        public float distalFollowCurl = 0.33f;
+        // When true the solver records per-joint debug telemetry into its LastSolveDebug for the gizmo
+        // drawer. Adds a little work, so leave off unless a HandPoseSolveDebugDrawer is showing it.
+        public bool collectDebug;
     }
 }

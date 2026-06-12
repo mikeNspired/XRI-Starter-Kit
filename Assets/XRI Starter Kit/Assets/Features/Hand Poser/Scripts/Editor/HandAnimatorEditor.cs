@@ -19,9 +19,6 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty defaultPose;
         private SerializedProperty animationPose;
         private SerializedProperty secondButtonPose;
-        private SerializedProperty openPose;
-        private SerializedProperty closedPose;
-        private SerializedProperty closedPoses;
         private HandAnimator mainScript;
 
         private bool showReferencePoses;
@@ -41,10 +38,6 @@ namespace MikeNspired.XRIStarterKit.Editor
             defaultPose = serializedObject.FindProperty("DefaultPose");
             animationPose = serializedObject.FindProperty("AnimationPose");
             secondButtonPose = serializedObject.FindProperty("SecondButtonPose");
-            openPose = serializedObject.FindProperty("OpenPose");
-            closedPose = serializedObject.FindProperty("ClosedPose");
-            closedPoses = serializedObject.FindProperty("ClosedPoses");
-
             if (mainScript.RootBone == null)
             {
                 mainScript.RootBone = mainScript.GetComponentInChildren<Pose>();
@@ -138,23 +131,8 @@ namespace MikeNspired.XRIStarterKit.Editor
             if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.SecondButtonPose);
             GUILayout.EndHorizontal();
 
-            GUILayout.BeginHorizontal();
-            labelToolTip = new GUIContent("Open Pose", "Fully-open/splayed pose used as the open end (t=0) of the procedural per-finger curl sweep. Distinct from Default Pose; falls back to Default Pose if unassigned.");
-            EditorGUILayout.PropertyField(openPose, labelToolTip);
-            if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.OpenPose);
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            labelToolTip = new GUIContent("Closed Pose", "Fist/grip pose used as the closed end (t=1) of the procedural per-finger curl sweep");
-            EditorGUILayout.PropertyField(closedPose, labelToolTip);
-            if (GUILayout.Button("Animate", GUILayout.MaxWidth(buttonWidth))) mainScript.AnimateInstantly(mainScript.ClosedPose);
-            GUILayout.EndHorizontal();
-
-            labelToolTip = new GUIContent("Extra Closed Poses",
-                "Optional additional closed shapes (e.g. a precision/pinch pose). The dynamic solver sweeps " +
-                "each finger against Closed Pose plus these, keeping the one whose fingertip ends closest to " +
-                "the object. Leave empty to use only Closed Pose.");
-            EditorGUILayout.PropertyField(closedPoses, labelToolTip, true);
+            // Dynamic-posing reference poses (Open / Closed / candidates) and fingertip probes live on the
+            // optional HandDynamicPoses component, not here — they only matter when procedural grabbing is used.
 
             serializedObject.ApplyModifiedProperties();
         }
