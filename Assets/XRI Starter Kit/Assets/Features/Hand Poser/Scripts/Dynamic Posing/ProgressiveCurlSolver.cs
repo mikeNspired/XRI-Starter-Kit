@@ -24,6 +24,31 @@ namespace MikeNspired.XRIStarterKit
         private readonly HandSolveDebug _debug = new HandSolveDebug();
         public HandSolveDebug LastSolveDebug { get; private set; }
 
+        // ── Reused across solves (this solver can run per frame via HandGraspProbe) ──────────
+        // Name-keyed joint lookups per pose asset, invalidated when a pose's joints array is
+        // replaced (re-saving a pose assigns a new array). Snapshot/candidate/result buffers are
+        // resized only when the hand or pose set grows, so a steady-state solve allocates just the
+        // returned JointData[] (callers keep that array) and the small per-finger t arrays.
+        private readonly Dictionary<PoseScriptableObject, (PoseScriptableObject.JointData[] source, Dictionary<string, PoseScriptableObject.JointData> dict)> _poseDictCache
+            = new Dictionary<PoseScriptableObject, (PoseScriptableObject.JointData[], Dictionary<string, PoseScriptableObject.JointData>)>();
+        private readonly List<PoseScriptableObject> _candidates = new List<PoseScriptableObject>();
+        private readonly List<PoseScriptableObject.JointData> _resultBuffer = new List<PoseScriptableObject.JointData>();
+        private readonly HashSet<string> _seenJoints = new HashSet<string>();
+        private Vector3[] _snapshotPos;
+        private Quaternion[] _snapshotRot;
+        private bool[] _jointHitScratch;
+        private bool[] _bestJointHit;
+
+        // Cached name lookup for a pose, rebuilt only when its joints array changes.
+        private Dictionary<string, PoseScriptableObject.JointData> Dict(PoseScriptableObject _pose)
+        {
+            if (_poseDictCache.TryGetValue(_pose, out var entry) && entry.source == _pose.joints)
+                return entry.dict;
+            var dict = ToDict(_pose);
+            _poseDictCache[_pose] = (_pose.joints, dict);
+            return dict;
+        }
+
         public PoseScriptableObject.JointData[] Solve(HandSolveContext _ctx)
         {
             if (!Validate(_ctx)) return null;
@@ -34,8 +59,13 @@ namespace MikeNspired.XRIStarterKit
             var joints = _ctx.hand.currentJoints;
             int jointCount = joints.Count;
 
-            var snapshotPos = new Vector3[jointCount];
-            var snapshotRot = new Quaternion[jointCount];
+            if (_snapshotPos == null || _snapshotPos.Length < jointCount)
+            {
+                _snapshotPos = new Vector3[jointCount];
+                _snapshotRot = new Quaternion[jointCount];
+            }
+            var snapshotPos = _snapshotPos;
+            var snapshotRot = _snapshotRot;
             for (int i = 0; i < jointCount; i++)
             {
                 snapshotPos[i] = joints[i].localPosition;
@@ -43,8 +73,7 @@ namespace MikeNspired.XRIStarterKit
             }
 
             var candidates = BuildCandidates(_ctx);
-            var openDict = ToDict(_ctx.openPose);
-            var closedDicts = new Dictionary<PoseScriptableObject, Dictionary<string, PoseScriptableObject.JointData>>();
+            var openDict = Dict(_ctx.openPose);
 
             var fingerJointT  = new float[5][];                 // per-joint curl amount, indexed to the finger chain
             var fingerClosed  = new PoseScriptableObject[5];    // closed pose chosen per finger
@@ -60,8 +89,13 @@ namespace MikeNspired.XRIStarterKit
                     var c = _ctx.fingerMap.Finger(f);
                     if (c != null && c.Count > maxChain) maxChain = c.Count;
                 }
-                jointHitScratch = new bool[maxChain];
-                bestJointHit    = new bool[maxChain];
+                if (_jointHitScratch == null || _jointHitScratch.Length < maxChain)
+                {
+                    _jointHitScratch = new bool[maxChain];
+                    _bestJointHit    = new bool[maxChain];
+                }
+                jointHitScratch = _jointHitScratch;
+                bestJointHit    = _bestJointHit;
             }
 
             try
@@ -96,11 +130,7 @@ namespace MikeNspired.XRIStarterKit
 
                     foreach (var cp in candidates)
                     {
-                        if (!closedDicts.TryGetValue(cp, out var closedDict))
-                        {
-                            closedDict = ToDict(cp);
-                            closedDicts[cp] = closedDict;
-                        }
+                        var closedDict = Dict(cp);
 
                         var tj = CurlFinger(_ctx, cal, chain, tipProbe, openDict, closedDict, out bool contacted, jointHitScratch);
                         float gap = TipGap(gapTip.position, _ctx);
@@ -134,7 +164,7 @@ namespace MikeNspired.XRIStarterKit
 
                     if (_ctx.collectDebug)
                         RecordFingerDebug(fingerIdx, chain, tipProbe, bestT, bestJointHit, bestPose, bestContacted,
-                                          openDict, closedDicts, _ctx, cal);
+                                          openDict, _ctx, cal);
                 }
             }
             finally
@@ -150,7 +180,7 @@ namespace MikeNspired.XRIStarterKit
 
             if (_ctx.collectDebug) _debug.hasData = true;
 
-            return BuildJointData(_ctx, openDict, closedDicts, fingerJointT, fingerClosed);
+            return BuildJointData(_ctx, openDict, fingerJointT, fingerClosed);
         }
 
         #region Solve helpers
@@ -357,7 +387,6 @@ namespace MikeNspired.XRIStarterKit
             PoseScriptableObject _closedPose,
             bool _contacted,
             Dictionary<string, PoseScriptableObject.JointData> _openDict,
-            Dictionary<PoseScriptableObject, Dictionary<string, PoseScriptableObject.JointData>> _closedDicts,
             HandSolveContext _ctx,
             FingerSolveCalibration _cal)
         {
@@ -370,11 +399,7 @@ namespace MikeNspired.XRIStarterKit
             }
 
             var closedPose = _closedPose ? _closedPose : _ctx.closedPose;
-            if (!_closedDicts.TryGetValue(closedPose, out var closedDict))
-            {
-                closedDict = ToDict(closedPose);
-                _closedDicts[closedPose] = closedDict;
-            }
+            var closedDict = Dict(closedPose);
 
             int n = _chain.Count;
             bool hasTip = _tip;
@@ -516,9 +541,11 @@ namespace MikeNspired.XRIStarterKit
             return false;
         }
 
-        private static List<PoseScriptableObject> BuildCandidates(HandSolveContext _ctx)
+        private List<PoseScriptableObject> BuildCandidates(HandSolveContext _ctx)
         {
-            var list = new List<PoseScriptableObject> { _ctx.closedPose };
+            var list = _candidates;
+            list.Clear();
+            list.Add(_ctx.closedPose);
             if (_ctx.closedPoses != null)
                 foreach (var cp in _ctx.closedPoses)
                     if (cp && !list.Contains(cp)) list.Add(cp);
@@ -532,15 +559,16 @@ namespace MikeNspired.XRIStarterKit
             return dict;
         }
 
-        private static PoseScriptableObject.JointData[] BuildJointData(
+        private PoseScriptableObject.JointData[] BuildJointData(
             HandSolveContext _ctx,
             Dictionary<string, PoseScriptableObject.JointData> _openDict,
-            Dictionary<PoseScriptableObject, Dictionary<string, PoseScriptableObject.JointData>> _closedDicts,
             float[][] _fingerJointT,
             PoseScriptableObject[] _fingerClosed)
         {
-            var result = new List<PoseScriptableObject.JointData>();
-            var seen = new HashSet<string>();
+            var result = _resultBuffer;
+            result.Clear();
+            var seen = _seenJoints;
+            seen.Clear();
 
             for (int f = 0; f < 5; f++)
             {
@@ -550,11 +578,7 @@ namespace MikeNspired.XRIStarterKit
 
                 var closedPose = _fingerClosed[f] ? _fingerClosed[f] : _ctx.closedPose;
                 if (!closedPose) continue;
-                if (!_closedDicts.TryGetValue(closedPose, out var closedDict))
-                {
-                    closedDict = ToDict(closedPose);
-                    _closedDicts[closedPose] = closedDict;
-                }
+                var closedDict = Dict(closedPose);
 
                 for (int i = 0; i < chain.Count; i++)
                 {

@@ -3,6 +3,11 @@ using UnityEngine;
 
 namespace MikeNspired.XRIStarterKit
 {
+    /// <summary>
+    /// Everything an <see cref="IHandPoseSolver"/> needs for one solve. LOCKED as of Phase 7 along
+    /// with the interface: extend by ADDING optional fields whose defaults reproduce the previous
+    /// behavior (so existing drivers keep working unchanged); never remove or repurpose a field.
+    /// </summary>
     public class HandSolveContext
     {
         public HandAnimator hand;

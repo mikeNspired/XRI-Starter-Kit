@@ -20,6 +20,26 @@ namespace MikeNspired.XRIStarterKit
         private readonly HandSolveDebug _debug = new HandSolveDebug();
         public HandSolveDebug LastSolveDebug { get; private set; }
 
+        // ── Reused across solves (mirrors ProgressiveCurlSolver; this can run per frame) ─────
+        private readonly Dictionary<PoseScriptableObject, (PoseScriptableObject.JointData[] source, Dictionary<string, PoseScriptableObject.JointData> dict)> _poseDictCache
+            = new Dictionary<PoseScriptableObject, (PoseScriptableObject.JointData[], Dictionary<string, PoseScriptableObject.JointData>)>();
+        private readonly List<PoseScriptableObject> _candidates = new List<PoseScriptableObject>();
+        private readonly List<PoseScriptableObject.JointData> _resultBuffer = new List<PoseScriptableObject.JointData>();
+        private readonly HashSet<string> _seenJoints = new HashSet<string>();
+        private Vector3[] _snapshotPos;
+        private Quaternion[] _snapshotRot;
+
+        // Cached name lookup for a pose, rebuilt only when its joints array changes.
+        private Dictionary<string, PoseScriptableObject.JointData> Dict(PoseScriptableObject _pose)
+        {
+            if (_poseDictCache.TryGetValue(_pose, out var entry) && entry.source == _pose.joints)
+                return entry.dict;
+            var dict = new Dictionary<string, PoseScriptableObject.JointData>(_pose.joints.Length);
+            foreach (var jd in _pose.joints) dict[jd.jointName] = jd;
+            _poseDictCache[_pose] = (_pose.joints, dict);
+            return dict;
+        }
+
         public PoseScriptableObject.JointData[] Solve(HandSolveContext _ctx)
         {
             if (!Validate(_ctx)) return null;
@@ -31,8 +51,13 @@ namespace MikeNspired.XRIStarterKit
             int jointCount = joints.Count;
 
             // Snapshot every joint's local pose before the sweep modifies anything
-            var snapshotPos = new Vector3[jointCount];
-            var snapshotRot = new Quaternion[jointCount];
+            if (_snapshotPos == null || _snapshotPos.Length < jointCount)
+            {
+                _snapshotPos = new Vector3[jointCount];
+                _snapshotRot = new Quaternion[jointCount];
+            }
+            var snapshotPos = _snapshotPos;
+            var snapshotRot = _snapshotRot;
             for (int i = 0; i < jointCount; i++)
             {
                 snapshotPos[i] = joints[i].localPosition;
@@ -230,9 +255,11 @@ namespace MikeNspired.XRIStarterKit
             (_col is MeshCollider mc && mc.convex);
 
         // closedPose is always candidate 0; extra closedPoses are appended (deduped, non-null).
-        private static List<PoseScriptableObject> BuildCandidates(HandSolveContext _ctx)
+        private List<PoseScriptableObject> BuildCandidates(HandSolveContext _ctx)
         {
-            var list = new List<PoseScriptableObject> { _ctx.closedPose };
+            var list = _candidates;
+            list.Clear();
+            list.Add(_ctx.closedPose);
             if (_ctx.closedPoses != null)
                 foreach (var cp in _ctx.closedPoses)
                     if (cp && !list.Contains(cp)) list.Add(cp);
@@ -292,16 +319,14 @@ namespace MikeNspired.XRIStarterKit
             return false;
         }
 
-        private static PoseScriptableObject.JointData[] BuildJointData(HandSolveContext _ctx, float[] _tFinals, PoseScriptableObject[] _chosenClosed, bool[] _fingerSkipped)
+        private PoseScriptableObject.JointData[] BuildJointData(HandSolveContext _ctx, float[] _tFinals, PoseScriptableObject[] _chosenClosed, bool[] _fingerSkipped)
         {
-            var openDict = new Dictionary<string, PoseScriptableObject.JointData>(_ctx.openPose.joints.Length);
-            foreach (var jd in _ctx.openPose.joints) openDict[jd.jointName] = jd;
+            var openDict = Dict(_ctx.openPose);
 
-            // Each finger may use a different closed pose; cache the lookup per pose.
-            var closedDicts = new Dictionary<PoseScriptableObject, Dictionary<string, PoseScriptableObject.JointData>>();
-
-            var result = new List<PoseScriptableObject.JointData>();
-            var seen = new HashSet<string>();
+            var result = _resultBuffer;
+            result.Clear();
+            var seen = _seenJoints;
+            seen.Clear();
 
             for (int i = 0; i < 5; i++)
             {
@@ -312,13 +337,7 @@ namespace MikeNspired.XRIStarterKit
 
                 var closedPose = _chosenClosed[i] ? _chosenClosed[i] : _ctx.closedPose;
                 if (!closedPose) continue;
-
-                if (!closedDicts.TryGetValue(closedPose, out var closedDict))
-                {
-                    closedDict = new Dictionary<string, PoseScriptableObject.JointData>(closedPose.joints.Length);
-                    foreach (var jd in closedPose.joints) closedDict[jd.jointName] = jd;
-                    closedDicts[closedPose] = closedDict;
-                }
+                var closedDict = Dict(closedPose);
 
                 foreach (var joint in chain)
                 {
