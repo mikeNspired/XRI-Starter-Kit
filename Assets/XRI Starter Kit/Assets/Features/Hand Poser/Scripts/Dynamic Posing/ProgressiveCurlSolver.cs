@@ -81,7 +81,7 @@ namespace MikeNspired.XRIStarterKit
                     var tip = chain[chain.Count - 1];
                     // Solver-only probe past the last joint (skeletons with no tip bone). When present it is
                     // the outermost contact point and the gap is measured from it; else fall back to the joint.
-                    var tipProbe = _ctx.fingerMap != null ? _ctx.fingerMap.Tip(fingerIdx) : null;
+                    var tipProbe = TipProbe(_ctx, fingerIdx);
                     var gapTip = tipProbe ? tipProbe : tip;
 
                     bool bestContacted = false;
@@ -307,6 +307,10 @@ namespace MikeNspired.XRIStarterKit
                             : SegmentOverlaps(_chain, _i, _i, _ctx);
             return SegmentOverlaps(_chain, _i, _i + 1, _ctx);
         }
+
+        // The finger's tip probe from the context (supplied by HandFingertipProbes), or null.
+        private static Transform TipProbe(HandSolveContext _ctx, int _fingerIdx) =>
+            _ctx.tipProbes != null && _fingerIdx < _ctx.tipProbes.Length ? _ctx.tipProbes[_fingerIdx] : null;
 
         // Tests the segment from the last joint's pivot out to the tip probe (endpoint + midpoint).
         private static bool TipSegmentOverlaps(Transform _leaf, Transform _tip, HandSolveContext _ctx)

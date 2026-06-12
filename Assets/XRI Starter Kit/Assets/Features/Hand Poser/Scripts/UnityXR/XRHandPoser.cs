@@ -199,10 +199,14 @@ namespace MikeNspired.XRIStarterKit
             // authored yet, preserving prior behavior.
             var openPose = hand.OpenPose ? hand.OpenPose : hand.DefaultPose;
 
+            // Optional fingertip probes (skeletons whose last bone is the distal knuckle).
+            var fingertips = hand.GetComponent<HandFingertipProbes>();
+
             var ctx = new HandSolveContext
             {
                 hand            = hand,
                 fingerMap       = hand.fingerMap,
+                tipProbes       = fingertips ? fingertips.Tips : null,
                 openPose        = openPose,
                 closedPose      = hand.ClosedPose,
                 closedPoses     = hand.ClosedPoses,

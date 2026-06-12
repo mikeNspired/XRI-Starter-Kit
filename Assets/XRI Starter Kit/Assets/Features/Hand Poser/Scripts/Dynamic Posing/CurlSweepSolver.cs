@@ -65,7 +65,8 @@ namespace MikeNspired.XRIStarterKit
                     var tip = chain[chain.Count - 1];
                     // Solver-only probe past the last joint (skeletons with no tip bone): the outermost
                     // sample and the gap anchor when present, else fall back to the last joint.
-                    var tipProbe = _ctx.fingerMap != null ? _ctx.fingerMap.Tip(fingerIdx) : null;
+                    var tipProbe = _ctx.tipProbes != null && fingerIdx < _ctx.tipProbes.Length
+                        ? _ctx.tipProbes[fingerIdx] : null;
                     var gapTip = tipProbe ? tipProbe : tip;
                     int samples = Mathf.Clamp(_ctx.samplesPerFinger, 1, chain.Count);
                     int sampleStart = chain.Count - samples;

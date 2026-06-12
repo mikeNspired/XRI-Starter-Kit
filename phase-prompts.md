@@ -263,7 +263,24 @@ Out of scope: polish. Open a PR with the acceptance steps restated; do not start
 >   `*Ignore` child** — the physical-presence feature's distal finger colliders (`*_DistalCollider_Ignore`)
 >   are also `Ignore` children of the last joint, and an earlier broad match grabbed those capsule colliders
 >   instead of creating a probe. The physics feature enumerates `currentJoints` (which excludes `*Ignore`),
->   so it never sees the probe; the two tracks stay decoupled. `HandFingerMap` gains `tips[5]`/`Tip(i)` (no `HandSolveContext` change —
+>   so it never sees the probe; the two tracks stay decoupled.
+> - **Tip probes moved to their own component + codebase cleanup (user review).** The probes "still didn't
+>   work" because the first (buggy) button run had already saved the distal colliders into the HandAnimator
+>   tip fields, and the fixed button kept any assigned field. Root fix + the user's architectural point
+>   (tips are a *dynamic*-posing concern, not authored posing): new **`HandFingertipProbes`** MonoBehaviour
+>   (on the hand, optional) owns the 5 probes, with a "Create / Refresh Probes" inspector button, runtime
+>   auto-create, and **collider rejection** (an assigned transform with a Collider is warned about and
+>   ignored — the exact prior failure). Solvers read `HandSolveContext.tipProbes` (filled by XRHandPoser /
+>   HandGraspProbe / DynamicPoseTester via `GetComponent<HandFingertipProbes>()`); HandAnimator lost all tip
+>   code, plus dead members `SetFingerCurls` and `AnimateHandTransformLocal` (no callers). `ClosedPoses` was
+>   audited and KEPT — it is the wired multi-candidate (fist vs pinch) picker, zero cost when empty.
+>   **Scripts folder reorganized** (git mv, GUIDs preserved → scene/prefab refs survive): `Core/` (authored
+>   posing + shared types), `Dynamic Posing/` (solvers, drivers, debug, testers), `Physics Colliders/`,
+>   `Helpers/` (audio/animation/Note), `UnityXR/` (+ HandReference, which is XRI-coupled), `Editor/`.
+>   Usage audit by GUID: every script is referenced except `HoldInPlaceOnGrab` (Phase 5 proof mechanic,
+>   superseded by HandReference snap suppression — flagged for deletion, awaiting user) and
+>   `DynamicPoseTester` (dev-only; depends on gitignored Odin). **Setup required in-editor:** add
+>   `HandFingertipProbes` to each hand prefab and click Create / Refresh Probes. `HandFingerMap` gains `tips[5]`/`Tip(i)` (no `HandSolveContext` change —
 >   tips ride along on `fingerMap`). Both solvers test the leaf→tip segment, so the leaf is now a **real
 >   contact sweep** (rotating it moves the tip child) instead of the binary pivot test, and the debug drawer
 >   shows a sphere at the actual fingertip. Grab path benefits automatically. **Feel** on `HandGraspProbe`

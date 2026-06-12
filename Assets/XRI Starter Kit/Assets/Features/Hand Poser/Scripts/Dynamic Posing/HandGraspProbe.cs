@@ -131,6 +131,8 @@ namespace MikeNspired.XRIStarterKit
 
         private IHandPoseSolver solver;
         private bool solverIsProgressive;
+        private HandFingertipProbes fingertips; // optional, resolved once from the hand
+        private bool fingertipsResolved;
         private HandSolveContext ctx;
         private Collider[] colliders;
         private Transform ignoreRoot;   // resolved hand/rig root whose colliders are skipped
@@ -408,8 +410,15 @@ namespace MikeNspired.XRIStarterKit
                 solverIsProgressive = useProgressiveSolver;
             }
 
+            if (!fingertipsResolved)
+            {
+                fingertips = handAnimator.GetComponent<HandFingertipProbes>();
+                fingertipsResolved = true;
+            }
+
             ctx.hand             = handAnimator;
             ctx.fingerMap        = handAnimator.fingerMap;
+            ctx.tipProbes        = fingertips ? fingertips.Tips : null;
             ctx.openPose         = handAnimator.OpenPose ? handAnimator.OpenPose : handAnimator.DefaultPose;
             ctx.closedPose       = handAnimator.ClosedPose;
             ctx.closedPoses      = handAnimator.ClosedPoses;

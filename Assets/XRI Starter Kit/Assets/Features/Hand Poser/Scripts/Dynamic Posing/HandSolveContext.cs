@@ -14,6 +14,10 @@ namespace MikeNspired.XRIStarterKit
         public List<PoseScriptableObject> closedPoses;
         public Collider[] targetColliders;
         public LayerMask targetMask;
+        // Optional solver-only fingertip probes (thumb=0 … pinky=4, entries may be null), supplied by a
+        // HandFingertipProbes component on the hand. Used as the outermost contact point on skeletons whose
+        // last finger bone is the distal knuckle. Null when the hand has no probe component.
+        public Transform[] tipProbes;
         public int stepCount = 15;
         public float probeRadius = 0.01f;
         // How many joints from the fingertip inward to sphere-test each step. 1 = tip only;

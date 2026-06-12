@@ -70,13 +70,6 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject defaultPose, goalPose;
         public Transform thumbTopTransform, indexTopTransform, middleTopTransform, ringTopTransform, pinkyTopTransform;
 
-        [Header("Fingertip Probes (solver only)")]
-        [Tooltip("Optional probe transforms placed just past each finger's last joint, used ONLY by the " +
-                 "dynamic solver to seat the fingertip on a surface. Needed on skeletons with no tip joint " +
-                 "(the last bone is the distal knuckle). Their names MUST end in 'Ignore' so the pose system " +
-                 "skips them. Use the 'Create Fingertip Probes' button, or leave empty to auto-generate at runtime.")]
-        public Transform thumbTipProbe, indexTipProbe, middleTipProbe, ringTipProbe, pinkyTipProbe;
-
         public void AnimateToCurrent() => AnimateInstantly(DefaultPose);
 
         void Awake()
@@ -134,11 +127,6 @@ namespace MikeNspired.XRIStarterKit
             {
                 0 => thumb, 1 => index, 2 => middle, 3 => ring, 4 => pinky, _ => null
             };
-
-            // Optional solver-only fingertip probe per finger (thumb=0 … pinky=4), sitting just past the
-            // finger's last joint. Null when the skeleton has a real tip joint or the chain is too short.
-            public readonly Transform[] tips = new Transform[5];
-            public Transform Tip(int i) => (i >= 0 && i < 5) ? tips[i] : null;
         }
 
         public HandFingerMap fingerMap = new HandFingerMap();
@@ -163,71 +151,6 @@ namespace MikeNspired.XRIStarterKit
             BuildFingerChain(middleTopTransform, "middle", fingerMap.middle);
             BuildFingerChain(ringTopTransform,   "ring",   fingerMap.ring);
             BuildFingerChain(pinkyTopTransform,  "pinky",  fingerMap.pinky);
-
-            ResolveFingerTip(0, thumbTipProbe,  fingerMap.thumb,  "Thumb");
-            ResolveFingerTip(1, indexTipProbe,  fingerMap.index,  "Index");
-            ResolveFingerTip(2, middleTipProbe, fingerMap.middle, "Middle");
-            ResolveFingerTip(3, ringTipProbe,   fingerMap.ring,   "Ring");
-            ResolveFingerTip(4, pinkyTipProbe,  fingerMap.pinky,  "Pinky");
-        }
-
-        /// <summary>
-        /// Resolves the solver-only fingertip probe for a finger: an explicitly-assigned field, else an
-        /// existing "*Ignore" child of the last joint, else (at runtime only) a freshly created probe
-        /// extrapolated past the last bone. Leaves the tip null when the chain is too short to extrapolate.
-        /// Edit-time creation is the inspector "Create Fingertip Probes" button — never spawned here.
-        /// </summary>
-        void ResolveFingerTip(int index, Transform explicitProbe, List<Transform> chain, string fingerName)
-        {
-            fingerMap.tips[index] = null;
-            if (explicitProbe) { fingerMap.tips[index] = explicitProbe; return; }
-            if (chain == null || chain.Count == 0) return;
-
-            // Reuse an authored / previously-created tip probe so repeated SetBones() is idempotent.
-            var existing = FindTipProbeChild(chain[chain.Count - 1]);
-            if (existing) { fingerMap.tips[index] = existing; return; }
-
-            if (!Application.isPlaying) return; // runtime fallback only; no edit-time scene/prefab pollution
-
-            var probe = CreateTipProbe(chain, fingerName);
-            if (probe) fingerMap.tips[index] = probe;
-        }
-
-        /// Marker substring identifying a solver tip probe. Distinct from the physical-presence finger
-        /// colliders, which are ALSO "*Ignore" children of the last joint — matching only this substring
-        /// keeps the solver from mistaking a distal capsule collider for the fingertip.
-        public const string TipProbeMarker = "TipProbe";
-
-        /// First child of <paramref name="parent"/> that is a solver tip probe (name contains "TipProbe").
-        /// Deliberately NOT a generic "*Ignore" match, so persistent finger colliders are never picked up.
-        public static Transform FindTipProbeChild(Transform parent)
-        {
-            for (int i = 0; i < parent.childCount; i++)
-                if (parent.GetChild(i).name.Contains(TipProbeMarker)) return parent.GetChild(i);
-            return null;
-        }
-
-        /// <summary>
-        /// Creates a probe child just past a finger's last joint by extending the last bone segment (0.8×).
-        /// The name is "&lt;finger&gt;_TipProbe_Ignore": the "TipProbe" marker distinguishes it from physics
-        /// colliders, and the "Ignore" suffix makes <see cref="JointUtility.ShouldSkipTransform"/> and pose
-        /// saving skip it. Returns null when the chain can't define a direction (needs ≥2 joints). Shared by
-        /// the runtime fallback and the editor button so both produce identical, mutually-recognized probes.
-        /// </summary>
-        public static Transform CreateTipProbe(List<Transform> chain, string fingerName)
-        {
-            if (chain == null || chain.Count < 2) return null;
-            var last = chain[chain.Count - 1];
-            var prev = chain[chain.Count - 2];
-            Vector3 dir = last.position - prev.position;
-            float len = dir.magnitude;
-            if (len < 1e-5f) return null;
-
-            var probe = new GameObject($"{fingerName}_{TipProbeMarker}_Ignore").transform;
-            probe.SetParent(last, false);
-            probe.position = last.position + dir / len * (len * 0.8f);
-            probe.localRotation = Quaternion.identity;
-            return probe;
         }
 
         /// <summary>
@@ -456,27 +379,6 @@ namespace MikeNspired.XRIStarterKit
                 timer += Time.deltaTime;
             }
             transform.SetPositionAndRotation(newTransform.position, newTransform.rotation);
-        }
-
-        IEnumerator AnimateHandTransformLocal(float animationLength, TransformStruct newTransform)
-        {
-            float timer = 0;
-            var startPos = transform.localPosition;
-            var startRot = transform.localRotation;
-
-            while (timer < animationLength + Time.deltaTime)
-            {
-                var newPosition = Vector3.Lerp(startPos, newTransform.position, timer / animationLength);
-                var newRotation = Quaternion.Lerp(startRot, newTransform.rotation, timer / animationLength);
-
-                transform.localPosition = newPosition;
-                transform.localRotation = newRotation;
-
-                yield return new WaitForSeconds(Time.deltaTime);
-                timer += Time.deltaTime;
-            }
-            transform.localPosition = newTransform.position;
-            transform.localRotation = newTransform.rotation;
         }
 
         void StartHandPositionTracking(Transform target)
@@ -720,21 +622,6 @@ namespace MikeNspired.XRIStarterKit
 
             // chain[0] is the finger's base joint; SetPoseByValue walks its descendants
             SetPoseByValue(chain[0], openPose, closedPose, t);
-        }
-
-        /// <summary>
-        /// Convenience overload: pose all five fingers at once.
-        /// t must have at least 5 elements (thumb=0, index=1, middle=2, ring=3, pinky=4).
-        /// </summary>
-        public void SetFingerCurls(float[] t)
-        {
-            if (t == null || t.Length < 5)
-            {
-                Debug.LogWarning("[HandAnimator] SetFingerCurls requires an array of at least 5 values.");
-                return;
-            }
-            for (int i = 0; i < 5; i++)
-                SetFingerCurl(i, t[i]);
         }
 
         #endregion

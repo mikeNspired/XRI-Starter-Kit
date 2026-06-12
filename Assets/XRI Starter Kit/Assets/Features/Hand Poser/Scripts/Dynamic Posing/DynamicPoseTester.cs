@@ -151,10 +151,13 @@ namespace MikeNspired.XRIStarterKit
             if (colliders.Length == 0)
                 Debug.LogWarning($"[DynamicPoseTester] '{m_Target.name}' has no solid Colliders — solver will fully close all fingers.");
 
+            var fingertips = m_HandAnimator.GetComponent<HandFingertipProbes>();
+
             var ctx = new HandSolveContext
             {
                 hand            = m_HandAnimator,
                 fingerMap       = m_HandAnimator.fingerMap,
+                tipProbes       = fingertips ? fingertips.Tips : null,
                 openPose        = m_HandAnimator.DefaultPose,
                 closedPose      = m_HandAnimator.ClosedPose,
                 targetColliders = colliders,
