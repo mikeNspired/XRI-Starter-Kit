@@ -51,6 +51,12 @@ namespace MikeNspired.XRIStarterKit
                  "Leave empty for no clamping.")]
         [SerializeField] private HandJointLimits jointLimits;
 
+        [Header("Palm")]
+        [Tooltip("Approximate palm-center point, used by object seating (a dynamic grab settles the object " +
+                 "toward this before the solve). Leave empty to fall back to the centroid of the finger " +
+                 "base joints — assign a transform on the palm surface for best results.")]
+        [SerializeField] private Transform palmAnchor;
+
         [Header("Fingertip Probes")]
         [Tooltip("Per-finger probe transform at the fingertip pad, just past the last joint. Leave empty to " +
                  "auto-generate at runtime, or use 'Create / Refresh Probes' and nudge into place. Must be a " +
@@ -70,6 +76,26 @@ namespace MikeNspired.XRIStarterKit
         public List<PoseScriptableObject> ClosedCandidates => closedCandidates;
         public PoseScriptableObject RelaxedPose => relaxedPose;
         public HandJointLimits JointLimits => jointLimits;
+
+        /// World-space palm point for object seating: the authored anchor when assigned, else the
+        /// centroid of the finger base joints (a fair palm approximation on most skeletons).
+        public Vector3 PalmPoint
+        {
+            get
+            {
+                if (palmAnchor) return palmAnchor.position;
+                Vector3 sum = Vector3.zero;
+                int count = 0;
+                for (int i = 0; i < 5; i++)
+                {
+                    var chain = Hand ? Hand.fingerMap.Finger(i) : null;
+                    if (chain == null || chain.Count == 0 || !chain[0]) continue;
+                    sum += chain[0].position;
+                    count++;
+                }
+                return count > 0 ? sum / count : transform.position;
+            }
+        }
 
         /// Open pose for the sweep, falling back to the hand's DefaultPose when none is assigned.
         public PoseScriptableObject OpenOrDefault => openPose ? openPose : (Hand ? Hand.DefaultPose : null);

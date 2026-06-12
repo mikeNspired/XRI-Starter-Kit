@@ -37,6 +37,9 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty graspRequireThumb;
         private SerializedProperty graspRequiredFingers;
         private SerializedProperty failedGraspResponse;
+        private SerializedProperty seatInPalm;
+        private SerializedProperty seatMaxDistance;
+        private SerializedProperty seatClearance;
 
         private bool hasLeftHand;
         private bool hasRightHand;
@@ -75,6 +78,9 @@ namespace MikeNspired.XRIStarterKit.Editor
             graspRequireThumb = serializedObject.FindProperty("graspRequireThumb");
             graspRequiredFingers = serializedObject.FindProperty("graspRequiredFingers");
             failedGraspResponse = serializedObject.FindProperty("failedGraspResponse");
+            seatInPalm = serializedObject.FindProperty("seatInPalm");
+            seatMaxDistance = serializedObject.FindProperty("seatMaxDistance");
+            seatClearance = serializedObject.FindProperty("seatClearance");
         }
 
         public override void OnInspectorGUI()
@@ -205,6 +211,16 @@ namespace MikeNspired.XRIStarterKit.Editor
                     "Number of non-thumb fingers that must contact for a dynamic grasp to hold."));
                 EditorGUILayout.PropertyField(failedGraspResponse, new GUIContent("Failed Grasp Response",
                     "What to do when a dynamic grasp fails its contact test."));
+                EditorGUILayout.PropertyField(seatInPalm, new GUIContent("Seat In Palm",
+                    "On a DYNAMIC grab, settle the object a small capped distance toward the palm before " +
+                    "the solve, closing the air gap. Never reintroduces the authored-grip snap."));
+                if (seatInPalm.boolValue)
+                {
+                    EditorGUILayout.PropertyField(seatMaxDistance, new GUIContent("Seat Max Distance",
+                        "Maximum settle distance (m) toward the palm."));
+                    EditorGUILayout.PropertyField(seatClearance, new GUIContent("Seat Clearance",
+                        "Air gap (m) kept between the palm point and the object surface."));
+                }
                 EditorGUI.indentLevel--;
             }
             else

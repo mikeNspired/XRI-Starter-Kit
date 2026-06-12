@@ -77,6 +77,18 @@ namespace MikeNspired.XRIStarterKit
                  "defaults; XRHandPoser's Override Global Settings replaces the whole block per object.")]
         public PerFingerSolveSettings dynamicFingerSettings = new PerFingerSolveSettings();
 
+        [Header("Dynamic Pose — Object Seating")]
+        [Tooltip("On a DYNAMIC grab, kinematically settle the object a small capped distance toward the " +
+                 "hand's palm point BEFORE the solve, closing the air gap so the grab reads as held rather " +
+                 "than hovering. Pure position nudge, hard-capped — it can never reintroduce the " +
+                 "authored-grip snap. Off = hold exactly where grabbed (previous behavior).")]
+        public bool dynamicSeatInPalm = false;
+        [Tooltip("Maximum distance (m) the seating settle may move the object toward the palm.")]
+        public float dynamicSeatMaxDistance = 0.03f;
+        [Tooltip("Air gap (m) seating keeps between the palm point and the object surface, so the " +
+                 "object settles against the palm instead of into it.")]
+        public float dynamicSeatClearance = 0.01f;
+
         [Header("Dynamic Pose — Debug")]
         [Tooltip("Master switch for the per-finger solve visualization. When on, dynamic solves record " +
                  "telemetry and a HandPoseSolveDebugDrawer on the hand draws, per finger: a sphere at each " +

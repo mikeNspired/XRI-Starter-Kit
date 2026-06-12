@@ -43,6 +43,9 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private bool  graspRequireThumb  = true;
         [SerializeField, Range(0, 4)] private int graspRequiredFingers = 2;
         [SerializeField] private FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;
+        [SerializeField] private bool  seatInPalm = false;
+        [SerializeField] private float seatMaxDistance = 0.03f;
+        [SerializeField] private float seatClearance = 0.01f;
 
         private IHandPoseSolver poseSolver;
         private Coroutine dynamicSolveRoutine;
@@ -61,6 +64,9 @@ namespace MikeNspired.XRIStarterKit
         private bool  GraspRequireThumb     => overrideGlobalSettings ? graspRequireThumb     : Settings.graspRequireThumb;
         private int   GraspRequiredFingers  => overrideGlobalSettings ? graspRequiredFingers  : Settings.graspRequiredFingers;
         private FailedGraspResponse FailedGraspResponse => overrideGlobalSettings ? failedGraspResponse : Settings.failedGraspResponse;
+        private bool  SeatInPalm            => overrideGlobalSettings ? seatInPalm      : Settings.dynamicSeatInPalm;
+        private float SeatMaxDistance       => overrideGlobalSettings ? seatMaxDistance : Settings.dynamicSeatMaxDistance;
+        private float SeatClearance         => overrideGlobalSettings ? seatClearance   : Settings.dynamicSeatClearance;
 
         protected override void Awake()
         {
@@ -187,6 +193,9 @@ namespace MikeNspired.XRIStarterKit
             hand.AnimationPose = null;     // gate the trigger animation; ReturnAnimationsToOriginal restores it on release
             hand.StopButtonValueAnimation(); // stop the grip squeeze in place so it can't keep closing the hand
 
+            // Optional seating BEFORE the solve, so the fingers wrap the settled position.
+            if (SeatInPalm) SeatObjectInPalm(hand, interactor);
+
             // Solve and apply on THIS frame, exactly like the authored path. Phase 5 holds the object
             // where it was grabbed (it does not ease toward the hand), so the geometry is already in
             // place — there is nothing to wait for. Applying synchronously means one blend from the
@@ -194,6 +203,62 @@ namespace MikeNspired.XRIStarterKit
             // squeeze close the hand to a fist before the pose landed (the "closes then poses" glitch).
             SolveAndApplyDynamicPose(hand, interactor);
         }
+
+        // Kinematic object seating: settle the grabbed object a small, hard-capped distance toward the
+        // hand's palm point, closing the air gap so a dynamic grab reads as held rather than hovering.
+        // HandReference (interactor selectEntered, which XRI fires before this interactable event) has
+        // already aligned the interactor attach to the object's current pose, so moving the object AND
+        // that attach target by the same delta keeps XRI's grab target equal to the object's pose — a
+        // settle, never a snap-back toward the authored grip.
+        private void SeatObjectInPalm(HandAnimator hand, IXRSelectInteractor interactor)
+        {
+            var dyn = hand ? hand.GetComponent<HandDynamicPoses>() : null;
+            if (!dyn) return;
+
+            var colliders = GatherSolidColliders();
+            if (colliders.Length == 0) return;
+
+            Vector3 palm = dyn.PalmPoint;
+            float gap = float.PositiveInfinity;
+            Vector3 nearest = palm;
+            foreach (var col in colliders)
+            {
+                // ClosestPoint only supports primitives + convex meshes; bounds is a fine fallback
+                // for a settle distance on arbitrary environment-style meshes.
+                Vector3 cp = SupportsClosestPoint(col) ? col.ClosestPoint(palm) : col.ClosestPointOnBounds(palm);
+                float d = Vector3.Distance(palm, cp);
+                if (d < gap) { gap = d; nearest = cp; }
+            }
+            // gap 0 = palm already inside the object; nothing sensible to settle.
+            if (float.IsPositiveInfinity(gap) || gap <= 1e-5f) return;
+
+            float move = Mathf.Min(SeatMaxDistance, gap - SeatClearance);
+            if (move <= 0f) return;
+
+            // Move the nearest surface point toward the palm: the shortest way to close the gap.
+            Vector3 delta = (palm - nearest) / gap * move;
+
+            interactable.transform.position += delta;
+            if (interactable.TryGetComponent(out Rigidbody body)) body.position = interactable.transform.position;
+
+            var attach = interactor?.GetAttachTransform(interactable);
+            if (attach) attach.position += delta;
+
+            // The solve sphere-tests this frame; make the physics world see the moved colliders now.
+            Physics.SyncTransforms();
+        }
+
+        private static bool SupportsClosestPoint(Collider col) =>
+            col is BoxCollider || col is SphereCollider || col is CapsuleCollider ||
+            (col is MeshCollider mc && mc.convex);
+
+        // Solid colliders only: trigger volumes (hover zones, sound triggers) can never stop a finger
+        // (the sweep queries ignore triggers) but they WOULD pollute the fingertip-gap candidate
+        // selection and the layer mask. Disabled colliders likewise aren't in the physics world.
+        private Collider[] GatherSolidColliders() =>
+            System.Array.FindAll(
+                interactable.GetComponentsInChildren<Collider>(),
+                c => c.enabled && !c.isTrigger);
 
         private void SolveAndApplyDynamicPose(HandAnimator hand, IXRSelectInteractor interactor)
         {
@@ -205,12 +270,7 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            // Solid colliders only: trigger volumes (hover zones, sound triggers) can never stop a finger
-            // (the sweep queries ignore triggers) but they WOULD pollute the fingertip-gap candidate
-            // selection and the layer mask. Disabled colliders likewise aren't in the physics world.
-            var colliders = System.Array.FindAll(
-                interactable.GetComponentsInChildren<Collider>(),
-                c => c.enabled && !c.isTrigger);
+            var colliders = GatherSolidColliders();
             if (colliders.Length == 0)
                 Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve: no solid colliders on interactable; fingers will fully close.");
 
