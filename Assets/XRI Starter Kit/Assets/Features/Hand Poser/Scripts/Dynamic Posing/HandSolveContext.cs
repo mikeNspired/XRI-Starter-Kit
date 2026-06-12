@@ -12,6 +12,9 @@ namespace MikeNspired.XRIStarterKit
         // Optional candidate closed poses. When non-empty the solver picks, per finger, the one
         // whose fingertip ends closest to the target. Falls back to closedPose when null/empty.
         public List<PoseScriptableObject> closedPoses;
+        // Optional rest shape: a finger that contacts NOTHING takes this pose exactly instead of
+        // curling toward closedPose by noContactCurl. Null = the curl-value rest (original behavior).
+        public PoseScriptableObject relaxedPose;
         public Collider[] targetColliders;
         public LayerMask targetMask;
         // Optional solver-only fingertip probes (thumb=0 … pinky=4, entries may be null), supplied by a

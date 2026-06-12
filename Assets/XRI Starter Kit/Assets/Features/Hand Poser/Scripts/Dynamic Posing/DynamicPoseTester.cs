@@ -156,6 +156,7 @@ namespace MikeNspired.XRIStarterKit
                 openPose        = dyn.OpenOrDefault,
                 closedPose      = dyn.ClosedPose,
                 closedPoses     = dyn.ClosedCandidates,
+                relaxedPose     = dyn.RelaxedPose,
                 targetColliders = colliders,
                 targetMask      = 1 << m_Target.layer,
                 stepCount       = m_SolverStepCount,

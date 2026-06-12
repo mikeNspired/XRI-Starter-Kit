@@ -118,6 +118,15 @@ namespace MikeNspired.XRIStarterKit
                         }
                     }
 
+                    // A finger that touched nothing rests in the dedicated relaxed pose when one is
+                    // supplied (t=1 toward it = exactly the authored rest shape), instead of a single
+                    // curl value toward the fist.
+                    if (!bestContacted && _ctx.relaxedPose && bestT != null)
+                    {
+                        bestPose = _ctx.relaxedPose;
+                        for (int i = 0; i < bestT.Length; i++) bestT[i] = 1f;
+                    }
+
                     fingerJointT[fingerIdx] = bestT;
                     fingerClosed[fingerIdx] = bestPose;
                     LastSolveProbePositions[fingerIdx] = bestProbe;

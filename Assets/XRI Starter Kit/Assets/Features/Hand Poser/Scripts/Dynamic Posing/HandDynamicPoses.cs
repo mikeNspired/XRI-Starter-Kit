@@ -41,6 +41,11 @@ namespace MikeNspired.XRIStarterKit
                  "above is always tried first. Leave empty for fist-only — zero cost.")]
         [SerializeField] private List<PoseScriptableObject> closedCandidates = new List<PoseScriptableObject>();
 
+        [Tooltip("Optional rest shape for a finger that touches NOTHING during a dynamic solve. When set, " +
+                 "that finger takes this pose exactly (author a natural relaxed grip); when empty it curls " +
+                 "toward the Closed pose by the No-Contact Curl amount, as before.")]
+        [SerializeField] private PoseScriptableObject relaxedPose;
+
         [Header("Fingertip Probes")]
         [Tooltip("Per-finger probe transform at the fingertip pad, just past the last joint. Leave empty to " +
                  "auto-generate at runtime, or use 'Create / Refresh Probes' and nudge into place. Must be a " +
@@ -58,6 +63,7 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject OpenPose  => openPose;
         public PoseScriptableObject ClosedPose => closedPose;
         public List<PoseScriptableObject> ClosedCandidates => closedCandidates;
+        public PoseScriptableObject RelaxedPose => relaxedPose;
 
         /// Open pose for the sweep, falling back to the hand's DefaultPose when none is assigned.
         public PoseScriptableObject OpenOrDefault => openPose ? openPose : (Hand ? Hand.DefaultPose : null);

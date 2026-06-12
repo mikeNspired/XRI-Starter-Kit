@@ -120,6 +120,13 @@ namespace MikeNspired.XRIStarterKit
                         _ctx.hand.SetFingerCurl(fingerIdx, 0f, _ctx.openPose, cp);
                     }
 
+                    // No contact + a dedicated relaxed pose supplied → rest there instead of closing.
+                    if (!bestContacted && _ctx.relaxedPose)
+                    {
+                        bestPose = _ctx.relaxedPose;
+                        bestT = 1f;
+                    }
+
                     tFinals[fingerIdx]              = bestT;
                     chosenClosed[fingerIdx]         = bestPose;
                     LastSolveProbePositions[fingerIdx] = bestProbe;
@@ -176,7 +183,9 @@ namespace MikeNspired.XRIStarterKit
             dbg.EnsureCapacity(count);
             dbg.probeRadius  = _ctx.probeRadius * _cal.probeRadiusScale;
             dbg.chosenClosed = _closedPose ? _closedPose : _ctx.closedPose;
-            dbg.state        = _contacted ? FingerSolveState.Contacted : FingerSolveState.NoContact;
+            dbg.state        = _contacted ? FingerSolveState.Contacted
+                             : _ctx.relaxedPose && _closedPose == _ctx.relaxedPose ? FingerSolveState.RelaxedFist
+                             : FingerSolveState.NoContact;
 
             int w = 0;
             for (int j = sampleStart; j < _chain.Count; j++)

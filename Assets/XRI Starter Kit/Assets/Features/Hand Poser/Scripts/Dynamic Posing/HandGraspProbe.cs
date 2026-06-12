@@ -436,6 +436,7 @@ namespace MikeNspired.XRIStarterKit
             ctx.openPose         = dyn.OpenOrDefault;
             ctx.closedPose       = dyn.ClosedPose;
             ctx.closedPoses      = dyn.ClosedCandidates;
+            ctx.relaxedPose      = dyn.RelaxedPose;
             ctx.targetColliders  = colliders;
             ctx.targetMask       = worldMask;
             ctx.stepCount        = stepCount;

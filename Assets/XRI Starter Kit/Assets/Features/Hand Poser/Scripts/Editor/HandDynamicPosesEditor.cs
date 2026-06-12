@@ -23,6 +23,9 @@ namespace MikeNspired.XRIStarterKit.Editor
                     if (dyn.OpenOrDefault) hand.AnimateInstantly(dyn.OpenOrDefault);
                 if (GUILayout.Button(new GUIContent("Preview Closed", "Pose the hand at the Closed (fist) reference pose.")))
                     if (dyn.ClosedPose) hand.AnimateInstantly(dyn.ClosedPose);
+                using (new EditorGUI.DisabledScope(!dyn.RelaxedPose))
+                    if (GUILayout.Button(new GUIContent("Preview Relaxed", "Pose the hand at the Relaxed (no-contact rest) pose.")))
+                        hand.AnimateInstantly(dyn.RelaxedPose);
                 GUILayout.EndHorizontal();
             }
 
