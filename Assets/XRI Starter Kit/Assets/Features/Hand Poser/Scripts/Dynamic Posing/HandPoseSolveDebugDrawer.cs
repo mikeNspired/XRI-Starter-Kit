@@ -12,9 +12,11 @@ namespace MikeNspired.XRIStarterKit
     /// Works for both real grabs (XRHandPoser) and the grasp probe — whoever solves publishes the data
     /// to <see cref="HandAnimator.LastSolveDebug"/>.
     ///
-    /// Per finger it draws a sphere at every sampled joint, coloured by how the finger resolved:
-    /// green = contacted, red = no contact, yellow = relaxed-fist fallback. Contact normals are drawn in cyan,
-    /// and (in the editor) each finger is labelled with its chosen closed pose and per-joint locked t.
+    /// Per finger it draws a sphere at every sampled joint, coloured PER JOINT so you can see which
+    /// segment actually stopped the finger: green = this joint contacted the target; grey = no contact on
+    /// this joint but the finger gripped elsewhere; red = the whole finger found nothing; yellow = the
+    /// finger settled into the relaxed-rest fallback. Contact normals are drawn in cyan, and (in the
+    /// editor) each finger is labelled with its chosen closed pose and per-joint locked t.
     /// </summary>
     public class HandPoseSolveDebugDrawer : MonoBehaviour
     {
@@ -67,7 +69,13 @@ namespace MikeNspired.XRIStarterKit
                 {
                     var probe = fd.probes[p];
 
-                    Gizmos.color = fingerColor;
+                    // Per-joint colour: a contacted joint is always green (this is the segment that
+                    // stopped the finger); a non-contacted joint on a gripping finger is grey so the
+                    // contact stands out; on a no-contact finger every joint takes the finger colour.
+                    if (probe.contacted)
+                        Gizmos.color = Color.green;
+                    else
+                        Gizmos.color = fd.state == FingerSolveState.Contacted ? s_NoContactJointGrey : fingerColor;
                     Gizmos.DrawWireSphere(probe.position, radius);
 
                     if (probe.contacted && probe.contactNormal != Vector3.zero)
@@ -82,6 +90,8 @@ namespace MikeNspired.XRIStarterKit
 #endif
             }
         }
+
+        private static readonly Color s_NoContactJointGrey = new Color(0.65f, 0.65f, 0.65f);
 
         private static Color StateColor(FingerSolveState state) => state switch
         {
