@@ -46,11 +46,6 @@ namespace MikeNspired.XRIStarterKit
                  "toward the Closed pose by the No-Contact Curl amount, as before.")]
         [SerializeField] private PoseScriptableObject relaxedPose;
 
-        [Tooltip("Optional per-joint min/max clamp on the solve's curl t, for when the Closed pose alone " +
-                 "is not a tight enough limit. Joints matched by name; unlisted joints are unclamped. " +
-                 "Leave empty for no clamping.")]
-        [SerializeField] private HandJointLimits jointLimits;
-
         [Header("Palm")]
         [Tooltip("Approximate palm-center point, used by object seating (a dynamic grab settles the object " +
                  "toward this before the solve). Leave empty to fall back to the centroid of the finger " +
@@ -75,7 +70,6 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject ClosedPose => closedPose;
         public List<PoseScriptableObject> ClosedCandidates => closedCandidates;
         public PoseScriptableObject RelaxedPose => relaxedPose;
-        public HandJointLimits JointLimits => jointLimits;
 
         /// World-space palm point for object seating: the authored anchor when assigned, else the
         /// centroid of the finger base joints (a fair palm approximation on most skeletons).

@@ -348,15 +348,11 @@ namespace MikeNspired.XRIStarterKit
                     if (!openDict.TryGetValue(name, out var open)) continue;
                     if (!closedDict.TryGetValue(name, out var closed)) continue;
 
-                    // Optional per-joint clamp. The sweep itself poses through SetFingerCurl
-                    // (unclamped), so for this fallback solver the limits shape only the output.
-                    float tj = _ctx.jointLimits ? _ctx.jointLimits.Clamp(name, t) : t;
-
                     result.Add(new PoseScriptableObject.JointData
                     {
                         jointName     = name,
-                        localPosition = Vector3.Lerp(open.localPosition, closed.localPosition, tj),
-                        localRotation = Quaternion.Slerp(open.localRotation, closed.localRotation, tj)
+                        localPosition = Vector3.Lerp(open.localPosition, closed.localPosition, t),
+                        localRotation = Quaternion.Slerp(open.localRotation, closed.localRotation, t)
                     });
                 }
             }

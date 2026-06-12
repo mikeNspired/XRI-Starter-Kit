@@ -20,8 +20,6 @@ namespace MikeNspired.XRIStarterKit
         // Optional rest shape: a finger that contacts NOTHING takes this pose exactly instead of
         // curling toward closedPose by noContactCurl. Null = the curl-value rest (original behavior).
         public PoseScriptableObject relaxedPose;
-        // Optional per-joint min/max clamp on curl t (matched by joint name). Null = no clamping.
-        public HandJointLimits jointLimits;
         public Collider[] targetColliders;
         public LayerMask targetMask;
         // Optional solver-only fingertip probes (thumb=0 … pinky=4, entries may be null), supplied by a

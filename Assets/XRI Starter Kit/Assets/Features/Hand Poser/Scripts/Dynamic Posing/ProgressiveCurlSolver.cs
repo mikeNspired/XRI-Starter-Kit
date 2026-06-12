@@ -216,7 +216,7 @@ namespace MikeNspired.XRIStarterKit
             float maxCurl = Mathf.Clamp01(_cal.maxCurl);
 
             // ── Pass A — gross close ──────────────────────────────────────────────────────────
-            ApplyAll(_chain, _openDict, _closedDict, 0f, _ctx.jointLimits); // open, independent of the previous candidate
+            ApplyAll(_chain, _openDict, _closedDict, 0f); // open, independent of the previous candidate
 
             float tGross = 0f;
             int contactJoint = -1;
@@ -224,7 +224,7 @@ namespace MikeNspired.XRIStarterKit
             for (int step = 1; step <= _ctx.stepCount; step++)
             {
                 float t = maxCurl * step / _ctx.stepCount;
-                ApplyAll(_chain, _openDict, _closedDict, t, _ctx.jointLimits);
+                ApplyAll(_chain, _openDict, _closedDict, t);
 
                 if (FirstContactingJoint(_chain, _tip, _ctx, radius) >= 0)
                 {
@@ -233,14 +233,14 @@ namespace MikeNspired.XRIStarterKit
                     for (int k = 0; k < RefineIterations; k++)
                     {
                         float mid = (lo + hi) * 0.5f;
-                        ApplyAll(_chain, _openDict, _closedDict, mid, _ctx.jointLimits);
+                        ApplyAll(_chain, _openDict, _closedDict, mid);
                         if (FirstContactingJoint(_chain, _tip, _ctx, radius) >= 0) hi = mid; else lo = mid;
                     }
                     // Identify the touching joint at the just-contact pose (hi), then settle at lo (clear).
-                    ApplyAll(_chain, _openDict, _closedDict, hi, _ctx.jointLimits);
+                    ApplyAll(_chain, _openDict, _closedDict, hi);
                     contactJoint = FirstContactingJoint(_chain, _tip, _ctx, radius);
                     tGross = Mathf.Clamp(lo + _cal.pressBias, 0f, maxCurl);
-                    ApplyAll(_chain, _openDict, _closedDict, tGross, _ctx.jointLimits);
+                    ApplyAll(_chain, _openDict, _closedDict, tGross);
                     break;
                 }
                 prevT = t;
@@ -253,7 +253,7 @@ namespace MikeNspired.XRIStarterKit
                 for (int i = 0; i < n; i++)
                 {
                     tj[i] = rest;
-                    ApplyJoint(_chain[i], _openDict, _closedDict, rest, _ctx.jointLimits);
+                    ApplyJoint(_chain[i], _openDict, _closedDict, rest);
                 }
                 return tj;
             }
@@ -279,12 +279,12 @@ namespace MikeNspired.XRIStarterKit
                     bool leafHit = SegmentOverlaps(_chain, i, i, _ctx, radius);
                     tj[i] = leafHit ? Mathf.Clamp(tStart + _cal.pressBias, 0f, maxCurl)
                                     : Mathf.Min(maxCurl, tStart + follow);
-                    ApplyJoint(_chain[i], _openDict, _closedDict, tj[i], _ctx.jointLimits);
+                    ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]);
                     if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = leafHit;
                     continue;
                 }
 
-                ApplyJoint(_chain[i], _openDict, _closedDict, tStart, _ctx.jointLimits);
+                ApplyJoint(_chain[i], _openDict, _closedDict, tStart);
 
                 bool jointHit;
                 if (WrapOverlaps(_chain, i, _tip, _ctx, radius))
@@ -299,14 +299,14 @@ namespace MikeNspired.XRIStarterKit
                     for (int step = 1; step <= _ctx.stepCount; step++)
                     {
                         float t = Mathf.Lerp(tStart, maxCurl, (float)step / _ctx.stepCount);
-                        ApplyJoint(_chain[i], _openDict, _closedDict, t, _ctx.jointLimits);
+                        ApplyJoint(_chain[i], _openDict, _closedDict, t);
                         if (WrapOverlaps(_chain, i, _tip, _ctx, radius))
                         {
                             float lo = lockedT, hi = t;
                             for (int k = 0; k < RefineIterations; k++)
                             {
                                 float mid = (lo + hi) * 0.5f;
-                                ApplyJoint(_chain[i], _openDict, _closedDict, mid, _ctx.jointLimits);
+                                ApplyJoint(_chain[i], _openDict, _closedDict, mid);
                                 if (WrapOverlaps(_chain, i, _tip, _ctx, radius)) hi = mid; else lo = mid;
                             }
                             lockedT = lo;
@@ -319,7 +319,7 @@ namespace MikeNspired.XRIStarterKit
                     tj[i] = jointHit ? Mathf.Clamp(lockedT + _cal.pressBias, 0f, maxCurl)
                                      : Mathf.Min(maxCurl, tStart + follow);
                 }
-                ApplyJoint(_chain[i], _openDict, _closedDict, tj[i], _ctx.jointLimits);
+                ApplyJoint(_chain[i], _openDict, _closedDict, tj[i]);
                 if (_jointHit != null && i < _jointHit.Length) _jointHit[i] = jointHit;
             }
 
@@ -331,11 +331,10 @@ namespace MikeNspired.XRIStarterKit
             List<Transform> _chain,
             Dictionary<string, PoseScriptableObject.JointData> _openDict,
             Dictionary<string, PoseScriptableObject.JointData> _closedDict,
-            float _t,
-            HandJointLimits _limits)
+            float _t)
         {
             for (int i = 0; i < _chain.Count; i++)
-                ApplyJoint(_chain[i], _openDict, _closedDict, _t, _limits);
+                ApplyJoint(_chain[i], _openDict, _closedDict, _t);
         }
 
         // Index of the most-proximal joint whose driven segment overlaps the target, or -1 if none.
@@ -412,7 +411,7 @@ namespace MikeNspired.XRIStarterKit
             // Re-pose at the chosen per-joint t so recorded world positions match the returned pose
             // (the candidate loop may have left the chain at a different candidate's shape).
             for (int i = 0; i < n; i++)
-                ApplyJoint(_chain[i], _openDict, closedDict, i < _tj.Length ? _tj[i] : 1f, _ctx.jointLimits);
+                ApplyJoint(_chain[i], _openDict, closedDict, i < _tj.Length ? _tj[i] : 1f);
 
             for (int i = 0; i < n; i++)
             {
@@ -473,20 +472,17 @@ namespace MikeNspired.XRIStarterKit
 
         private const int RefineIterations = 5;
 
-        // Sets a single joint's local pose to the lerp between its open and closed pose at t,
-        // clamped into the optional per-joint limits (null = unclamped).
+        // Sets a single joint's local pose to the lerp between its open and closed pose at t.
         private static void ApplyJoint(
             Transform _joint,
             Dictionary<string, PoseScriptableObject.JointData> _openDict,
             Dictionary<string, PoseScriptableObject.JointData> _closedDict,
-            float _t,
-            HandJointLimits _limits)
+            float _t)
         {
             if (!_joint) return;
             string name = _joint.name;
             if (!_openDict.TryGetValue(name, out var open)) return;
             if (!_closedDict.TryGetValue(name, out var closed)) return;
-            if (_limits) _t = _limits.Clamp(name, _t);
 
             _joint.localPosition = Vector3.Lerp(open.localPosition, closed.localPosition, _t);
             _joint.localRotation = Quaternion.Slerp(open.localRotation, closed.localRotation, _t);
@@ -591,7 +587,6 @@ namespace MikeNspired.XRIStarterKit
                     if (!closedDict.TryGetValue(name, out var closed)) continue;
 
                     float t = i < tj.Length ? tj[i] : 1f;
-                    if (_ctx.jointLimits) t = _ctx.jointLimits.Clamp(name, t);
                     result.Add(new PoseScriptableObject.JointData
                     {
                         jointName     = name,
