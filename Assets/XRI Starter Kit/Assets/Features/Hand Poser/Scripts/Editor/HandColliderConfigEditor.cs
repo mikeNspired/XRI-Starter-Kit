@@ -46,7 +46,7 @@ namespace MikeNspired.XRIStarterKit
         {
             serializedObject.Update();
 
-            EditorGUILayout.LabelField("Global", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Global Multipliers", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(globalRadius, new GUIContent("Radius Multiplier"));
             EditorGUILayout.PropertyField(globalHeight, new GUIContent("Height Multiplier"));
 
