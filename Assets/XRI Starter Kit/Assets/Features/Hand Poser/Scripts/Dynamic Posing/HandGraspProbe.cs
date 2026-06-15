@@ -31,9 +31,13 @@ namespace MikeNspired.XRIStarterKit
     /// to idle over a short time (no snap). Kinematic only: sphere queries + direct transform writes. No
     /// physics forces, ArticulationBodies, or IK. Pauses entirely while grabbing. Off by default.
     ///
-    /// Contact-owner rule: this and any persistent physical-presence finger colliders must not both own
-    /// contact. While this runs, disable those colliders or set them to triggers. This driver does NOT wire
-    /// that feature in — it runs its own queries and ignores the hand's own colliders (see Ignore Collider Root).
+    /// Coexisting with physical-presence colliders (HandPhysicsColliders): the two are complementary —
+    /// the colliders push world objects (a door), this wraps the fingers so it looks held. The only
+    /// friction is the solver chasing a dynamic surface those colliders are pushing; the GripHoldPose
+    /// "latch" (Latch Grip Hold) fixes that by acquiring the grasp once and holding the captured shape
+    /// until release, so the fingers stop re-conforming to the moving object. This driver still does NOT
+    /// wire the collider feature in — it runs its own queries and ignores the hand's own colliders
+    /// (see Ignore Collider Root); the latch is purely a behavior of THIS component.
     /// </summary>
     public class HandGraspProbe : MonoBehaviour
     {
@@ -56,6 +60,14 @@ namespace MikeNspired.XRIStarterKit
 
         [Tooltip("Grip value (0..1) at/above which GripHoldPose mode is considered 'held'.")]
         [SerializeField, Range(0f, 1f)] private float gripThreshold = 0.5f;
+
+        [Tooltip("GripHoldPose only. On = solve ONCE when the grip engages near a surface, then HOLD that " +
+                 "finger shape until release (re-acquiring if the first press caught nothing). This stops " +
+                 "the fingers chasing a surface that the hand's physical colliders are pushing (e.g. a door " +
+                 "the hand shoves while 'holding' it), and reads like a real hand pressing on something. " +
+                 "Off = re-solve every frame, so the fingers re-conform as you slide along a surface " +
+                 "(drape over an edge) at the cost of fighting a dynamic object the colliders move.")]
+        [SerializeField] private bool latchGripHold = true;
 
         [Header("World Query")]
         [Tooltip("Only geometry on these layers is posed onto. Set to your non-grabbable environment layer(s) — " +
@@ -140,6 +152,13 @@ namespace MikeNspired.XRIStarterKit
         private bool warned;
         private bool warnedNoMask;
 
+        // Latch state (GripHoldPose + latchGripHold): once a grasp is acquired we hold latchedResult
+        // and stop re-solving until the grip releases. lastResult is the most recent solver output
+        // (the solver returns a fresh, caller-owned array each call, so capturing it is safe).
+        private bool latched;
+        private PoseScriptableObject.JointData[] lastResult;
+        private PoseScriptableObject.JointData[] latchedResult;
+
         // The probe's own last-written ("displayed") pose, per joint name, and the deadbanded target it is
         // smoothing toward. Both must be the probe's OWN state, not the live joints — the grip/trigger value
         // animations also write the joints every Update (before this LateUpdate), so smoothing against the
@@ -177,9 +196,24 @@ namespace MikeNspired.XRIStarterKit
             // Never fight the grab blend — the Phase 5 grab path owns the pose while holding something.
             if (handAnimator.isGrabbingObject) { HardStop(); return; }
 
+            // Latch path (GripHoldPose): acquire a grasp once, then HOLD it without re-solving so the
+            // fingers don't chase a surface the hand's physical colliders are simultaneously pushing.
+            if (UseLatch() && ShouldSolveThisFrame())
+            {
+                if (latched) { ApplySolved(latchedResult, 1f); return; }   // hold the captured shape
+                if (Ready() && TrySolve()) { latched = true; latchedResult = lastResult; return; }
+                FadeToIdle();   // grip held but nothing in reach yet — keep trying to acquire
+                return;
+            }
+
+            // Continuous path (AutoGraspTest, or GripHoldPose with latch off): re-solve every frame.
+            latched = false;
             bool posed = ShouldSolveThisFrame() && Ready() && TrySolve();
             if (!posed) FadeToIdle();
         }
+
+        // True while a held grasp should hold its captured pose instead of re-solving.
+        private bool UseLatch() => mode == GraspProbeMode.GripHoldPose && latchGripHold;
 
         #endregion
 
@@ -203,6 +237,7 @@ namespace MikeNspired.XRIStarterKit
             var result = solver.Solve(ctx);
             handAnimator.LastSolveDebug = solver.LastSolveDebug;
             if (result == null || result.Length == 0) return false;
+            lastResult = result; // caller-owned; safe to capture for the latch hold
 
             float weight = ProximityWeight(center, count);
             ApplySolved(result, weight);
@@ -348,6 +383,7 @@ namespace MikeNspired.XRIStarterKit
         {
             isPosing = false;
             fading = false;
+            latched = false;
             if (displayedPose.Count > 0) displayedPose.Clear();
             if (targetPose.Count > 0) targetPose.Clear();
             if (fadeStart.Count > 0) fadeStart.Clear();
