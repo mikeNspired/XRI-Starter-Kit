@@ -8,6 +8,12 @@ namespace MikeNspired.XRIStarterKit.Editor
     {
         public override void OnInspectorGUI()
         {
+            DynamicPoseInfoBox.Draw(
+                "Per-hand setup for dynamic (procedural) grabbing: the Open / Closed / Relaxed poses the " +
+                "solver blends between, optional extra Closed candidates, the fingertip probes it " +
+                "contact-tests, and the palm point used for object seating. A hand needs this (with at " +
+                "least a Closed pose) to pose dynamically.");
+
             DrawDefaultInspector();
 
             var dyn = (HandDynamicPoses)target;

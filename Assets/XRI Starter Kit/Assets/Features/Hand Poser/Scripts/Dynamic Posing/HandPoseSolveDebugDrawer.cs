@@ -150,6 +150,7 @@ namespace MikeNspired.XRIStarterKit
 
 #if UNITY_EDITOR
         private static readonly string[] s_FingerNames = { "Thumb", "Index", "Middle", "Ring", "Pinky" };
+        private GUIStyle _labelStyle;
 
         private void DrawFingerLabel(int fingerIdx, FingerSolveDebug fd)
         {
@@ -165,11 +166,13 @@ namespace MikeNspired.XRIStarterKit
             for (int p = 0; p < fd.probeCount; p++)
                 sb.Append(' ').Append(fd.probes[p].lockedT.ToString("0.00"));
 
+            // Handles.Label ignores Handles.color — text colour comes from the GUIStyle, so set it there.
             // Labels stay fully opaque regardless of the sphere alphas — translucent text is unreadable.
             Color c = tintLabelsByState ? StateColor(fd.state) : labelColor;
             c.a = 1f;
-            UnityEditor.Handles.color = c;
-            UnityEditor.Handles.Label(anchor + Vector3.up * labelOffset, sb.ToString());
+            _labelStyle ??= new GUIStyle(UnityEditor.EditorStyles.whiteLabel) { richText = false };
+            _labelStyle.normal.textColor = c;
+            UnityEditor.Handles.Label(anchor + Vector3.up * labelOffset, sb.ToString(), _labelStyle);
         }
 #endif
     }

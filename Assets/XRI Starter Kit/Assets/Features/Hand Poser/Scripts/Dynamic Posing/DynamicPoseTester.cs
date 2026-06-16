@@ -15,6 +15,9 @@ namespace MikeNspired.XRIStarterKit
     {
         #region Fields
 
+        [InfoBox("Editor / dev test tool — NOT required on production hands. It triggers solver blends and " +
+                 "curl sweeps without an XRI grab so you can dial poses in. Safe to delete from any hand. " +
+                 "(Depends on Odin Inspector.)")]
         [FormerlySerializedAs("m_Hand")]
         [SerializeField] private HandAnimator m_HandAnimator;
 

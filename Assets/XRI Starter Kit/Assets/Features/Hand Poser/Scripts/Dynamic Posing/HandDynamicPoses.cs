@@ -53,10 +53,18 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private Transform palmAnchor;
 
         [Header("Fingertip Probes")]
-        [Tooltip("Per-finger probe transform at the fingertip pad, just past the last joint. Leave empty to " +
-                 "auto-generate at runtime, or use 'Create / Refresh Probes' and nudge into place. Must be a " +
-                 "bare transform named *_Ignore (never a physics collider).")]
-        public Transform thumbTip, indexTip, middleTip, ringTip, pinkyTip;
+        [Tooltip("Per-finger probe transforms at the fingertip pad, just past each last joint. Leave empty " +
+                 "to auto-generate at runtime, or click 'Create / Refresh Probes' below and nudge them onto " +
+                 "the pads. Each must be a bare transform named *_Ignore (never a physics collider).")]
+        public Transform thumbTip;
+        public Transform indexTip;
+        public Transform middleTip;
+        public Transform ringTip;
+        public Transform pinkyTip;
+
+        [Tooltip("Draw magenta spheres at the fingertip probes while this hand is selected, so you can " +
+                 "check their placement. Turn off once they're positioned — purely a setup aid.")]
+        [SerializeField] private bool drawTipGizmos = true;
 
         /// Marker substring identifying a solver tip probe, so detection can never confuse one with the
         /// physical-presence distal colliders (also "*Ignore" children of the same joints).
@@ -186,8 +194,11 @@ namespace MikeNspired.XRIStarterKit
         }
 
 #if UNITY_EDITOR
+        // Magenta spheres mark the solver-only fingertip probes (the contact points the curl solver
+        // tests against), so you can verify they sit on the finger pads. Setup aid only — toggleable.
         private void OnDrawGizmosSelected()
         {
+            if (!drawTipGizmos) return;
             Gizmos.color = Color.magenta;
             foreach (var tip in tips)
                 if (tip) Gizmos.DrawWireSphere(tip.position, 0.005f);

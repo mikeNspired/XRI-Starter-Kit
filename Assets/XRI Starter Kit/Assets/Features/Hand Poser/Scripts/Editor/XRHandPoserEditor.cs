@@ -75,6 +75,11 @@ namespace MikeNspired.XRIStarterKit.Editor
         {
             serializedObject.Update();
 
+            DynamicPoseInfoBox.Draw(
+                "Goes on a GRABBABLE object (not the hand). Sets the hand pose when this object is grabbed: " +
+                "the authored pose near the grip, or the dynamic solver when grabbed off-axis / with no " +
+                "authored pose — see Pose Policy and the Dynamic Posing section below.");
+
             hasLeftHand = currentLeftHand.objectReferenceValue != null;
             hasRightHand = currentRightHand.objectReferenceValue != null;
             customizeValues = new AnimBool(true);

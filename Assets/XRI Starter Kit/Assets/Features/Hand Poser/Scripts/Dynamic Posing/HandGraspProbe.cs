@@ -110,10 +110,18 @@ namespace MikeNspired.XRIStarterKit
             overrideSolverSettings || !HandPoserSettings.Instance ? solverSettings : HandPoserSettings.Instance.dynamicSolver;
 
         [Header("Feel")]
-        [Tooltip("Distance (m) to the nearest surface at/under which the hand fully commits to the solved " +
-                 "pose. Between this and Reach Radius the pose eases in by proximity, so the hand doesn't " +
-                 "snap into a full grasp (the 'spider claw') the instant something enters reach.")]
-        [SerializeField] private float fullPoseDistance = 0.04f;
+        [Tooltip("Ease the grasp in by how close the surface is, so the hand doesn't snap to a full grasp " +
+                 "(the 'spider claw') the instant something enters reach. OFF = commit fully to the solved " +
+                 "pose whenever anything is in reach. Turn OFF first if the fingers fall short of the " +
+                 "object — that is almost always this easing diluting the pose, not the solver.")]
+        [SerializeField] private bool proximityEaseIn = true;
+
+        [Tooltip("Proximity ease-in only. Distance (m) from the HAND (probe center — NOT the fingertips) " +
+                 "to the nearest surface at which the grasp fully commits; farther than this it blends " +
+                 "toward the idle pose. Because it is measured from the hand center, the realistic range is " +
+                 "larger than it looks (~0.06–0.10) and it MUST stay below Reach Radius — at or above it the " +
+                 "weight degenerates and the grasp never forms (auto-clamped to keep it valid).")]
+        [SerializeField] private float fullPoseDistance = 0.07f;
 
         [Tooltip("Ignore solved-joint rotation changes smaller than this (deg) so micro solver noise doesn't " +
                  "make the fingers crawl. Deliberate motion still passes through at full speed.")]
@@ -188,6 +196,15 @@ namespace MikeNspired.XRIStarterKit
 
         private void OnDisable() => HardStop();
 
+        private void OnValidate()
+        {
+            // Full-pose distance must stay strictly below reach radius: ProximityWeight does
+            // InverseLerp(reachRadius, fullPoseDistance, …), which degenerates to a never-commit 0 when
+            // the two are equal (the "0.15 ruins the pose" case). Keep a margin so it always works.
+            if (reachRadius < 0.01f) reachRadius = 0.01f;
+            fullPoseDistance = Mathf.Clamp(fullPoseDistance, 0f, reachRadius * 0.95f);
+        }
+
         // LateUpdate so this writes AFTER the trigger/grip value animations (which run in the normal update
         // phase). When this isn't posing, those animations naturally reassert the idle pose.
         private void LateUpdate()
@@ -250,6 +267,8 @@ namespace MikeNspired.XRIStarterKit
         // smoothstepped. Drives the ease-in so the hand doesn't claw the instant something enters reach.
         private float ProximityWeight(Vector3 _center, int _count)
         {
+            if (!proximityEaseIn) return 1f; // commit fully whenever something is in reach
+
             float nearest = float.PositiveInfinity;
             for (int i = 0; i < _count; i++)
             {
@@ -374,6 +393,10 @@ namespace MikeNspired.XRIStarterKit
         {
             if (isPosing && returnToIdleWhenClear && handAnimator && handAnimator.DefaultPose && !handAnimator.isGrabbingObject)
                 handAnimator.SetJointsImmediate(handAnimator.DefaultPose.joints);
+            // Stop the debug drawer leaving the last grasp's spheres/labels floating in the scene after
+            // the hand has gone idle. Only clears here (the probe was the active poser); the next solve
+            // re-sets hasData, so a fresh grab's telemetry is untouched.
+            if (handAnimator && handAnimator.LastSolveDebug != null) handAnimator.LastSolveDebug.hasData = false;
             HardStop();
         }
 
