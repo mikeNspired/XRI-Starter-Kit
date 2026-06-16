@@ -88,27 +88,6 @@ namespace MikeNspired.XRIStarterKit
                  "hand's hierarchy root (the XR rig) at runtime.")]
         [SerializeField] private Transform ignoreColliderRoot;
 
-        [Header("Solver")]
-        [Tooltip("Off = solve with the global solver settings from the HandPoserSettings asset (single " +
-                 "source of truth — the probe tracks whatever you dial in there). On = use the " +
-                 "probe-local block below, typically cheaper values since this can solve every frame.")]
-        [SerializeField] private bool overrideSolverSettings = false;
-
-        [Tooltip("Probe-local solver tuning, used only when Override Solver Settings is on. Defaults are " +
-                 "deliberately cheaper than the grab path (fewer steps, smaller radius, softer rest curl) " +
-                 "to bound per-frame cost.")]
-        [SerializeField] private HandSolverSettings solverSettings = new HandSolverSettings
-        {
-            stepCount = 8,
-            probeRadius = 0.012f,
-            noContactCurl = 0.5f,
-        };
-
-        // Effective solver block: probe-local override, else the global asset (which may be absent
-        // in a stripped setup — then the local block is still a safe fallback).
-        private HandSolverSettings Solver =>
-            overrideSolverSettings || !HandPoserSettings.Instance ? solverSettings : HandPoserSettings.Instance.dynamicSolver;
-
         [Header("Feel")]
         [Tooltip("Ease the grasp in by how close the surface is, so the hand doesn't snap to a full grasp " +
                  "(the 'spider claw') the instant something enters reach. OFF = commit fully to the solved " +
@@ -135,6 +114,14 @@ namespace MikeNspired.XRIStarterKit
                  "this can stay small, avoiding the slow-motion feel of high smoothing.")]
         [SerializeField, Range(0f, 0.3f)] private float smoothing = 0.04f;
 
+        [Tooltip("Stops a finger flickering between Closed candidate poses as the hand/object moves: it " +
+                 "keeps its current candidate unless another fits closer by more than this margin (m). " +
+                 "0 = pick the best fit every frame (old behaviour, jitter-prone with multiple candidates); " +
+                 "~0.003–0.008 stops the jitter while still switching on a clearly better fit; very high ≈ " +
+                 "lock the pose once chosen. Continuous modes only (AutoGraspTest / unlatched " +
+                 "GripHoldPose); the one-shot grab is unaffected.")]
+        [SerializeField] private float candidateStickiness = 0.005f;
+
         [Tooltip("When the trigger ends (left reach / grip released), ease back to idle over this many " +
                  "seconds instead of snapping. Keep short so it doesn't feel like slow motion. " +
                  "0 (or Return To Idle off) = stop immediately.")]
@@ -143,6 +130,27 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Ease back to the idle pose when the trigger ends. Off = freeze wherever the solve left off " +
                  "(the normal trigger/grip animations then reassert control).")]
         [SerializeField] private bool returnToIdleWhenClear = true;
+
+        [Header("Solver")]
+        [Tooltip("Off = solve with the global solver settings from the HandPoserSettings asset (single " +
+                 "source of truth — the probe tracks whatever you dial in there). On = use the " +
+                 "probe-local block below, typically cheaper values since this can solve every frame.")]
+        [SerializeField] private bool overrideSolverSettings = false;
+
+        [Tooltip("Probe-local solver tuning, used only when Override Solver Settings is on. Defaults are " +
+                 "deliberately cheaper than the grab path (fewer steps, smaller radius, softer rest curl) " +
+                 "to bound per-frame cost.")]
+        [SerializeField] private HandSolverSettings solverSettings = new HandSolverSettings
+        {
+            stepCount = 8,
+            probeRadius = 0.012f,
+            noContactCurl = 0.5f,
+        };
+
+        // Effective solver block: probe-local override, else the global asset (which may be absent
+        // in a stripped setup — then the local block is still a safe fallback).
+        private HandSolverSettings Solver =>
+            overrideSolverSettings || !HandPoserSettings.Instance ? solverSettings : HandPoserSettings.Instance.dynamicSolver;
 
         #endregion
 
@@ -492,6 +500,12 @@ namespace MikeNspired.XRIStarterKit
             ctx.collectDebug     = handAnimator.requestSolveDebug ||
                                    (HandPoserSettings.Instance && HandPoserSettings.Instance.drawSolveDebug);
             Solver.ApplyTo(ctx);
+
+            // Candidate hysteresis is a continuous-resolve concern, so it lives on the probe (not the
+            // shared solver block). Clear the solver's remembered choices on the first solve of a fresh
+            // session (was idle last frame) so a new grasp doesn't inherit the previous one's bias.
+            ctx.candidateStickiness   = candidateStickiness;
+            ctx.resetCandidateHistory = !isPosing;
         }
 
         // Keeps only colliders NOT under the ignore root (hand / rig), compacting them to the front of the

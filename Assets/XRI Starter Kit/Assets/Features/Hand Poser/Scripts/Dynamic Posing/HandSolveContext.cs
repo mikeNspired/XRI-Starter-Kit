@@ -46,6 +46,14 @@ namespace MikeNspired.XRIStarterKit
         // finds nothing — a gentle wrap continuing the finger's spiral — instead of snapping straight
         // to a full fist (the distal "claw"). 0 = stop dead at the last grip; ~0.33 reads natural.
         public float distalFollowCurl = 0.33f;
+        // Per-finger candidate hysteresis (gap metres). When > 0, a finger keeps its previously-chosen
+        // closed candidate pose unless another fits closer by more than this margin — stops the finger
+        // flickering between candidates as the hand/object moves under continuous re-solving. 0 =
+        // pick the best fit every solve (original behavior). Only meaningful when re-solving each frame.
+        public float candidateStickiness = 0f;
+        // Set true on the first solve of a fresh pose session to clear the solver's remembered per-finger
+        // candidate choices, so a new grasp doesn't inherit the previous session's stickiness bias.
+        public bool resetCandidateHistory = false;
         // When true the solver records per-joint debug telemetry into its LastSolveDebug for the gizmo
         // drawer. Adds a little work, so leave off unless a HandPoseSolveDebugDrawer is showing it.
         public bool collectDebug;

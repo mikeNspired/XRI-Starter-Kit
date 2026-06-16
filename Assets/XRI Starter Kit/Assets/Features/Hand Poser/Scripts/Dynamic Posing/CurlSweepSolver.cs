@@ -28,6 +28,8 @@ namespace MikeNspired.XRIStarterKit
         private readonly HashSet<string> _seenJoints = new HashSet<string>();
         private Vector3[] _snapshotPos;
         private Quaternion[] _snapshotRot;
+        // Per-finger candidate chosen last solve, for hysteresis (HandSolveContext.candidateStickiness).
+        private readonly PoseScriptableObject[] _lastCandidate = new PoseScriptableObject[5];
 
         // Cached name lookup for a pose, rebuilt only when its joints array changes.
         private Dictionary<string, PoseScriptableObject.JointData> Dict(PoseScriptableObject _pose)
@@ -63,6 +65,9 @@ namespace MikeNspired.XRIStarterKit
                 snapshotPos[i] = joints[i].localPosition;
                 snapshotRot[i] = joints[i].localRotation;
             }
+
+            if (_ctx.resetCandidateHistory)
+                for (int i = 0; i < _lastCandidate.Length; i++) _lastCandidate[i] = null;
 
             // Candidate closed poses: closedPose first, then any extras (deduped). Each finger
             // independently keeps whichever candidate ends with its fingertip closest to the target.
@@ -130,12 +135,18 @@ namespace MikeNspired.XRIStarterKit
                         Vector3 probeAtLocked = gapTip.position;
                         float gap = TipGap(probeAtLocked, _ctx);
 
+                        // Hysteresis: discount last solve's chosen candidate so a challenger must fit
+                        // closer by more than candidateStickiness to take over (stops per-frame flicker).
+                        float cmpGap = gap;
+                        if (_ctx.candidateStickiness > 0f && cp == _lastCandidate[fingerIdx])
+                            cmpGap -= _ctx.candidateStickiness;
+
                         // Prefer a candidate that makes contact; among equals, the snugger fingertip.
-                        if (!anyEvaluated || IsBetter(contacted, gap, bestContacted, bestGap))
+                        if (!anyEvaluated || IsBetter(contacted, cmpGap, bestContacted, bestGap))
                         {
                             anyEvaluated   = true;
                             bestContacted  = contacted;
-                            bestGap        = gap;
+                            bestGap        = cmpGap; // store the compared (hysteresis-biased) gap
                             bestT          = lockedT;
                             bestProbe      = probeAtLocked;
                             bestPose       = cp;
@@ -144,6 +155,10 @@ namespace MikeNspired.XRIStarterKit
                         // Reset this finger to open before the next candidate so sweeps are independent.
                         _ctx.hand.SetFingerCurl(fingerIdx, 0f, _ctx.openPose, cp);
                     }
+
+                    // Remember the candidate that won the gap competition (before any relaxed-pose
+                    // override) so next solve's hysteresis biases toward this same contacting choice.
+                    _lastCandidate[fingerIdx] = bestPose;
 
                     // No contact + a dedicated relaxed pose supplied → rest there instead of closing.
                     if (!bestContacted && _ctx.relaxedPose)
