@@ -100,6 +100,21 @@ namespace MikeNspired.XRIStarterKit
         /// snap" effect can read this; also handy for haptics / UI.
         public float StrainNormalized => sticking ? strain : 0f;
 
+        [Header("Grasp Validity (GripHoldPose)")]
+        [Tooltip("Only pose/hold a grip when the fingers actually WRAP onto something — not when the hand is " +
+                 "jammed flat into (or through) a surface, where the open fingers already 'contact' at t≈0 " +
+                 "and the solver would otherwise freeze a fake open 'grab'. Off = pose whenever anything is " +
+                 "in reach. Does not apply to AutoGraspTest (you want to see the raw solve there) or to " +
+                 "Surface Stick (resting an open hand on a surface is valid).")]
+        [SerializeField] private bool requireRealGrasp = true;
+
+        [Tooltip("How many fingers must genuinely wrap (contact AND curl past Min Wrap Angle) for a grip to count.")]
+        [SerializeField, Range(1, 5)] private int minGraspFingers = 2;
+
+        [Tooltip("How far (deg) a contacted finger must curl from the Open pose to count as a real wrap, " +
+                 "rather than just grazing/penetrating the surface at the open pose.")]
+        [SerializeField] private float minWrapAngle = 12f;
+
         [Header("World Query")]
         [Tooltip("Only geometry on these layers is posed onto. Set to your non-grabbable environment layer(s) — " +
                  "never include the player body or the other hand. (Own colliders are excluded regardless.)")]
@@ -214,6 +229,8 @@ namespace MikeNspired.XRIStarterKit
         private readonly Dictionary<string, TransformStruct> targetPose    = new Dictionary<string, TransformStruct>();
         private readonly Dictionary<string, TransformStruct> fadeStart     = new Dictionary<string, TransformStruct>();
         private Dictionary<string, PoseScriptableObject.JointData> idleByName; // DefaultPose lookup for the blend
+        private Dictionary<string, PoseScriptableObject.JointData> openByName; // OpenPose lookup for the grasp gate
+        private PoseScriptableObject openByNameSource;
         private Dictionary<string, Transform> jointByName;
         private PoseScriptableObject.JointData[] writeBuffer;
 
@@ -276,14 +293,15 @@ namespace MikeNspired.XRIStarterKit
             if (UseLatch() && ShouldSolveThisFrame())
             {
                 if (latched) { ApplySolved(latchedResult, 1f); return; }   // hold the captured shape
-                if (Ready() && TrySolve()) { latched = true; latchedResult = lastResult; return; }
-                FadeToIdle();   // grip held but nothing in reach yet — keep trying to acquire
+                if (Ready() && TrySolve(true)) { latched = true; latchedResult = lastResult; return; }
+                FadeToIdle();   // grip held but no real grasp yet — keep trying to acquire
                 return;
             }
 
             // Continuous path (AutoGraspTest, or GripHoldPose with latch off): re-solve every frame.
+            // Gate the grasp for GripHoldPose only; AutoGraspTest shows the raw solve for dial-in.
             latched = false;
-            bool posed = ShouldSolveThisFrame() && Ready() && TrySolve();
+            bool posed = ShouldSolveThisFrame() && Ready() && TrySolve(mode == GraspProbeMode.GripHoldPose);
             if (!posed) FadeToIdle();
         }
 
@@ -298,8 +316,9 @@ namespace MikeNspired.XRIStarterKit
         #region Solve + apply
 
         // Gathers nearby world colliders, solves, and applies the proximity-weighted, deadbanded, smoothed
-        // pose. Returns false (→ fade to idle) when nothing solvable is in reach.
-        private bool TrySolve()
+        // pose. Returns false (→ fade to idle) when nothing solvable is in reach, or (when gateGrasp) when
+        // the solve isn't a genuine wrap (so a hand jammed flat into a surface doesn't fake a grab).
+        private bool TrySolve(bool gateGrasp)
         {
             Vector3 center = (probeCenter ? probeCenter : transform).position;
             int hits = Physics.OverlapSphereNonAlloc(center, reachRadius, colliders, worldMask,
@@ -317,11 +336,62 @@ namespace MikeNspired.XRIStarterKit
             if (result == null || result.Length == 0) return false;
             lastResult = result; // caller-owned; safe to capture for the latch hold
 
+            // Reject a degenerate "grab" (fingers contacting at the open pose without curling) so a hand
+            // jammed into a surface doesn't lock a fake open grip.
+            if (gateGrasp && !HasRealGrasp(result)) return false;
+
             float weight = ProximityWeight(center, count);
             ApplySolved(result, weight);
             isPosing = true;
             fading = false;
             return true;
+        }
+
+        // A grip counts as real only when enough fingers both CONTACT and curl past minWrapAngle from the
+        // open pose. Contact-at-open (the jammed-into-a-surface case) is contacted but barely curled, so it
+        // is excluded; no-contact fingers (relaxed/idle curl) are excluded by the contact check.
+        private bool HasRealGrasp(PoseScriptableObject.JointData[] _result)
+        {
+            if (!requireRealGrasp) return true;
+            var open = dyn ? dyn.OpenOrDefault : null;
+            if (!open) return true; // can't judge without an open reference → don't block
+
+            if (openByName == null || openByNameSource != open)
+            {
+                openByName ??= new Dictionary<string, PoseScriptableObject.JointData>();
+                openByName.Clear();
+                foreach (var jd in open.joints) openByName[jd.jointName] = jd;
+                openByNameSource = open;
+            }
+
+            var contacted = solver.LastSolveContacted;
+            int wrapped = 0;
+            for (int f = 0; f < 5; f++)
+            {
+                if (contacted == null || f >= contacted.Length || !contacted[f]) continue;
+                if (FingerWrapAngle(f, _result) >= minWrapAngle) wrapped++;
+            }
+            return wrapped >= minGraspFingers;
+        }
+
+        // Largest rotation (deg) any joint of the finger moved from the open pose in the solved result.
+        private float FingerWrapAngle(int _finger, PoseScriptableObject.JointData[] _result)
+        {
+            var chain = handAnimator.fingerMap.Finger(_finger);
+            if (chain == null) return 0f;
+            float maxAngle = 0f;
+            foreach (var joint in chain)
+            {
+                if (!joint || !openByName.TryGetValue(joint.name, out var op)) continue;
+                for (int i = 0; i < _result.Length; i++)
+                {
+                    if (_result[i].jointName != joint.name) continue;
+                    float a = Quaternion.Angle(op.localRotation, _result[i].localRotation);
+                    if (a > maxAngle) maxAngle = a;
+                    break;
+                }
+            }
+            return maxAngle;
         }
 
         // 0 at the edge of reach (barely deviate from idle) → 1 at/under fullPoseDistance (full solve),
@@ -488,7 +558,7 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            bool solved = TrySolve(); // fingers re-conform to the surface each frame
+            bool solved = TrySolve(false); // resting an open hand on a surface is a valid stick — don't gate
 
             if (!sticking)
             {
