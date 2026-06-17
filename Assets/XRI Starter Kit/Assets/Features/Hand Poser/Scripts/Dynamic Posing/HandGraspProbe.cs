@@ -60,7 +60,6 @@ namespace MikeNspired.XRIStarterKit
                  "GripHoldPose: runtime, solves only while the grip button is held near a surface.")]
         [SerializeField] private GraspProbeMode mode = GraspProbeMode.GripHoldPose;
 
-        [Header("Grip (GripHoldPose mode)")]
         [Tooltip("Grip input source. Auto-found in parents if empty. Falls back to the hand's grip animation " +
                  "value when none is assigned.")]
         [SerializeField] private XRControllerButtons controllerButtons;
@@ -76,7 +75,6 @@ namespace MikeNspired.XRIStarterKit
                  "(drape over an edge) at the cost of fighting a dynamic object the colliders move.")]
         [SerializeField] private bool latchGripHold = true;
 
-        [Header("Surface Stick (GripHoldPose)")]
         [Tooltip("On = while gripping a surface the HAND ITSELF anchors to it (not just the fingers): it " +
                  "stays planted where you gripped as you move the controller, then snaps back when you pull " +
                  "too far. Fingers stay active and re-conform, so this OVERRIDES Latch Grip Hold. " +
@@ -100,7 +98,6 @@ namespace MikeNspired.XRIStarterKit
         /// snap" effect can read this; also handy for haptics / UI.
         public float StrainNormalized => sticking ? strain : 0f;
 
-        [Header("Grasp Validity (GripHoldPose)")]
         [Tooltip("Only pose/hold a grip when the fingers actually WRAP onto something — not when the hand is " +
                  "jammed flat into (or through) a surface, where the open fingers already 'contact' at t≈0 " +
                  "and the solver would otherwise freeze a fake open 'grab'. Off = pose whenever anything is " +
@@ -115,7 +112,6 @@ namespace MikeNspired.XRIStarterKit
                  "rather than just grazing/penetrating the surface at the open pose.")]
         [SerializeField] private float minWrapAngle = 12f;
 
-        [Header("World Query")]
         [Tooltip("Only geometry on these layers is posed onto. Set to your non-grabbable environment layer(s) — " +
                  "never include the player body or the other hand. (Own colliders are excluded regardless.)")]
         [SerializeField] private LayerMask worldMask;
@@ -134,7 +130,6 @@ namespace MikeNspired.XRIStarterKit
                  "hand's hierarchy root (the XR rig) at runtime.")]
         [SerializeField] private Transform ignoreColliderRoot;
 
-        [Header("Feel")]
         [Tooltip("Ease the grasp in by how close the surface is, so the hand doesn't snap to a full grasp " +
                  "(the 'spider claw') the instant something enters reach. OFF = commit fully to the solved " +
                  "pose whenever anything is in reach. Turn OFF first if the fingers fall short of the " +
@@ -177,7 +172,6 @@ namespace MikeNspired.XRIStarterKit
                  "(the normal trigger/grip animations then reassert control).")]
         [SerializeField] private bool returnToIdleWhenClear = true;
 
-        [Header("Solver")]
         [Tooltip("Off = solve with the global solver settings from the HandPoserSettings asset (single " +
                  "source of truth — the probe tracks whatever you dial in there). On = use the " +
                  "probe-local block below, typically cheaper values since this can solve every frame.")]

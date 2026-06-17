@@ -4,10 +4,11 @@ using UnityEngine;
 namespace MikeNspired.XRIStarterKit.Editor
 {
     /// <summary>
-    /// Conditional inspector for <see cref="HandGraspProbe"/>: shows only the fields that actually do
-    /// something in the current configuration. The GripHoldPose sections hide entirely in AutoGraspTest;
-    /// sub-options hide behind their toggles (stick fields, grasp-validity fields, the solver override
-    /// block); and World Query / Feel collapse into foldouts. Presentation only — no behavior change.
+    /// Inspector for <see cref="HandGraspProbe"/>. Groups the settings into collapsible foldouts and GREYS
+    /// OUT (rather than hides) fields that don't apply in the current config, so toggling a bool never
+    /// reflows the layout. The whole Grip Hold Pose group hides only on the deliberate Mode switch to
+    /// AutoGraspTest. Presentation only — no behavior or serialization change. (Field [Header]s were removed
+    /// from the component; all section titles are drawn here so they appear exactly once.)
     /// </summary>
     [CustomEditor(typeof(HandGraspProbe))]
     public class HandGraspProbeEditor : UnityEditor.Editor
@@ -21,8 +22,10 @@ namespace MikeNspired.XRIStarterKit.Editor
             smoothing, candidateStickiness, releaseFadeTime, returnToIdleWhenClear;
         private SerializedProperty overrideSolverSettings, solverSettings;
 
+        private bool gripHoldFoldout = true;
         private bool worldQueryFoldout = true;
         private bool feelFoldout;
+        private bool solverFoldout;
 
         private void OnEnable()
         {
@@ -69,42 +72,48 @@ namespace MikeNspired.XRIStarterKit.Editor
             EditorGUILayout.PropertyField(enableProbe);
             EditorGUILayout.PropertyField(mode);
 
-            // The Grip / Surface Stick / Grasp Validity groups are GripHoldPose-only — hide them whole in
-            // AutoGraspTest (the editor dial-in tool, which uses none of them).
-            bool gripHold = (GraspProbeMode)mode.enumValueIndex == GraspProbeMode.GripHoldPose;
-            if (gripHold)
+            // Grip Hold Pose: one dropdown for all of it. Hidden only on the deliberate switch to
+            // AutoGraspTest (the dial-in tool uses none of these). Inside, dead sub-fields grey out so a
+            // bool toggle never reflows the layout.
+            if ((GraspProbeMode)mode.enumValueIndex == GraspProbeMode.GripHoldPose)
             {
-                Header("Grip (GripHoldPose mode)");
-                EditorGUILayout.PropertyField(controllerButtons);
-                EditorGUILayout.PropertyField(gripThreshold);
-                // Surface Stick overrides the latch, so the latch toggle only matters when stick is off.
-                if (!stickHandToSurface.boolValue)
-                    EditorGUILayout.PropertyField(latchGripHold);
-
-                Header("Surface Stick (GripHoldPose)");
-                EditorGUILayout.PropertyField(stickHandToSurface);
-                if (stickHandToSurface.boolValue)
+                gripHoldFoldout = Foldout(gripHoldFoldout, "Grip Hold Pose");
+                if (gripHoldFoldout)
                 {
                     EditorGUI.indentLevel++;
-                    EditorGUILayout.PropertyField(leashWeight);
-                    EditorGUILayout.PropertyField(breakDistance);
-                    EditorGUILayout.PropertyField(onHandSnapBack);
-                    EditorGUI.indentLevel--;
-                }
 
-                Header("Grasp Validity (GripHoldPose)");
-                EditorGUILayout.PropertyField(requireRealGrasp);
-                if (requireRealGrasp.boolValue)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.PropertyField(minGraspFingers);
-                    EditorGUILayout.PropertyField(minWrapAngle);
+                    SubHeader("Grip");
+                    EditorGUILayout.PropertyField(controllerButtons);
+                    EditorGUILayout.PropertyField(gripThreshold);
+                    using (new EditorGUI.DisabledScope(stickHandToSurface.boolValue)) // stick overrides latch
+                        EditorGUILayout.PropertyField(latchGripHold);
+
+                    SubHeader("Surface Stick");
+                    EditorGUILayout.PropertyField(stickHandToSurface);
+                    using (new EditorGUI.DisabledScope(!stickHandToSurface.boolValue))
+                    {
+                        EditorGUI.indentLevel++;
+                        EditorGUILayout.PropertyField(leashWeight);
+                        EditorGUILayout.PropertyField(breakDistance);
+                        EditorGUILayout.PropertyField(onHandSnapBack);
+                        EditorGUI.indentLevel--;
+                    }
+
+                    SubHeader("Grasp Validity");
+                    EditorGUILayout.PropertyField(requireRealGrasp);
+                    using (new EditorGUI.DisabledScope(!requireRealGrasp.boolValue))
+                    {
+                        EditorGUI.indentLevel++;
+                        EditorGUILayout.PropertyField(minGraspFingers);
+                        EditorGUILayout.PropertyField(minWrapAngle);
+                        EditorGUI.indentLevel--;
+                    }
+
                     EditorGUI.indentLevel--;
                 }
             }
 
-            EditorGUILayout.Space(4);
-            worldQueryFoldout = EditorGUILayout.Foldout(worldQueryFoldout, "World Query", true, EditorStyles.foldoutHeader);
+            worldQueryFoldout = Foldout(worldQueryFoldout, "World Query");
             if (worldQueryFoldout)
             {
                 EditorGUI.indentLevel++;
@@ -116,13 +125,12 @@ namespace MikeNspired.XRIStarterKit.Editor
                 EditorGUI.indentLevel--;
             }
 
-            EditorGUILayout.Space(4);
-            feelFoldout = EditorGUILayout.Foldout(feelFoldout, "Feel", true, EditorStyles.foldoutHeader);
+            feelFoldout = Foldout(feelFoldout, "Feel");
             if (feelFoldout)
             {
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(proximityEaseIn);
-                if (proximityEaseIn.boolValue) // Full Pose Distance is proximity-ease-in only
+                using (new EditorGUI.DisabledScope(!proximityEaseIn.boolValue)) // Full Pose Distance is ease-in only
                     EditorGUILayout.PropertyField(fullPoseDistance);
                 EditorGUILayout.PropertyField(rotationDeadband);
                 EditorGUILayout.PropertyField(positionDeadband);
@@ -133,18 +141,29 @@ namespace MikeNspired.XRIStarterKit.Editor
                 EditorGUI.indentLevel--;
             }
 
-            Header("Solver");
-            EditorGUILayout.PropertyField(overrideSolverSettings);
-            if (overrideSolverSettings.boolValue) // the block is dead (and big) when using the global asset
-                EditorGUILayout.PropertyField(solverSettings, true);
+            solverFoldout = Foldout(solverFoldout, "Solver");
+            if (solverFoldout)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(overrideSolverSettings);
+                using (new EditorGUI.DisabledScope(!overrideSolverSettings.boolValue)) // dead when using the global asset
+                    EditorGUILayout.PropertyField(solverSettings, true);
+                EditorGUI.indentLevel--;
+            }
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        private static void Header(string title)
+        private static bool Foldout(bool state, string title)
         {
-            EditorGUILayout.Space(6);
-            EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+            EditorGUILayout.Space(4);
+            return EditorGUILayout.Foldout(state, title, true, EditorStyles.foldoutHeader);
+        }
+
+        private static void SubHeader(string title)
+        {
+            EditorGUILayout.Space(2);
+            EditorGUILayout.LabelField(title, EditorStyles.miniBoldLabel);
         }
     }
 }
