@@ -363,3 +363,96 @@ across a handful of varied objects look plausible rather than wild.
 
 Open a PR with the acceptance steps restated.
 ```
+
+> **Phase 7 outcome (branch `claude/ecstatic-turing-bb2j4x`).** Phase 7 shipped and the branch grew well
+> past its original scope into solver dial-in, a full grasp-probe **surface-stick** feature, and an
+> inspector overhaul. Treat the grab *shapes* as "good enough to build on" — further per-object calibration
+> is now data, not code.
+>
+> **Solver dial-in (Phase 7 proper):**
+> - **Debug viz finished:** per-JOINT contact colouring (green = this joint contacted, grey = idle joint on
+>   a gripping finger, red = no-contact finger, yellow = relaxed rest). `HandPoseSolveDebugDrawer` gained
+>   draw toggles, a contacted-joints-only filter, every colour configurable WITH alpha, sphere scale, label
+>   tint/colour, and a **Label Alpha** — the label text alpha was a real bug (`Handles.Label` ignores
+>   `Handles.color`; text colour now comes from a cached `GUIStyle`).
+> - **Per-finger calibration** (`PerFingerSolveSettings`: enable mask, probe-radius scale, max-curl
+>   anti-overshoot clamp, press bias) on the settings asset + per-object (`XRHandPoser`) / per-probe
+>   (`HandGraspProbe`) overrides. A disabled finger keeps the authored pose on the grab path and is exempt
+>   from the grasp gate. Plus `samplesPerSegment` for drape quality.
+> - **Relaxed rest pose** (`HandDynamicPoses.RelaxedPose`): a no-contact finger takes an authored rest
+>   shape, superseding the `noContactCurl` scalar when assigned.
+> - **HandJointLimits** was built then **removed** — redundant with the pose-bounded curl + per-finger
+>   max-curl. Its real use (geometry pushing fingers around) belongs to the deferred world-pushback feature;
+>   the asset is in git history.
+> - **Object seating** (`Seat In Palm`, off by default): a dynamic grab settles the object a capped distance
+>   toward a palm anchor (`HandDynamicPoses`) before the solve. Position-only; rotation settle deferred
+>   (needs shape classification).
+> - **Interface lock + allocation pass:** `IHandPoseSolver` / `HandSolveContext` documented as the frozen
+>   seam a future IK/penetration solver drops into; both solvers reuse pose-dict caches and snapshot/result
+>   buffers (per-frame-safe).
+> - **Per-finger candidate hysteresis** (`candidateStickiness`): each finger keeps its chosen Closed
+>   candidate unless another fits closer by a margin — kills the frame-to-frame pose flicker with multiple
+>   candidates. Default-off for the one-shot grab; on for the continuous probe.
+>
+> **Consolidation / inspector overhaul:**
+> - `HandSolverSettings` — the shared solver-tuning block, defined ONCE and reused on the settings asset
+>   (global source of truth), `XRHandPoser` (per-object override) and `HandGraspProbe` (per-probe override);
+>   killed the triple-maintained fields.
+> - One-line **info boxes** on every dynamic-pose component (`DynamicPoseInfoBox`, with a universal
+>   Tools ▸ XRI Starter Kit ▸ Dynamic Pose Info Boxes toggle). Fixed the repeating "Fingertip Probes" header
+>   and added a tip-gizmo toggle on `HandDynamicPoses`. `DynamicPoseTester` marked dev-only / removable.
+>   `HandPhysicsColliders` got a gizmo toggle, a Default-layer warning, and a de-cluttered inspector.
+>
+> **HandGraspProbe — grew into a real free-hand feature:**
+> - **Latch Grip Hold:** acquire the grasp once on grip-press and hold it (no per-frame chase).
+> - **Surface Stick:** the HAND ROOT anchors to the gripped surface (reusing `HandAnimator.MoveHandToTarget`
+>   / `ReturnHandToPlayer` per-frame tracking) with a tunable **leash** give, snapping back past a **break
+>   distance**. Exposes `StrainNormalized` (0→1 toward the break) and an `onHandSnapBack` UnityEvent.
+>   Decision after discussion: rigid-freeze was the safe option but leash + active-poser was chosen because
+>   it sets up the eventual fingertip-pinning IK — it feeds that solver the palm motion.
+> - **Grasp Validity gate** (`Require Real Grasp` / `Min Grasp Fingers` / `Min Wrap Angle`): a grip only
+>   poses/sticks when enough fingers actually WRAP (contact AND curl past the angle from the Open pose), so
+>   a hand jammed flat into a surface no longer fakes a grab. The stick exists only while a valid grasp does.
+> - `Proximity Ease In` toggle + `Full Pose Distance` clamp/tooltip fix (`>= reachRadius` degenerated),
+>   stale-debug-gizmo clear on idle, mode enum reordered (GripHoldPose first), and a conditional **custom
+>   editor** (one Grip-Hold-Pose foldout; dead fields grey out so a bool toggle never reflows the layout).
+>
+> **Deferred / known-not-good:**
+> - **Fingertip-pinning IK** (lock the fingertips, let the palm move) — the genuinely-nicer "stuck hand"
+>   look, but it needs real IK (deferred by `CLAUDE.md`). The surface-stick leash is deliberately its future
+>   input. Confirmed the architecture composes: an IK solver drops in as another `IHandPoseSolver` and the
+>   drivers / anchor / latch / gate / viz / probes / authored poses all carry forward unchanged.
+> - **Grasp-gate hysteresis:** the stick is tied to per-frame grasp validity, so a wrap hovering at the
+>   angle threshold could flicker the anchor. Add a dead-zone / few-frame grace if it shows up in play.
+> - **Polish hooks wired but unbuilt:** `StrainNormalized` (hand shakes as it nears the snap) and
+>   `onHandSnapBack` (sound on snap) — left as clean seams, and the natural lead-in to Phase 8.
+
+---
+
+## Phase 8 — Grab / contact audio (exploration)
+
+> Exploratory, not a tight spec. `GrabAudioEffect` (`Features/Hand Poser/Scripts/Helpers/`) already exists:
+> an `AudioRandomize` subclass that plays a randomized clip on an interactable's `selectEntered`, shipped as
+> a preconfigured prefab you drop under any XR grab interactable. This phase explores richer grab/contact
+> audio and wires it into the systems this branch built. Kept for "whatever the next phase ends up being" —
+> the dynamic-posing work is already long.
+
+```
+Explore Phase 8 — grab / contact audio. Branch: phase-8-grab-audio.
+
+Starting point: GrabAudioEffect (Helpers/) — AudioRandomize + selectEntered → Play(), a prefab child of
+grab interactables. Keep that simple path working and backward-compatible.
+
+Directions to explore (pick what reads best in-editor; additive, decoupled — audio listens to events, the
+posing/solver code never references audio, mirroring the IHandPoseSolver discipline):
+- Tie audio to the NEW dynamic events, not just selectEntered:
+    * surface-stick onHandSnapBack is already a UnityEvent — a snap-back sound is a one-liner wiring.
+    * a grasp-acquire sound when a dynamic grab / grip-hold actually WRAPS (Require Real Grasp passes),
+      and a release sound.
+- Per-surface / per-material grab + tap sounds (a wood table vs a metal rail should sound different):
+  a small ScriptableObject mapping a PhysicMaterial / layer / tag to a clip set, read at grab/contact time.
+- Optional soft-contact tick when the free-hand grasp probe first touches a surface — gate it so it does
+  not machine-gun while sliding (debounce on the grasp-acquire transition, not every contacting frame).
+
+Out of scope: haptics (could share the same event seams later), music / ambience.
+```
