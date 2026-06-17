@@ -558,20 +558,20 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            // Gated solve: only a genuine wrap poses the fingers AND qualifies to anchor. A hand jammed
-            // flat into a surface fails the gate, so it behaves EXACTLY like Stick Off (no anchor, the hand
-            // falls back to its normal pose via FadeToIdle) instead of faking a grab.
+            // The grasp gate drives EVERYTHING: a stick exists only while a genuine wrap exists this frame.
             bool grasped = TrySolve(requireRealGrasp);
 
-            if (!sticking)
+            if (!grasped)
             {
-                if (grasped) AcquireStick(); // anchor only on a real grasp
-                else FadeToIdle();           // no real wrap → identical to Stick Off
+                // No valid grasp (jammed into a surface, slid off into a non-grip fist, etc.): never anchor,
+                // and release if we somehow were. The hand falls back to its normal pose — same as Stick Off.
+                if (sticking) ReleaseStick(false);
+                FadeToIdle();
                 return;
             }
 
-            // Anchored: stay stuck until grip release (handled above) or the break distance; a momentary
-            // grasp drop just leaves the fingers at their last pose rather than releasing or opening.
+            // Valid grasp: anchor (if not already) and leash toward the controller (break distance still applies).
+            if (!sticking) AcquireStick();
             UpdateLeash();
         }
 
