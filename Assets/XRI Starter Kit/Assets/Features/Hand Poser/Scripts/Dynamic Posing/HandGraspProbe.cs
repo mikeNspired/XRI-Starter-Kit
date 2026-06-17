@@ -38,6 +38,13 @@ namespace MikeNspired.XRIStarterKit
     /// until release, so the fingers stop re-conforming to the moving object. This driver still does NOT
     /// wire the collider feature in — it runs its own queries and ignores the hand's own colliders
     /// (see Ignore Collider Root); the latch is purely a behavior of THIS component.
+    ///
+    /// Surface stick (GripHoldPose, opt-in via Stick Hand To Surface): the HAND ROOT also anchors to the
+    /// gripped surface — it stays planted where you gripped (with a tunable leash 'give') and snaps back to
+    /// the controller past a break distance, while the fingers keep re-conforming. Reuses the hand's
+    /// MoveHandToTarget / ReturnHandToPlayer tracking; it is the spatial companion to the finger latch and
+    /// takes precedence over it. The palm motion it produces is also the input a future fingertip-pinning
+    /// IK solver would consume.
     /// </summary>
     public class HandGraspProbe : MonoBehaviour
     {
@@ -68,6 +75,30 @@ namespace MikeNspired.XRIStarterKit
                  "Off = re-solve every frame, so the fingers re-conform as you slide along a surface " +
                  "(drape over an edge) at the cost of fighting a dynamic object the colliders move.")]
         [SerializeField] private bool latchGripHold = true;
+
+        [Header("Surface Stick (GripHoldPose)")]
+        [Tooltip("On = while gripping a surface the HAND ITSELF anchors to it (not just the fingers): it " +
+                 "stays planted where you gripped as you move the controller, then snaps back when you pull " +
+                 "too far. Fingers stay active and re-conform, so this OVERRIDES Latch Grip Hold. " +
+                 "Off = the hand follows the controller as usual and only the fingers pose.")]
+        [SerializeField] private bool stickHandToSurface = false;
+
+        [Tooltip("How much the anchored hand follows the controller. 0 = planted rigidly on the surface; " +
+                 "1 = no stick. A small value keeps it mostly planted but lets it 'give' toward the " +
+                 "controller as you pull, so the detach reads as straining rather than a frozen hand.")]
+        [SerializeField, Range(0f, 1f)] private float leashWeight = 0.15f;
+
+        [Tooltip("Controller-to-anchor distance (m) at which the hand lets go and snaps back to the " +
+                 "controller. Keep tight (~0.1–0.15) so the snap is small and reads as the grip slipping.")]
+        [SerializeField] private float breakDistance = 0.12f;
+
+        [Tooltip("Invoked when the hand snaps back because you pulled past Break Distance (NOT on a normal " +
+                 "grip release). Hook a sound or haptic here.")]
+        [SerializeField] private UnityEngine.Events.UnityEvent onHandSnapBack;
+
+        /// 0 when not anchored, rising to 1 at the break distance. A future "hand shakes as it nears the
+        /// snap" effect can read this; also handy for haptics / UI.
+        public float StrainNormalized => sticking ? strain : 0f;
 
         [Header("World Query")]
         [Tooltip("Only geometry on these layers is posed onto. Set to your non-grabbable environment layer(s) — " +
@@ -189,6 +220,15 @@ namespace MikeNspired.XRIStarterKit
         private bool fading;
         private float fadeElapsed;
 
+        // Surface-stick anchor state (GripHoldPose + stickHandToSurface).
+        private Transform stickAnchor;     // child of the gripped collider, frozen at the grip-time hand pose
+        private Transform leashTarget;     // transform the hand tracks each frame (anchor ↔ controller blend)
+        private Transform controllerMount; // hand's parent captured at acquire (where the hand "should" be)
+        private Vector3 handLocalPos;
+        private Quaternion handLocalRot;
+        private bool sticking;
+        private float strain;
+
         #endregion
 
         #region Unity Lifecycle
@@ -202,7 +242,11 @@ namespace MikeNspired.XRIStarterKit
             colliders = new Collider[Mathf.Max(1, maxColliders)];
         }
 
-        private void OnDisable() => HardStop();
+        private void OnDisable()
+        {
+            ReleaseStick(false); // re-parent the hand before we stop, so it never stays detached
+            HardStop();
+        }
 
         private void OnValidate()
         {
@@ -211,15 +255,21 @@ namespace MikeNspired.XRIStarterKit
             // the two are equal (the "0.15 ruins the pose" case). Keep a margin so it always works.
             if (reachRadius < 0.01f) reachRadius = 0.01f;
             fullPoseDistance = Mathf.Clamp(fullPoseDistance, 0f, reachRadius * 0.95f);
+            if (breakDistance < 0.01f) breakDistance = 0.01f;
         }
 
         // LateUpdate so this writes AFTER the trigger/grip value animations (which run in the normal update
         // phase). When this isn't posing, those animations naturally reassert the idle pose.
         private void LateUpdate()
         {
-            if (!enableProbe || !handAnimator) { HardStop(); return; }
+            if (!enableProbe || !handAnimator) { ReleaseStick(false); HardStop(); return; }
             // Never fight the grab blend — the Phase 5 grab path owns the pose while holding something.
-            if (handAnimator.isGrabbingObject) { HardStop(); return; }
+            if (handAnimator.isGrabbingObject) { ReleaseStick(false); HardStop(); return; }
+
+            // Surface stick (GripHoldPose): the hand root anchors to the gripped surface and the fingers
+            // re-conform continuously. Takes precedence over the latch.
+            if (UseStick()) { StickUpdate(); return; }
+            if (sticking) ReleaseStick(false); // mode/toggle changed while anchored — clean up
 
             // Latch path (GripHoldPose): acquire a grasp once, then HOLD it without re-solving so the
             // fingers don't chase a surface the hand's physical colliders are simultaneously pushing.
@@ -239,6 +289,9 @@ namespace MikeNspired.XRIStarterKit
 
         // True while a held grasp should hold its captured pose instead of re-solving.
         private bool UseLatch() => mode == GraspProbeMode.GripHoldPose && latchGripHold;
+
+        // True when the hand-root surface anchor is active (overrides the finger latch).
+        private bool UseStick() => mode == GraspProbeMode.GripHoldPose && stickHandToSurface;
 
         #endregion
 
@@ -422,6 +475,113 @@ namespace MikeNspired.XRIStarterKit
 
         #endregion
 
+        #region Surface stick
+
+        // GripHoldPose + stickHandToSurface: keep the fingers solving continuously while anchoring the
+        // hand root to the gripped surface with a leash, snapping back past the break distance.
+        private void StickUpdate()
+        {
+            if (!ShouldSolveThisFrame() || !Ready())   // grip released / not set up → let go
+            {
+                if (sticking) ReleaseStick(false);
+                FadeToIdle();
+                return;
+            }
+
+            bool solved = TrySolve(); // fingers re-conform to the surface each frame
+
+            if (!sticking)
+            {
+                if (solved) AcquireStick();  // first valid grasp anchors the hand
+                else FadeToIdle();           // grip held but nothing in reach yet
+                return;
+            }
+
+            UpdateLeash(); // already anchored: leash toward the controller, break if pulled too far
+        }
+
+        // Anchor the hand at its current pose: freeze a child transform under the gripped collider, start
+        // the hand tracking a leash transform, and remember where the controller would otherwise hold it.
+        private void AcquireStick()
+        {
+            controllerMount = handAnimator.transform.parent;
+            handLocalPos    = handAnimator.transform.localPosition;
+            handLocalRot    = handAnimator.transform.localRotation;
+
+            Vector3 pos = handAnimator.transform.position;
+            Quaternion rot = handAnimator.transform.rotation;
+
+            var surface = NearestCollider();
+            stickAnchor = new GameObject("HandStickAnchor").transform;
+            if (surface) stickAnchor.SetParent(surface.transform, true); // ride a moving surface
+            stickAnchor.SetPositionAndRotation(pos, rot);
+
+            leashTarget = new GameObject("HandLeashTarget").transform;
+            leashTarget.SetPositionAndRotation(pos, rot);
+
+            // Reuse the hand's existing attach-tracking: MoveHandToTarget un-parents the hand and matches
+            // it to leashTarget every frame (OnBeforeRender). We move leashTarget; ReturnHandToPlayer undoes it.
+            handAnimator.MoveHandToTarget(leashTarget, 0f, false);
+            sticking = true;
+            strain   = 0f;
+        }
+
+        // Move the leash target between the surface anchor and where the controller would hold the hand,
+        // weighted by leashWeight; break (snap back) when the controller pulls past breakDistance.
+        private void UpdateLeash()
+        {
+            if (!leashTarget || !stickAnchor || !controllerMount) { ReleaseStick(true); return; }
+
+            Vector3 ctrlPos = controllerMount.TransformPoint(handLocalPos);
+            Quaternion ctrlRot = controllerMount.rotation * handLocalRot;
+            Vector3 stickPos = stickAnchor.position;
+
+            float dist = Vector3.Distance(ctrlPos, stickPos);
+            strain = Mathf.Clamp01(dist / breakDistance);
+            if (dist > breakDistance) { ReleaseStick(true); return; }
+
+            leashTarget.SetPositionAndRotation(
+                Vector3.Lerp(stickPos, ctrlPos, leashWeight),
+                Quaternion.Slerp(stickAnchor.rotation, ctrlRot, leashWeight));
+        }
+
+        // Re-attach the hand to the controller (snap), tear down the anchor objects, and (on a distance
+        // break only) fire the snap-back event. Idempotent — safe to call when not sticking.
+        private void ReleaseStick(bool broke)
+        {
+            if (!sticking) return;
+            sticking = false;
+            strain   = 0f;
+
+            if (handAnimator) handAnimator.ReturnHandToPlayer();
+            if (stickAnchor) Destroy(stickAnchor.gameObject);
+            if (leashTarget) Destroy(leashTarget.gameObject);
+            stickAnchor     = null;
+            leashTarget     = null;
+            controllerMount = null;
+
+            if (broke) onHandSnapBack?.Invoke();
+        }
+
+        // Nearest gathered world collider to the probe center (buffer is compacted: nulls only at the tail).
+        private Collider NearestCollider()
+        {
+            Vector3 center = (probeCenter ? probeCenter : transform).position;
+            Collider best = null;
+            float min = float.PositiveInfinity;
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                var col = colliders[i];
+                if (!col) break;
+                Vector3 cp = SupportsClosestPoint(col) ? col.ClosestPoint(center) : col.ClosestPointOnBounds(center);
+                float d = (cp - center).sqrMagnitude;
+                if (d < min) { min = d; best = col; }
+            }
+            return best;
+        }
+
+        #endregion
+
         #region Gating / context
 
         // Mode-specific trigger gate.
@@ -570,6 +730,16 @@ namespace MikeNspired.XRIStarterKit
             Gizmos.color = enableProbe ? Color.cyan : Color.gray;
             Vector3 center = (probeCenter ? probeCenter : transform).position;
             Gizmos.DrawWireSphere(center, reachRadius);
+
+            // While anchored: the break sphere (green → red as strain rises) and the strain line to where
+            // the controller is pulling the hand.
+            if (sticking && stickAnchor)
+            {
+                Gizmos.color = Color.Lerp(Color.green, Color.red, strain);
+                Gizmos.DrawWireSphere(stickAnchor.position, breakDistance);
+                if (controllerMount)
+                    Gizmos.DrawLine(stickAnchor.position, controllerMount.TransformPoint(handLocalPos));
+            }
         }
 #endif
     }
