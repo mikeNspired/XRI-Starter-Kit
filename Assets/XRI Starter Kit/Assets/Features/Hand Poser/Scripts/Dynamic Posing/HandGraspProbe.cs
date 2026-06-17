@@ -211,6 +211,7 @@ namespace MikeNspired.XRIStarterKit
         private Transform ignoreRoot;   // resolved hand/rig root whose colliders are skipped
         private bool ignoreRootResolved;
         private bool isPosing;          // wrote a solved pose last evaluated frame
+        private int lastColliderCount;  // world colliders found by the last TrySolve (for stick acquisition)
         private bool warned;
         private bool warnedNoMask;
 
@@ -328,6 +329,7 @@ namespace MikeNspired.XRIStarterKit
             // tail so stale references can't match. The solver's contact test only counts colliders that
             // remain in this buffer, so excluding them here fully prevents the hand grabbing itself.
             int count = FilterOwnColliders(hits);
+            lastColliderCount = count; // for stick acquisition (resting needs a surface, not a grasp)
             if (count == 0) return false;
 
             BuildContext();
@@ -558,16 +560,33 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            bool solved = TrySolve(false); // resting an open hand on a surface is a valid stick — don't gate
+            // Solve the fingers GATED: a real wrap poses the grasp, otherwise TrySolve applies nothing and
+            // we fall back to an open resting hand. Stick acquisition is separate (resting an open hand on a
+            // surface is valid), so it keys off "a surface is in reach", not the grasp.
+            bool grasped = TrySolve(requireRealGrasp);
 
             if (!sticking)
             {
-                if (solved) AcquireStick();  // first valid grasp anchors the hand
-                else FadeToIdle();           // grip held but nothing in reach yet
+                if (lastColliderCount > 0) AcquireStick(); // anchor on any surface in reach
+                if (!grasped && !sticking) FadeToIdle();   // nothing in reach yet → idle
+                if (!grasped && sticking) HoldOpenRest();  // just anchored without a wrap → open rest
                 return;
             }
 
-            UpdateLeash(); // already anchored: leash toward the controller, break if pulled too far
+            if (!grasped) HoldOpenRest(); // anchored, no real wrap → open resting hand (not a fake claw)
+            UpdateLeash();                // leash toward the controller, break if pulled too far
+        }
+
+        // While stuck without a real grasp, hold the open/relaxed pose so a flat-rest or a hand pressed into
+        // a surface reads as an open resting hand — not the solver's fake "contacted at open" claw, and not
+        // the normal grip-button fist.
+        private void HoldOpenRest()
+        {
+            var openPose = dyn ? dyn.OpenOrDefault : null;
+            if (!openPose) return;
+            ApplySolved(openPose.joints, 1f); // reuse the deadband + smoothing so it eases, not snaps
+            isPosing = true;
+            fading = false;
         }
 
         // Anchor the hand at its current pose: freeze a child transform under the gripped collider, start
