@@ -8,13 +8,13 @@ namespace MikeNspired.XRIStarterKit
     /// </summary>
     public enum GraspProbeMode
     {
-        /// Editor-only dial-in: solve continuously while the hand is empty and an object is in reach,
-        /// so you can tune the grab settings live without an actual XRI grab. Never runs in a build.
-        AutoGraspTest,
-
         /// Runtime: solve only while the grip button is held and a non-grabbable object is in reach,
         /// so the hand poses onto a surface (e.g. a table) the player cannot normally grab.
         GripHoldPose,
+
+        /// Editor-only dial-in: solve continuously while the hand is empty and an object is in reach,
+        /// so you can tune the grab settings live without an actual XRI grab. Never runs in a build.
+        AutoGraspTest,
     }
 
     /// <summary>
