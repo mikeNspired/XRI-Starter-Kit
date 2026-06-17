@@ -66,6 +66,11 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Label colour when Tint Labels By State is off.")]
         [SerializeField] private Color labelColor = Color.white;
 
+        [Tooltip("Text opacity for the labels. 1 = solid; lower it to see the hand through the text " +
+                 "(the labels are usually the biggest visibility blocker). Applies whether or not the " +
+                 "labels are tinted by state.")]
+        [SerializeField, Range(0f, 1f)] private float labelAlpha = 1f;
+
         [Tooltip("World-space lift (m) of each label above its finger, to clear the geometry.")]
         [SerializeField] private float labelOffset = 0.01f;
 
@@ -166,10 +171,10 @@ namespace MikeNspired.XRIStarterKit
             for (int p = 0; p < fd.probeCount; p++)
                 sb.Append(' ').Append(fd.probes[p].lockedT.ToString("0.00"));
 
-            // Handles.Label ignores Handles.color — text colour comes from the GUIStyle, so set it there.
-            // Labels stay fully opaque regardless of the sphere alphas — translucent text is unreadable.
+            // Handles.Label ignores Handles.color — text colour (incl. alpha) comes from the GUIStyle.
+            // Drive the text opacity from labelAlpha so the labels can be faded to see the hand through them.
             Color c = tintLabelsByState ? StateColor(fd.state) : labelColor;
-            c.a = 1f;
+            c.a = labelAlpha;
             _labelStyle ??= new GUIStyle(UnityEditor.EditorStyles.whiteLabel) { richText = false };
             _labelStyle.normal.textColor = c;
             UnityEditor.Handles.Label(anchor + Vector3.up * labelOffset, sb.ToString(), _labelStyle);
