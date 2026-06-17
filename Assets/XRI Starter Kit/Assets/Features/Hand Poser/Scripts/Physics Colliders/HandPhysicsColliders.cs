@@ -14,6 +14,11 @@ namespace MikeNspired.XRIStarterKit
                  "the NearFar interactor and DistanceGrabber masks so the fingers don't block grabs.")]
         [SerializeField] private int colliderLayer;
 
+        [Tooltip("Draw the built colliders as Scene-view gizmos while this hand is selected " +
+                 "(green = enabled, red = disabled). Purely a setup aid — turn off once the colliders " +
+                 "are dialed in so they stop cluttering the view.")]
+        [SerializeField] private bool drawGizmos = true;
+
         private HandAnimator handAnimator;
 
         // Serialized so edit-mode colliders survive domain reloads and aren't duplicated on rebuild.
@@ -32,8 +37,11 @@ namespace MikeNspired.XRIStarterKit
 
         void Start()
         {
+            // Disable the physical colliders while this hand is grabbing so they can't fight the
+            // grabbed object or the curl solver, and re-enable on release. This runtime job is why
+            // the component stays on the hand — it is not an edit-only collider builder.
             var handRef = GetComponentInParent<HandReference>();
-            if (handRef != null)
+            if (handRef != null && handRef.NearFarInteractor != null)
             {
                 handRef.NearFarInteractor.selectEntered.AddListener(_ => SetCollidersEnabled(false));
                 handRef.NearFarInteractor.selectExited.AddListener(_ => SetCollidersEnabled(true));
@@ -376,6 +384,8 @@ namespace MikeNspired.XRIStarterKit
 
         private void OnDrawGizmosSelected()
         {
+            if (!drawGizmos) return;
+
             foreach (var col in fingerColliders)
             {
                 if (!col) continue;

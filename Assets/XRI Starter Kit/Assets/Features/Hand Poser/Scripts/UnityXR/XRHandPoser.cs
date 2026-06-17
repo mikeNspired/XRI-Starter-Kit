@@ -33,14 +33,13 @@ namespace MikeNspired.XRIStarterKit
         [Header("Per-Object Overrides (used only when Override Global Settings is on)")]
         [SerializeField] private float positionThreshold = 0.08f;
         [SerializeField] private float rotationThreshold = 45f;
-        [SerializeField] private int   dynamicStepCount   = 15;
-        [SerializeField] private float dynamicProbeRadius = 0.02f;
-        [SerializeField, Range(1, 4)] private int dynamicSamplesPerFinger = 2;
-        [SerializeField, Range(0, 1)] private float dynamicNoContactCurl = 0.7f;
-        [SerializeField, Range(0, 1)] private float dynamicDistalFollowCurl = 0.33f;
+        [SerializeField] private HandSolverSettings solverSettings = new HandSolverSettings();
         [SerializeField] private bool  graspRequireThumb  = true;
         [SerializeField, Range(0, 4)] private int graspRequiredFingers = 2;
         [SerializeField] private FailedGraspResponse failedGraspResponse = FailedGraspResponse.Drop;
+        [SerializeField] private bool  seatInPalm = false;
+        [SerializeField] private float seatMaxDistance = 0.03f;
+        [SerializeField] private float seatClearance = 0.01f;
 
         private IHandPoseSolver poseSolver;
         private Coroutine dynamicSolveRoutine;
@@ -49,14 +48,13 @@ namespace MikeNspired.XRIStarterKit
         private HandPoserSettings Settings => HandPoserSettings.Instance;
         private float PositionThreshold     => overrideGlobalSettings ? positionThreshold     : Settings.dynamicPositionThreshold;
         private float RotationThreshold     => overrideGlobalSettings ? rotationThreshold     : Settings.dynamicRotationThreshold;
-        private int   DynamicStepCount      => overrideGlobalSettings ? dynamicStepCount      : Settings.dynamicStepCount;
-        private float DynamicProbeRadius    => overrideGlobalSettings ? dynamicProbeRadius    : Settings.dynamicProbeRadius;
-        private int   SamplesPerFinger      => overrideGlobalSettings ? dynamicSamplesPerFinger : Settings.dynamicSamplesPerFinger;
-        private float NoContactCurl         => overrideGlobalSettings ? dynamicNoContactCurl   : Settings.dynamicNoContactCurl;
-        private float DistalFollowCurl      => overrideGlobalSettings ? dynamicDistalFollowCurl : Settings.dynamicDistalFollowCurl;
+        private HandSolverSettings Solver   => overrideGlobalSettings ? solverSettings        : Settings.dynamicSolver;
         private bool  GraspRequireThumb     => overrideGlobalSettings ? graspRequireThumb     : Settings.graspRequireThumb;
         private int   GraspRequiredFingers  => overrideGlobalSettings ? graspRequiredFingers  : Settings.graspRequiredFingers;
         private FailedGraspResponse FailedGraspResponse => overrideGlobalSettings ? failedGraspResponse : Settings.failedGraspResponse;
+        private bool  SeatInPalm            => overrideGlobalSettings ? seatInPalm      : Settings.dynamicSeatInPalm;
+        private float SeatMaxDistance       => overrideGlobalSettings ? seatMaxDistance : Settings.dynamicSeatMaxDistance;
+        private float SeatClearance         => overrideGlobalSettings ? seatClearance   : Settings.dynamicSeatClearance;
 
         protected override void Awake()
         {
@@ -183,6 +181,9 @@ namespace MikeNspired.XRIStarterKit
             hand.AnimationPose = null;     // gate the trigger animation; ReturnAnimationsToOriginal restores it on release
             hand.StopButtonValueAnimation(); // stop the grip squeeze in place so it can't keep closing the hand
 
+            // Optional seating BEFORE the solve, so the fingers wrap the settled position.
+            if (SeatInPalm) SeatObjectInPalm(hand, interactor);
+
             // Solve and apply on THIS frame, exactly like the authored path. Phase 5 holds the object
             // where it was grabbed (it does not ease toward the hand), so the geometry is already in
             // place — there is nothing to wait for. Applying synchronously means one blend from the
@@ -190,6 +191,62 @@ namespace MikeNspired.XRIStarterKit
             // squeeze close the hand to a fist before the pose landed (the "closes then poses" glitch).
             SolveAndApplyDynamicPose(hand, interactor);
         }
+
+        // Kinematic object seating: settle the grabbed object a small, hard-capped distance toward the
+        // hand's palm point, closing the air gap so a dynamic grab reads as held rather than hovering.
+        // HandReference (interactor selectEntered, which XRI fires before this interactable event) has
+        // already aligned the interactor attach to the object's current pose, so moving the object AND
+        // that attach target by the same delta keeps XRI's grab target equal to the object's pose — a
+        // settle, never a snap-back toward the authored grip.
+        private void SeatObjectInPalm(HandAnimator hand, IXRSelectInteractor interactor)
+        {
+            var dyn = hand ? hand.GetComponent<HandDynamicPoses>() : null;
+            if (!dyn) return;
+
+            var colliders = GatherSolidColliders();
+            if (colliders.Length == 0) return;
+
+            Vector3 palm = dyn.PalmPoint;
+            float gap = float.PositiveInfinity;
+            Vector3 nearest = palm;
+            foreach (var col in colliders)
+            {
+                // ClosestPoint only supports primitives + convex meshes; bounds is a fine fallback
+                // for a settle distance on arbitrary environment-style meshes.
+                Vector3 cp = SupportsClosestPoint(col) ? col.ClosestPoint(palm) : col.ClosestPointOnBounds(palm);
+                float d = Vector3.Distance(palm, cp);
+                if (d < gap) { gap = d; nearest = cp; }
+            }
+            // gap 0 = palm already inside the object; nothing sensible to settle.
+            if (float.IsPositiveInfinity(gap) || gap <= 1e-5f) return;
+
+            float move = Mathf.Min(SeatMaxDistance, gap - SeatClearance);
+            if (move <= 0f) return;
+
+            // Move the nearest surface point toward the palm: the shortest way to close the gap.
+            Vector3 delta = (palm - nearest) / gap * move;
+
+            interactable.transform.position += delta;
+            if (interactable.TryGetComponent(out Rigidbody body)) body.position = interactable.transform.position;
+
+            var attach = interactor?.GetAttachTransform(interactable);
+            if (attach) attach.position += delta;
+
+            // The solve sphere-tests this frame; make the physics world see the moved colliders now.
+            Physics.SyncTransforms();
+        }
+
+        private static bool SupportsClosestPoint(Collider col) =>
+            col is BoxCollider || col is SphereCollider || col is CapsuleCollider ||
+            (col is MeshCollider mc && mc.convex);
+
+        // Solid colliders only: trigger volumes (hover zones, sound triggers) can never stop a finger
+        // (the sweep queries ignore triggers) but they WOULD pollute the fingertip-gap candidate
+        // selection and the layer mask. Disabled colliders likewise aren't in the physics world.
+        private Collider[] GatherSolidColliders() =>
+            System.Array.FindAll(
+                interactable.GetComponentsInChildren<Collider>(),
+                c => c.enabled && !c.isTrigger);
 
         private void SolveAndApplyDynamicPose(HandAnimator hand, IXRSelectInteractor interactor)
         {
@@ -201,12 +258,7 @@ namespace MikeNspired.XRIStarterKit
                 return;
             }
 
-            // Solid colliders only: trigger volumes (hover zones, sound triggers) can never stop a finger
-            // (the sweep queries ignore triggers) but they WOULD pollute the fingertip-gap candidate
-            // selection and the layer mask. Disabled colliders likewise aren't in the physics world.
-            var colliders = System.Array.FindAll(
-                interactable.GetComponentsInChildren<Collider>(),
-                c => c.enabled && !c.isTrigger);
+            var colliders = GatherSolidColliders();
             if (colliders.Length == 0)
                 Debug.LogWarning($"[XRHandPoser] {gameObject.name} — dynamic solve: no solid colliders on interactable; fingers will fully close.");
 
@@ -221,19 +273,16 @@ namespace MikeNspired.XRIStarterKit
                 openPose        = dyn.OpenOrDefault,
                 closedPose      = dyn.ClosedPose,
                 closedPoses     = dyn.ClosedCandidates,
+                relaxedPose     = dyn.RelaxedPose,
                 targetColliders = colliders,
                 targetMask      = mask,
-                stepCount       = DynamicStepCount,
-                probeRadius     = DynamicProbeRadius,
-                samplesPerFinger = SamplesPerFinger,
-                noContactCurl    = NoContactCurl,
-                distalFollowCurl = DistalFollowCurl,
-                collectDebug     = Settings.drawSolveDebug || hand.requestSolveDebug,
+                collectDebug    = Settings.drawSolveDebug || hand.requestSolveDebug,
             };
+            Solver.ApplyTo(ctx);
 
             // Re-created when the settings toggle changes so flipping useProgressiveSolver during
             // play-mode dial-in takes effect on the next grab (??= alone would pin the first choice).
-            bool wantProgressive = Settings.useProgressiveSolver;
+            bool wantProgressive = Solver.useProgressiveSolver;
             if (poseSolver == null || (poseSolver is ProgressiveCurlSolver) != wantProgressive)
                 poseSolver = wantProgressive ? (IHandPoseSolver)new ProgressiveCurlSolver() : new CurlSweepSolver();
             var result = poseSolver.Solve(ctx);
@@ -259,21 +308,68 @@ namespace MikeNspired.XRIStarterKit
             }
 
             // Grasp holds: apply the solved pose — a single blend from the current grab shape.
-            hand.SetJointsDirect(result, hand.animationTimeToNewPose);
+            // Fingers disabled in the per-finger calibration take the authored pose when one exists.
+            hand.SetJointsDirect(AppendAuthoredJointsForDisabledFingers(hand, result), hand.animationTimeToNewPose);
         }
 
-        // thumb = index 0; fingers 1..4 are index/middle/ring/pinky.
+        // A finger disabled in the per-finger calibration emits no solved joints. When this object has
+        // an authored pose for the hand, pose that finger from it so "disabled" reads as "stay authored
+        // while the rest solve". With no authored pose the finger simply keeps its current shape.
+        private PoseScriptableObject.JointData[] AppendAuthoredJointsForDisabledFingers(
+            HandAnimator hand, PoseScriptableObject.JointData[] result)
+        {
+            var settings = Solver.fingerSettings;
+            var authored = hand.handType == LeftRight.Left ? leftHandPose : rightHandPose;
+            if (!authored) return result;
+
+            System.Collections.Generic.List<PoseScriptableObject.JointData> extra = null;
+            for (int f = 0; f < 5; f++)
+            {
+                if (PerFingerSolveSettings.Get(settings, f).solve) continue;
+                var chain = hand.fingerMap.Finger(f);
+                if (chain == null) continue;
+                foreach (var joint in chain)
+                {
+                    if (!joint) continue;
+                    foreach (var jd in authored.joints)
+                    {
+                        if (jd.jointName != joint.name) continue;
+                        extra ??= new System.Collections.Generic.List<PoseScriptableObject.JointData>();
+                        extra.Add(jd);
+                        break;
+                    }
+                }
+            }
+            if (extra == null) return result;
+
+            // Solved joints first: SetJointsDirect matches by first name hit, so on a bone shared
+            // between an enabled and a disabled finger the solve wins.
+            var merged = new PoseScriptableObject.JointData[result.Length + extra.Count];
+            result.CopyTo(merged, 0);
+            extra.CopyTo(merged, result.Length);
+            return merged;
+        }
+
+        // thumb = index 0; fingers 1..4 are index/middle/ring/pinky. Fingers disabled in the
+        // per-finger calibration can never contact, so they are exempt from the requirement and
+        // the required count caps at the number of enabled fingers.
         private bool IsGraspValid(bool[] contacted)
         {
             if (contacted == null || contacted.Length < 5) return false;
+            var settings = Solver.fingerSettings;
 
-            if (GraspRequireThumb && !contacted[0]) return false;
+            if (GraspRequireThumb && PerFingerSolveSettings.Get(settings, 0).solve && !contacted[0])
+                return false;
 
-            int fingers = 0;
+            int fingers = 0, enabledFingers = 0;
             for (int i = 1; i < 5; i++)
+            {
+                if (!PerFingerSolveSettings.Get(settings, i).solve) continue;
+                enabledFingers++;
                 if (contacted[i]) fingers++;
+            }
 
-            return fingers >= GraspRequiredFingers;
+            return fingers >= Mathf.Min(GraspRequiredFingers, enabledFingers);
         }
 
         private static string DescribeContacts(bool[] contacted)

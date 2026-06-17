@@ -41,11 +41,30 @@ namespace MikeNspired.XRIStarterKit
                  "above is always tried first. Leave empty for fist-only — zero cost.")]
         [SerializeField] private List<PoseScriptableObject> closedCandidates = new List<PoseScriptableObject>();
 
+        [Tooltip("Optional rest shape for a finger that touches NOTHING during a dynamic solve. When set, " +
+                 "that finger takes this pose exactly (author a natural relaxed grip); when empty it curls " +
+                 "toward the Closed pose by the No-Contact Curl amount, as before.")]
+        [SerializeField] private PoseScriptableObject relaxedPose;
+
+        [Header("Palm")]
+        [Tooltip("Approximate palm-center point, used by object seating (a dynamic grab settles the object " +
+                 "toward this before the solve). Leave empty to fall back to the centroid of the finger " +
+                 "base joints — assign a transform on the palm surface for best results.")]
+        [SerializeField] private Transform palmAnchor;
+
         [Header("Fingertip Probes")]
-        [Tooltip("Per-finger probe transform at the fingertip pad, just past the last joint. Leave empty to " +
-                 "auto-generate at runtime, or use 'Create / Refresh Probes' and nudge into place. Must be a " +
-                 "bare transform named *_Ignore (never a physics collider).")]
-        public Transform thumbTip, indexTip, middleTip, ringTip, pinkyTip;
+        [Tooltip("Per-finger probe transforms at the fingertip pad, just past each last joint. Leave empty " +
+                 "to auto-generate at runtime, or click 'Create / Refresh Probes' below and nudge them onto " +
+                 "the pads. Each must be a bare transform named *_Ignore (never a physics collider).")]
+        public Transform thumbTip;
+        public Transform indexTip;
+        public Transform middleTip;
+        public Transform ringTip;
+        public Transform pinkyTip;
+
+        [Tooltip("Draw magenta spheres at the fingertip probes while this hand is selected, so you can " +
+                 "check their placement. Turn off once they're positioned — purely a setup aid.")]
+        [SerializeField] private bool drawTipGizmos = true;
 
         /// Marker substring identifying a solver tip probe, so detection can never confuse one with the
         /// physical-presence distal colliders (also "*Ignore" children of the same joints).
@@ -58,6 +77,27 @@ namespace MikeNspired.XRIStarterKit
         public PoseScriptableObject OpenPose  => openPose;
         public PoseScriptableObject ClosedPose => closedPose;
         public List<PoseScriptableObject> ClosedCandidates => closedCandidates;
+        public PoseScriptableObject RelaxedPose => relaxedPose;
+
+        /// World-space palm point for object seating: the authored anchor when assigned, else the
+        /// centroid of the finger base joints (a fair palm approximation on most skeletons).
+        public Vector3 PalmPoint
+        {
+            get
+            {
+                if (palmAnchor) return palmAnchor.position;
+                Vector3 sum = Vector3.zero;
+                int count = 0;
+                for (int i = 0; i < 5; i++)
+                {
+                    var chain = Hand ? Hand.fingerMap.Finger(i) : null;
+                    if (chain == null || chain.Count == 0 || !chain[0]) continue;
+                    sum += chain[0].position;
+                    count++;
+                }
+                return count > 0 ? sum / count : transform.position;
+            }
+        }
 
         /// Open pose for the sweep, falling back to the hand's DefaultPose when none is assigned.
         public PoseScriptableObject OpenOrDefault => openPose ? openPose : (Hand ? Hand.DefaultPose : null);
@@ -154,8 +194,11 @@ namespace MikeNspired.XRIStarterKit
         }
 
 #if UNITY_EDITOR
+        // Magenta spheres mark the solver-only fingertip probes (the contact points the curl solver
+        // tests against), so you can verify they sit on the finger pads. Setup aid only — toggleable.
         private void OnDrawGizmosSelected()
         {
+            if (!drawTipGizmos) return;
             Gizmos.color = Color.magenta;
             foreach (var tip in tips)
                 if (tip) Gizmos.DrawWireSphere(tip.position, 0.005f);

@@ -48,24 +48,22 @@ namespace MikeNspired.XRIStarterKit
         public float dynamicPositionThreshold = 0.08f;
         [Tooltip("How far (deg) a grab can rotate from the authored grip before it counts as off-axis (DYNAMIC). Per-object XRHandPoser can override.")]
         public float dynamicRotationThreshold = 45f;
-        [Tooltip("Curl-sweep resolution: number of t steps per finger.")]
-        public int dynamicStepCount = 15;
-        [Tooltip("Fingertip probe sphere radius (m) used to detect contact during the sweep.")]
-        public float dynamicProbeRadius = 0.02f;
-        [Tooltip("Joints from the fingertip inward to sphere-test each step. 1 = tip only; " +
-                 "2+ catches a finger wrapping the object even when the tip slips past it.")]
-        [Range(1, 4)] public int dynamicSamplesPerFinger = 2;
-        [Tooltip("Use the per-joint progressive-curl solver (fingertips wrap onto surfaces even when " +
-                 "the knuckle rests on the object). Off uses the simpler single-t-per-finger curl sweep.")]
-        public bool useProgressiveSolver = true;
-        [Tooltip("Curl for a finger that touches nothing (progressive solver). Like a human grabbing, " +
-                 "non-gripping fingers settle into a relaxed fist instead of splaying open. " +
-                 "1 = full fist, 0 = fully open; ~0.7 reads as a natural relaxed grip.")]
-        [Range(0, 1)] public float dynamicNoContactCurl = 0.7f;
-        [Tooltip("After a finger grips, how much each further-out joint keeps curling when it finds " +
-                 "nothing — a gentle wrap — instead of snapping to a fist (the distal 'claw'). " +
-                 "0 = stop dead at the grip; ~0.33 reads natural. Progressive solver only.")]
-        [Range(0, 1)] public float dynamicDistalFollowCurl = 0.33f;
+
+        [Tooltip("Solver tuning used by EVERY dynamic solve (grab path and grasp probe) unless overridden " +
+                 "per object on XRHandPoser or per probe on HandGraspProbe — the single source of truth.")]
+        public HandSolverSettings dynamicSolver = new HandSolverSettings();
+
+        [Header("Dynamic Pose — Object Seating")]
+        [Tooltip("On a DYNAMIC grab, kinematically settle the object a small capped distance toward the " +
+                 "hand's palm point BEFORE the solve, closing the air gap so the grab reads as held rather " +
+                 "than hovering. Pure position nudge, hard-capped — it can never reintroduce the " +
+                 "authored-grip snap. Off = hold exactly where grabbed (previous behavior).")]
+        public bool dynamicSeatInPalm = false;
+        [Tooltip("Maximum distance (m) the seating settle may move the object toward the palm.")]
+        public float dynamicSeatMaxDistance = 0.03f;
+        [Tooltip("Air gap (m) seating keeps between the palm point and the object surface, so the " +
+                 "object settles against the palm instead of into it.")]
+        public float dynamicSeatClearance = 0.01f;
 
         [Header("Dynamic Pose — Debug")]
         [Tooltip("Master switch for the per-finger solve visualization. When on, dynamic solves record " +

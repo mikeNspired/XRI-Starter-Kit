@@ -8,6 +8,12 @@ namespace MikeNspired.XRIStarterKit.Editor
     {
         public override void OnInspectorGUI()
         {
+            DynamicPoseInfoBox.Draw(
+                "Per-hand setup for dynamic (procedural) grabbing: the Open / Closed / Relaxed poses the " +
+                "solver blends between, optional extra Closed candidates, the fingertip probes it " +
+                "contact-tests, and the palm point used for object seating. A hand needs this (with at " +
+                "least a Closed pose) to pose dynamically.");
+
             DrawDefaultInspector();
 
             var dyn = (HandDynamicPoses)target;
@@ -23,6 +29,9 @@ namespace MikeNspired.XRIStarterKit.Editor
                     if (dyn.OpenOrDefault) hand.AnimateInstantly(dyn.OpenOrDefault);
                 if (GUILayout.Button(new GUIContent("Preview Closed", "Pose the hand at the Closed (fist) reference pose.")))
                     if (dyn.ClosedPose) hand.AnimateInstantly(dyn.ClosedPose);
+                using (new EditorGUI.DisabledScope(!dyn.RelaxedPose))
+                    if (GUILayout.Button(new GUIContent("Preview Relaxed", "Pose the hand at the Relaxed (no-contact rest) pose.")))
+                        hand.AnimateInstantly(dyn.RelaxedPose);
                 GUILayout.EndHorizontal();
             }
 

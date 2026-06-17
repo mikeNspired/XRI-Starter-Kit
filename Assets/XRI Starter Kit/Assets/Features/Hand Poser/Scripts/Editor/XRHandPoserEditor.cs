@@ -27,13 +27,13 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty overrideGlobalSettings;
         private SerializedProperty positionThreshold;
         private SerializedProperty rotationThreshold;
-        private SerializedProperty dynamicStepCount;
-        private SerializedProperty dynamicProbeRadius;
-        private SerializedProperty dynamicSamplesPerFinger;
-        private SerializedProperty dynamicNoContactCurl;
+        private SerializedProperty solverSettings;
         private SerializedProperty graspRequireThumb;
         private SerializedProperty graspRequiredFingers;
         private SerializedProperty failedGraspResponse;
+        private SerializedProperty seatInPalm;
+        private SerializedProperty seatMaxDistance;
+        private SerializedProperty seatClearance;
 
         private bool hasLeftHand;
         private bool hasRightHand;
@@ -62,18 +62,23 @@ namespace MikeNspired.XRIStarterKit.Editor
             overrideGlobalSettings = serializedObject.FindProperty("overrideGlobalSettings");
             positionThreshold = serializedObject.FindProperty("positionThreshold");
             rotationThreshold = serializedObject.FindProperty("rotationThreshold");
-            dynamicStepCount = serializedObject.FindProperty("dynamicStepCount");
-            dynamicProbeRadius = serializedObject.FindProperty("dynamicProbeRadius");
-            dynamicSamplesPerFinger = serializedObject.FindProperty("dynamicSamplesPerFinger");
-            dynamicNoContactCurl = serializedObject.FindProperty("dynamicNoContactCurl");
+            solverSettings = serializedObject.FindProperty("solverSettings");
             graspRequireThumb = serializedObject.FindProperty("graspRequireThumb");
             graspRequiredFingers = serializedObject.FindProperty("graspRequiredFingers");
             failedGraspResponse = serializedObject.FindProperty("failedGraspResponse");
+            seatInPalm = serializedObject.FindProperty("seatInPalm");
+            seatMaxDistance = serializedObject.FindProperty("seatMaxDistance");
+            seatClearance = serializedObject.FindProperty("seatClearance");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+
+            DynamicPoseInfoBox.Draw(
+                "Goes on a GRABBABLE object (not the hand). Sets the hand pose when this object is grabbed: " +
+                "the authored pose near the grip, or the dynamic solver when grabbed off-axis / with no " +
+                "authored pose — see Pose Policy and the Dynamic Posing section below.");
 
             hasLeftHand = currentLeftHand.objectReferenceValue != null;
             hasRightHand = currentRightHand.objectReferenceValue != null;
@@ -174,22 +179,26 @@ namespace MikeNspired.XRIStarterKit.Editor
                     "How far (m) a grab can land from the authored grip before it counts as off-axis (DYNAMIC)."));
                 EditorGUILayout.PropertyField(rotationThreshold, new GUIContent("Rotation Threshold",
                     "How far (deg) a grab can rotate from the authored grip before it counts as off-axis (DYNAMIC)."));
-                EditorGUILayout.PropertyField(dynamicStepCount, new GUIContent("Step Count",
-                    "Curl-sweep resolution: number of t steps per finger."));
-                EditorGUILayout.PropertyField(dynamicProbeRadius, new GUIContent("Probe Radius",
-                    "Fingertip probe sphere radius (m) used to detect contact during the sweep."));
-                EditorGUILayout.PropertyField(dynamicSamplesPerFinger, new GUIContent("Samples Per Finger",
-                    "Curl-sweep solver only. Joints from the fingertip inward to sphere-test each step. " +
-                    "1 = tip only; 2+ catches a finger wrapping the object even when the tip slips past it."));
-                EditorGUILayout.PropertyField(dynamicNoContactCurl, new GUIContent("No-Contact Curl",
-                    "Progressive solver only. Curl for a finger that touches nothing — non-gripping " +
-                    "fingers settle into a relaxed fist instead of opening. 1 = full fist; ~0.7 natural."));
+                EditorGUILayout.PropertyField(solverSettings, new GUIContent("Solver Settings",
+                    "This object's solver tuning, replacing the global block on the HandPoserSettings " +
+                    "asset: solver choice, sweep resolution, probe radius, sampling, rest curls, and the " +
+                    "per-finger calibration."), true);
                 EditorGUILayout.PropertyField(graspRequireThumb, new GUIContent("Grasp Require Thumb",
                     "Require the thumb to make contact for a dynamic grasp to hold."));
                 EditorGUILayout.PropertyField(graspRequiredFingers, new GUIContent("Grasp Required Fingers",
                     "Number of non-thumb fingers that must contact for a dynamic grasp to hold."));
                 EditorGUILayout.PropertyField(failedGraspResponse, new GUIContent("Failed Grasp Response",
                     "What to do when a dynamic grasp fails its contact test."));
+                EditorGUILayout.PropertyField(seatInPalm, new GUIContent("Seat In Palm",
+                    "On a DYNAMIC grab, settle the object a small capped distance toward the palm before " +
+                    "the solve, closing the air gap. Never reintroduces the authored-grip snap."));
+                if (seatInPalm.boolValue)
+                {
+                    EditorGUILayout.PropertyField(seatMaxDistance, new GUIContent("Seat Max Distance",
+                        "Maximum settle distance (m) toward the palm."));
+                    EditorGUILayout.PropertyField(seatClearance, new GUIContent("Seat Clearance",
+                        "Air gap (m) kept between the palm point and the object surface."));
+                }
                 EditorGUI.indentLevel--;
             }
             else

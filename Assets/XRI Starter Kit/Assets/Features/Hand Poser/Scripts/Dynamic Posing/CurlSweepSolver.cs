@@ -20,6 +20,28 @@ namespace MikeNspired.XRIStarterKit
         private readonly HandSolveDebug _debug = new HandSolveDebug();
         public HandSolveDebug LastSolveDebug { get; private set; }
 
+        // ── Reused across solves (mirrors ProgressiveCurlSolver; this can run per frame) ─────
+        private readonly Dictionary<PoseScriptableObject, (PoseScriptableObject.JointData[] source, Dictionary<string, PoseScriptableObject.JointData> dict)> _poseDictCache
+            = new Dictionary<PoseScriptableObject, (PoseScriptableObject.JointData[], Dictionary<string, PoseScriptableObject.JointData>)>();
+        private readonly List<PoseScriptableObject> _candidates = new List<PoseScriptableObject>();
+        private readonly List<PoseScriptableObject.JointData> _resultBuffer = new List<PoseScriptableObject.JointData>();
+        private readonly HashSet<string> _seenJoints = new HashSet<string>();
+        private Vector3[] _snapshotPos;
+        private Quaternion[] _snapshotRot;
+        // Per-finger candidate chosen last solve, for hysteresis (HandSolveContext.candidateStickiness).
+        private readonly PoseScriptableObject[] _lastCandidate = new PoseScriptableObject[5];
+
+        // Cached name lookup for a pose, rebuilt only when its joints array changes.
+        private Dictionary<string, PoseScriptableObject.JointData> Dict(PoseScriptableObject _pose)
+        {
+            if (_poseDictCache.TryGetValue(_pose, out var entry) && entry.source == _pose.joints)
+                return entry.dict;
+            var dict = new Dictionary<string, PoseScriptableObject.JointData>(_pose.joints.Length);
+            foreach (var jd in _pose.joints) dict[jd.jointName] = jd;
+            _poseDictCache[_pose] = (_pose.joints, dict);
+            return dict;
+        }
+
         public PoseScriptableObject.JointData[] Solve(HandSolveContext _ctx)
         {
             if (!Validate(_ctx)) return null;
@@ -31,13 +53,21 @@ namespace MikeNspired.XRIStarterKit
             int jointCount = joints.Count;
 
             // Snapshot every joint's local pose before the sweep modifies anything
-            var snapshotPos = new Vector3[jointCount];
-            var snapshotRot = new Quaternion[jointCount];
+            if (_snapshotPos == null || _snapshotPos.Length < jointCount)
+            {
+                _snapshotPos = new Vector3[jointCount];
+                _snapshotRot = new Quaternion[jointCount];
+            }
+            var snapshotPos = _snapshotPos;
+            var snapshotRot = _snapshotRot;
             for (int i = 0; i < jointCount; i++)
             {
                 snapshotPos[i] = joints[i].localPosition;
                 snapshotRot[i] = joints[i].localRotation;
             }
+
+            if (_ctx.resetCandidateHistory)
+                for (int i = 0; i < _lastCandidate.Length; i++) _lastCandidate[i] = null;
 
             // Candidate closed poses: closedPose first, then any extras (deduped). Each finger
             // independently keeps whichever candidate ends with its fingertip closest to the target.
@@ -45,20 +75,26 @@ namespace MikeNspired.XRIStarterKit
 
             var tFinals = new float[5];
             var chosenClosed = new PoseScriptableObject[5];
+            var fingerSkipped = new bool[5]; // disabled by calibration → no joints in the result
 
             try
             {
                 for (int fingerIdx = 0; fingerIdx < 5; fingerIdx++)
                 {
                     var chain = _ctx.fingerMap.Finger(fingerIdx);
-                    if (chain == null || chain.Count == 0)
+                    var cal = PerFingerSolveSettings.Get(_ctx.fingerSettings, fingerIdx);
+                    if (chain == null || chain.Count == 0 || !cal.solve)
                     {
                         tFinals[fingerIdx] = 0f;
                         chosenClosed[fingerIdx] = candidates[0];
+                        fingerSkipped[fingerIdx] = true;
                         LastSolveProbePositions[fingerIdx] = Vector3.zero;
                         LastSolveContacted[fingerIdx] = false;
                         continue;
                     }
+
+                    float radius  = _ctx.probeRadius * cal.probeRadiusScale;
+                    float maxCurl = Mathf.Clamp01(cal.maxCurl);
 
                     // Sample the last N joints (fingertip inward). Multi-sampling catches a
                     // finger that wraps the object even when the tip slips past the side.
@@ -80,29 +116,37 @@ namespace MikeNspired.XRIStarterKit
 
                     foreach (var cp in candidates)
                     {
-                        // Sweep this candidate from open to closed, stopping before first contact.
+                        // Sweep this candidate from open to closed (capped at the finger's max curl),
+                        // stopping before first contact.
                         bool contacted = false;
                         float prevT = 0f;
                         for (int step = 1; step <= _ctx.stepCount; step++)
                         {
-                            float t = (float)step / _ctx.stepCount;
+                            float t = maxCurl * step / _ctx.stepCount;
                             _ctx.hand.SetFingerCurl(fingerIdx, t, _ctx.openPose, cp);
 
-                            if (AnySampleOverlaps(chain, sampleStart, tipProbe, _ctx)) { contacted = true; break; }
+                            if (AnySampleOverlaps(chain, sampleStart, tipProbe, _ctx, radius)) { contacted = true; break; }
                             prevT = t;
                         }
 
-                        float lockedT = contacted ? prevT : 1f;
+                        // Contact → lock just before it, shifted by press bias; no contact → max curl.
+                        float lockedT = contacted ? Mathf.Clamp(prevT + cal.pressBias, 0f, maxCurl) : maxCurl;
                         _ctx.hand.SetFingerCurl(fingerIdx, lockedT, _ctx.openPose, cp);
                         Vector3 probeAtLocked = gapTip.position;
                         float gap = TipGap(probeAtLocked, _ctx);
 
+                        // Hysteresis: discount last solve's chosen candidate so a challenger must fit
+                        // closer by more than candidateStickiness to take over (stops per-frame flicker).
+                        float cmpGap = gap;
+                        if (_ctx.candidateStickiness > 0f && cp == _lastCandidate[fingerIdx])
+                            cmpGap -= _ctx.candidateStickiness;
+
                         // Prefer a candidate that makes contact; among equals, the snugger fingertip.
-                        if (!anyEvaluated || IsBetter(contacted, gap, bestContacted, bestGap))
+                        if (!anyEvaluated || IsBetter(contacted, cmpGap, bestContacted, bestGap))
                         {
                             anyEvaluated   = true;
                             bestContacted  = contacted;
-                            bestGap        = gap;
+                            bestGap        = cmpGap; // store the compared (hysteresis-biased) gap
                             bestT          = lockedT;
                             bestProbe      = probeAtLocked;
                             bestPose       = cp;
@@ -112,13 +156,24 @@ namespace MikeNspired.XRIStarterKit
                         _ctx.hand.SetFingerCurl(fingerIdx, 0f, _ctx.openPose, cp);
                     }
 
+                    // Remember the candidate that won the gap competition (before any relaxed-pose
+                    // override) so next solve's hysteresis biases toward this same contacting choice.
+                    _lastCandidate[fingerIdx] = bestPose;
+
+                    // No contact + a dedicated relaxed pose supplied → rest there instead of closing.
+                    if (!bestContacted && _ctx.relaxedPose)
+                    {
+                        bestPose = _ctx.relaxedPose;
+                        bestT = 1f;
+                    }
+
                     tFinals[fingerIdx]              = bestT;
                     chosenClosed[fingerIdx]         = bestPose;
                     LastSolveProbePositions[fingerIdx] = bestProbe;
                     LastSolveContacted[fingerIdx]   = bestContacted;
 
                     if (_ctx.collectDebug)
-                        RecordFingerDebug(fingerIdx, chain, sampleStart, bestT, bestPose, bestContacted, _ctx);
+                        RecordFingerDebug(fingerIdx, chain, sampleStart, bestT, bestPose, bestContacted, _ctx, cal);
                 }
             }
             finally
@@ -135,7 +190,7 @@ namespace MikeNspired.XRIStarterKit
 
             if (_ctx.collectDebug) _debug.hasData = true;
 
-            return BuildJointData(_ctx, tFinals, chosenClosed);
+            return BuildJointData(_ctx, tFinals, chosenClosed, fingerSkipped);
         }
 
         // Re-poses the finger at its locked t and records each sampled joint's world position and
@@ -148,7 +203,8 @@ namespace MikeNspired.XRIStarterKit
             float _t,
             PoseScriptableObject _closedPose,
             bool _contacted,
-            HandSolveContext _ctx)
+            HandSolveContext _ctx,
+            FingerSolveCalibration _cal)
         {
             var dbg = _debug.fingers[_fingerIdx];
             if (_chain == null || _chain.Count == 0)
@@ -165,9 +221,11 @@ namespace MikeNspired.XRIStarterKit
             int sampleStart = Mathf.Clamp(_sampleStart, 0, _chain.Count - 1);
             int count = _chain.Count - sampleStart;
             dbg.EnsureCapacity(count);
-            dbg.probeRadius  = _ctx.probeRadius;
+            dbg.probeRadius  = _ctx.probeRadius * _cal.probeRadiusScale;
             dbg.chosenClosed = _closedPose ? _closedPose : _ctx.closedPose;
-            dbg.state        = _contacted ? FingerSolveState.Contacted : FingerSolveState.NoContact;
+            dbg.state        = _contacted ? FingerSolveState.Contacted
+                             : _ctx.relaxedPose && _closedPose == _ctx.relaxedPose ? FingerSolveState.RelaxedFist
+                             : FingerSolveState.NoContact;
 
             int w = 0;
             for (int j = sampleStart; j < _chain.Count; j++)
@@ -212,9 +270,11 @@ namespace MikeNspired.XRIStarterKit
             (_col is MeshCollider mc && mc.convex);
 
         // closedPose is always candidate 0; extra closedPoses are appended (deduped, non-null).
-        private static List<PoseScriptableObject> BuildCandidates(HandSolveContext _ctx)
+        private List<PoseScriptableObject> BuildCandidates(HandSolveContext _ctx)
         {
-            var list = new List<PoseScriptableObject> { _ctx.closedPose };
+            var list = _candidates;
+            list.Clear();
+            list.Add(_ctx.closedPose);
             if (_ctx.closedPoses != null)
                 foreach (var cp in _ctx.closedPoses)
                     if (cp && !list.Contains(cp)) list.Add(cp);
@@ -248,22 +308,22 @@ namespace MikeNspired.XRIStarterKit
 
         // True if any of the sampled joints (sampleStart..tip), or the fingertip probe past the last joint,
         // overlaps the target this step.
-        private static bool AnySampleOverlaps(List<Transform> _chain, int _sampleStart, Transform _tip, HandSolveContext _ctx)
+        private static bool AnySampleOverlaps(List<Transform> _chain, int _sampleStart, Transform _tip, HandSolveContext _ctx, float _radius)
         {
             for (int j = _sampleStart; j < _chain.Count; j++)
             {
                 var joint = _chain[j];
-                if (joint && OverlapsTarget(joint.position, _ctx)) return true;
+                if (joint && OverlapsTarget(joint.position, _ctx, _radius)) return true;
             }
-            if (_tip && OverlapsTarget(_tip.position, _ctx)) return true;
+            if (_tip && OverlapsTarget(_tip.position, _ctx, _radius)) return true;
             return false;
         }
 
-        private static bool OverlapsTarget(Vector3 _center, HandSolveContext _ctx)
+        private static bool OverlapsTarget(Vector3 _center, HandSolveContext _ctx, float _radius)
         {
             if (_ctx.targetColliders == null || _ctx.targetColliders.Length == 0) return false;
 
-            var hits = Physics.OverlapSphere(_center, _ctx.probeRadius, _ctx.targetMask, QueryTriggerInteraction.Ignore);
+            var hits = Physics.OverlapSphere(_center, _radius, _ctx.targetMask, QueryTriggerInteraction.Ignore);
             foreach (var hit in hits)
             {
                 for (int j = 0; j < _ctx.targetColliders.Length; j++)
@@ -274,32 +334,25 @@ namespace MikeNspired.XRIStarterKit
             return false;
         }
 
-        private static PoseScriptableObject.JointData[] BuildJointData(HandSolveContext _ctx, float[] _tFinals, PoseScriptableObject[] _chosenClosed)
+        private PoseScriptableObject.JointData[] BuildJointData(HandSolveContext _ctx, float[] _tFinals, PoseScriptableObject[] _chosenClosed, bool[] _fingerSkipped)
         {
-            var openDict = new Dictionary<string, PoseScriptableObject.JointData>(_ctx.openPose.joints.Length);
-            foreach (var jd in _ctx.openPose.joints) openDict[jd.jointName] = jd;
+            var openDict = Dict(_ctx.openPose);
 
-            // Each finger may use a different closed pose; cache the lookup per pose.
-            var closedDicts = new Dictionary<PoseScriptableObject, Dictionary<string, PoseScriptableObject.JointData>>();
-
-            var result = new List<PoseScriptableObject.JointData>();
-            var seen = new HashSet<string>();
+            var result = _resultBuffer;
+            result.Clear();
+            var seen = _seenJoints;
+            seen.Clear();
 
             for (int i = 0; i < 5; i++)
             {
+                if (_fingerSkipped[i]) continue; // disabled finger keeps the driver's own pose
                 float t = _tFinals[i];
                 var chain = _ctx.fingerMap.Finger(i);
                 if (chain == null) continue;
 
                 var closedPose = _chosenClosed[i] ? _chosenClosed[i] : _ctx.closedPose;
                 if (!closedPose) continue;
-
-                if (!closedDicts.TryGetValue(closedPose, out var closedDict))
-                {
-                    closedDict = new Dictionary<string, PoseScriptableObject.JointData>(closedPose.joints.Length);
-                    foreach (var jd in closedPose.joints) closedDict[jd.jointName] = jd;
-                    closedDicts[closedPose] = closedDict;
-                }
+                var closedDict = Dict(closedPose);
 
                 foreach (var joint in chain)
                 {
