@@ -1,5 +1,4 @@
 // Editor test utility — safe to remove in production
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -8,7 +7,7 @@ namespace MikeNspired.XRIStarterKit
     /// <summary>
     /// Drop on any GameObject alongside a HandAnimator to test SetJointsDirect in Play Mode.
     /// Assign a closed/grip PoseScriptableObject to m_TargetPose (e.g. Pose_HandGunBottom),
-    /// then use the Odin buttons to trigger test blends.
+    /// then use the right-click context-menu items (component header ⋮ menu) to trigger test blends.
     /// Per-finger curl verification uses the HandAnimator inspector's built-in Finger Sliders section.
     /// </summary>
     public class DynamicPoseTester : MonoBehaviour
@@ -51,7 +50,7 @@ namespace MikeNspired.XRIStarterKit
         /// Lerps each joint between DefaultPose and TargetPose at m_BlendAmount,
         /// then applies the result via SetJointsDirect over m_AnimationTime seconds.
         /// </summary>
-        [Button("Test Partial Curl")]
+        [ContextMenu("Test Partial Curl")]
         private void TestPartialCurl()
         {
             if (!ValidateForTest()) return;
@@ -105,7 +104,7 @@ namespace MikeNspired.XRIStarterKit
         /// <summary>
         /// Returns the hand to its DefaultPose via SetJointsDirect.
         /// </summary>
-        [Button("Test Return to Default Pose")]
+        [ContextMenu("Test Return to Default Pose")]
         private void TestReturnToDefault()
         {
             if (!ValidateForTest()) return;
@@ -125,7 +124,7 @@ namespace MikeNspired.XRIStarterKit
         /// via SetJointsDirect. Gizmos show each finger's final probe position.
         /// Must be in Play Mode.
         /// </summary>
-        [Button("Test Curl Sweep Solver")]
+        [ContextMenu("Test Curl Sweep Solver")]
         private void TestCurlSweepSolver()
         {
             if (!ValidateForTest()) return;
