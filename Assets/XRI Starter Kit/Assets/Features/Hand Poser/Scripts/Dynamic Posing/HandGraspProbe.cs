@@ -3,6 +3,10 @@ using UnityEngine;
 
 namespace MikeNspired.XRIStarterKit
 {
+    /// <summary>Fires with the number of fingers (1..5) that wrapped when the free hand grasps a surface.</summary>
+    [System.Serializable]
+    public class HandContactEvent : UnityEngine.Events.UnityEvent<int> { }
+
     /// <summary>
     /// How <see cref="HandGraspProbe"/> decides when to solve a grasp onto nearby world geometry.
     /// </summary>
@@ -93,6 +97,14 @@ namespace MikeNspired.XRIStarterKit
         [Tooltip("Invoked when the hand snaps back because you pulled past Break Distance (NOT on a normal " +
                  "grip release). Hook a sound or haptic here.")]
         [SerializeField] private UnityEngine.Events.UnityEvent onHandSnapBack;
+
+        [Tooltip("Invoked once when the free hand WRAPS onto a surface (a real grasp is acquired), with the " +
+                 "number of fingers (1..5) that landed. Debounced to the grasp-acquire transition (not every " +
+                 "frame). HandContactAudio listens to this in code; also exposed for haptics / VFX.")]
+        [SerializeField] private HandContactEvent onGraspAcquired = new HandContactEvent();
+
+        /// Fired once when the free hand wraps/contacts a surface; payload = contacting finger count (1..5).
+        public HandContactEvent OnGraspAcquired => onGraspAcquired;
 
         /// 0 when not anchored, rising to 1 at the break distance. A future "hand shakes as it nears the
         /// snap" effect can read this; also handy for haptics / UI.
@@ -214,6 +226,7 @@ namespace MikeNspired.XRIStarterKit
         private bool latched;
         private PoseScriptableObject.JointData[] lastResult;
         private PoseScriptableObject.JointData[] latchedResult;
+        private bool contactReported;   // rising-edge latch for onGraspAcquired (re-armed in HardStop)
 
         // The probe's own last-written ("displayed") pose, per joint name, and the deadbanded target it is
         // smoothing toward. Both must be the probe's OWN state, not the live joints — the grip/trigger value
@@ -338,7 +351,25 @@ namespace MikeNspired.XRIStarterKit
             ApplySolved(result, weight);
             isPosing = true;
             fading = false;
+            ReportContact();
             return true;
+        }
+
+        // Fire onGraspAcquired once when the free hand first wraps a surface (rising edge), with the count of
+        // contacting fingers. Re-armed by HardStop when the hand goes idle, so the next grasp fires again. All
+        // real-grasp paths funnel through TrySolve, and the latch holds it to one event per grasp even while
+        // the continuous path re-solves every frame.
+        private void ReportContact()
+        {
+            if (contactReported) return;
+            var contacted = solver != null ? solver.LastSolveContacted : null;
+            int count = 0;
+            if (contacted != null)
+                for (int i = 0; i < contacted.Length; i++)
+                    if (contacted[i]) count++;
+            if (count <= 0) return;
+            contactReported = true;
+            onGraspAcquired.Invoke(count);
         }
 
         // A grip counts as real only when enough fingers both CONTACT and curl past minWrapAngle from the
@@ -532,6 +563,7 @@ namespace MikeNspired.XRIStarterKit
             isPosing = false;
             fading = false;
             latched = false;
+            contactReported = false;
             if (displayedPose.Count > 0) displayedPose.Clear();
             if (targetPose.Count > 0) targetPose.Clear();
             if (fadeStart.Count > 0) fadeStart.Clear();

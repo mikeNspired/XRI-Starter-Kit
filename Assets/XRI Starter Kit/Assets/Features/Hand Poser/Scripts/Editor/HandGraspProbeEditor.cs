@@ -21,11 +21,13 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty proximityEaseIn, fullPoseDistance, rotationDeadband, positionDeadband,
             smoothing, candidateStickiness, releaseFadeTime, returnToIdleWhenClear;
         private SerializedProperty overrideSolverSettings, solverSettings;
+        private SerializedProperty onGraspAcquired;
 
         private bool gripHoldFoldout = true;
         private bool worldQueryFoldout = true;
         private bool feelFoldout;
         private bool solverFoldout;
+        private bool eventsFoldout;
 
         private void OnEnable()
         {
@@ -57,6 +59,7 @@ namespace MikeNspired.XRIStarterKit.Editor
             returnToIdleWhenClear = serializedObject.FindProperty("returnToIdleWhenClear");
             overrideSolverSettings = serializedObject.FindProperty("overrideSolverSettings");
             solverSettings     = serializedObject.FindProperty("solverSettings");
+            onGraspAcquired    = serializedObject.FindProperty("onGraspAcquired");
         }
 
         public override void OnInspectorGUI()
@@ -148,6 +151,14 @@ namespace MikeNspired.XRIStarterKit.Editor
                 EditorGUILayout.PropertyField(overrideSolverSettings);
                 using (new EditorGUI.DisabledScope(!overrideSolverSettings.boolValue)) // dead when using the global asset
                     EditorGUILayout.PropertyField(solverSettings, true);
+                EditorGUI.indentLevel--;
+            }
+
+            eventsFoldout = Foldout(eventsFoldout, "Events");
+            if (eventsFoldout)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(onGraspAcquired);
                 EditorGUI.indentLevel--;
             }
 
