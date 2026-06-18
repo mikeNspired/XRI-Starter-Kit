@@ -2,8 +2,12 @@
 // The handle should be a direct child of a static track; do not move the assembly during play.
 // Place the handle at the value=0 position before entering play mode. Drag direction is local +Z by default.
 // The ConfigurableJoint is created at runtime — no manual joint setup in the inspector needed.
+// Optional: add XRGrabInteractable to the same GameObject for grab-and-drag interaction.
+// If XRGrabInteractable is present its movementType is set to VelocityTracking automatically.
 
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MikeNspired.XRIStarterKit
 {
@@ -34,8 +38,10 @@ namespace MikeNspired.XRIStarterKit
 
         private Rigidbody m_Rigidbody;
         private ConfigurableJoint m_Joint;
+        private XRGrabInteractable m_GrabInteractable;
         private Vector3 m_InitialLocalPosition;
         private float m_PreviousValue = -1f;
+        private bool m_IsGrabbed;
 
         #endregion
 
@@ -43,6 +49,7 @@ namespace MikeNspired.XRIStarterKit
 
         public float Value { get; private set; }
         public float NormalizedValue { get; private set; }
+        public bool IsGrabbed => m_IsGrabbed;
 
         #endregion
 
@@ -55,6 +62,16 @@ namespace MikeNspired.XRIStarterKit
             m_Rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             m_InitialLocalPosition = transform.localPosition;
             SetupJoint();
+
+            if (TryGetComponent(out m_GrabInteractable))
+                ConfigureGrab();
+        }
+
+        private void OnDestroy()
+        {
+            if (m_GrabInteractable == null) return;
+            m_GrabInteractable.selectEntered.RemoveListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.RemoveListener(OnGrabExited);
         }
 
         private void FixedUpdate()
@@ -101,19 +118,40 @@ namespace MikeNspired.XRIStarterKit
             m_Joint.angularYMotion = ConfigurableJointMotion.Locked;
             m_Joint.angularZMotion = ConfigurableJointMotion.Locked;
 
-            // Symmetric limit — handle placed at value=0 (start) can travel ±TravelDistance.
-            // Only the 0→+TravelDistance range maps to valid values; clamped in FixedUpdate.
             m_Joint.linearLimit = new SoftJointLimit { limit = m_TravelDistance };
 
             if (m_ReturnOnRelease)
-            {
-                m_Joint.xDrive = new JointDrive
-                {
-                    positionSpring = m_SpringForce,
-                    positionDamper = m_SpringDamper,
-                    maximumForce = float.MaxValue
-                };
-            }
+                SetSpring(true);
+        }
+
+        private void ConfigureGrab()
+        {
+            m_GrabInteractable.movementType = XRGrabInteractable.MovementType.VelocityTracking;
+            m_GrabInteractable.throwOnDetach = false;
+            m_GrabInteractable.selectEntered.AddListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.AddListener(OnGrabExited);
+        }
+
+        private void OnGrabEntered(SelectEnterEventArgs _args)
+        {
+            m_IsGrabbed = true;
+            // Suspend return spring while hand is holding the slider
+            if (m_ReturnOnRelease)
+                SetSpring(false);
+        }
+
+        private void OnGrabExited(SelectExitEventArgs _args)
+        {
+            m_IsGrabbed = false;
+            if (m_ReturnOnRelease)
+                SetSpring(true);
+        }
+
+        private void SetSpring(bool _enabled)
+        {
+            m_Joint.xDrive = _enabled
+                ? new JointDrive { positionSpring = m_SpringForce, positionDamper = m_SpringDamper, maximumForce = float.MaxValue }
+                : new JointDrive { positionSpring = 0f, positionDamper = 0f, maximumForce = float.MaxValue };
         }
 
         #endregion
@@ -132,7 +170,7 @@ namespace MikeNspired.XRIStarterKit
 #if UNITY_EDITOR
         [ContextMenu("Log Current Value")]
         private void LogCurrentValue() =>
-            Debug.Log($"[PhysicsSliderInteractable] normalized={NormalizedValue:F3} value={Value:F3}");
+            Debug.Log($"[PhysicsSliderInteractable] normalized={NormalizedValue:F3} value={Value:F3} grabbed={m_IsGrabbed}");
 #endif
     }
 }

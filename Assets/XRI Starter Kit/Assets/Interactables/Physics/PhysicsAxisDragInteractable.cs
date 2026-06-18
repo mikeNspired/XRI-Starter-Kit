@@ -2,8 +2,12 @@
 // The draggable should be a direct child of a static anchor; do not move the assembly during play.
 // Place the draggable at the value=0 position before entering play mode.
 // The ConfigurableJoint is created at runtime — no manual joint setup in the inspector needed.
+// Optional: add XRGrabInteractable to the same GameObject for grab-and-drag interaction.
+// If XRGrabInteractable is present its movementType is set to VelocityTracking automatically.
 
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MikeNspired.XRIStarterKit
 {
@@ -39,6 +43,7 @@ namespace MikeNspired.XRIStarterKit
 
         private Rigidbody m_Rigidbody;
         private ConfigurableJoint m_Joint;
+        private XRGrabInteractable m_GrabInteractable;
         private Vector3 m_InitialLocalPosition;
         private float m_PreviousRawDistance = -1f;
         private int m_CurrentStep = -1;
@@ -50,6 +55,7 @@ namespace MikeNspired.XRIStarterKit
 
         public float Distance { get; private set; }
         public int CurrentStep => m_CurrentStep;
+        public bool IsGrabbed => m_IsGrabbed;
 
         #endregion
 
@@ -62,6 +68,16 @@ namespace MikeNspired.XRIStarterKit
             m_Rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             m_InitialLocalPosition = transform.localPosition;
             SetupJoint();
+
+            if (TryGetComponent(out m_GrabInteractable))
+                ConfigureGrab();
+        }
+
+        private void OnDestroy()
+        {
+            if (m_GrabInteractable == null) return;
+            m_GrabInteractable.selectEntered.RemoveListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.RemoveListener(OnGrabExited);
         }
 
         private void FixedUpdate()
@@ -75,9 +91,7 @@ namespace MikeNspired.XRIStarterKit
             m_PreviousRawDistance = rawDistance;
 
             if (m_Steps > 0 && !m_SnapOnlyOnRelease)
-            {
                 ApplySnap(rawDistance);
-            }
             else
             {
                 Distance = rawDistance;
@@ -115,14 +129,38 @@ namespace MikeNspired.XRIStarterKit
             m_Joint.linearLimit = new SoftJointLimit { limit = m_AxisLength };
 
             if (m_ReturnOnRelease)
-            {
-                m_Joint.xDrive = new JointDrive
-                {
-                    positionSpring = m_SpringForce,
-                    positionDamper = m_SpringDamper,
-                    maximumForce = float.MaxValue
-                };
-            }
+                SetSpring(true);
+        }
+
+        private void ConfigureGrab()
+        {
+            m_GrabInteractable.movementType = XRGrabInteractable.MovementType.VelocityTracking;
+            m_GrabInteractable.throwOnDetach = false;
+            m_GrabInteractable.selectEntered.AddListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.AddListener(OnGrabExited);
+        }
+
+        private void OnGrabEntered(SelectEnterEventArgs _args)
+        {
+            m_IsGrabbed = true;
+            if (m_ReturnOnRelease)
+                SetSpring(false);
+        }
+
+        private void OnGrabExited(SelectExitEventArgs _args)
+        {
+            m_IsGrabbed = false;
+            if (m_ReturnOnRelease)
+                SetSpring(true);
+            if (m_Steps > 0 && m_SnapOnlyOnRelease)
+                ApplySnap(m_PreviousRawDistance);
+        }
+
+        private void SetSpring(bool _enabled)
+        {
+            m_Joint.xDrive = _enabled
+                ? new JointDrive { positionSpring = m_SpringForce, positionDamper = m_SpringDamper, maximumForce = float.MaxValue }
+                : new JointDrive { positionSpring = 0f, positionDamper = 0f, maximumForce = float.MaxValue };
         }
 
         private void ApplySnap(float _rawDistance)
@@ -143,7 +181,6 @@ namespace MikeNspired.XRIStarterKit
                 m_OnDragStep.Invoke(m_CurrentStep);
                 PlaySnapAudio();
 
-                // Physically snap the draggable to the step position
                 Vector3 targetLocal = m_InitialLocalPosition + m_LocalAxis.normalized * snappedDistance;
                 m_Rigidbody.MovePosition(transform.parent != null
                     ? transform.parent.TransformPoint(targetLocal)
@@ -162,13 +199,6 @@ namespace MikeNspired.XRIStarterKit
 
         #region Public Methods
 
-        // Call from selectExited to snap on release when m_SnapOnlyOnRelease is true.
-        public void OnReleased()
-        {
-            if (m_Steps > 0 && m_SnapOnlyOnRelease)
-                ApplySnap(m_PreviousRawDistance);
-        }
-
         public void SetDistance(float _distance)
         {
             float clamped = Mathf.Clamp(_distance, 0f, m_AxisLength);
@@ -183,7 +213,7 @@ namespace MikeNspired.XRIStarterKit
 #if UNITY_EDITOR
         [ContextMenu("Log Current Value")]
         private void LogCurrentValue() =>
-            Debug.Log($"[PhysicsAxisDragInteractable] distance={Distance:F4} step={m_CurrentStep}");
+            Debug.Log($"[PhysicsAxisDragInteractable] distance={Distance:F4} step={m_CurrentStep} grabbed={m_IsGrabbed}");
 #endif
     }
 }

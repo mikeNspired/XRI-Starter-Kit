@@ -2,8 +2,12 @@
 // The arm should be a direct child of a static pivot; do not move the assembly during play.
 // Rotation axis is the lever arm's local X axis. Min/max angles define the travel range.
 // The HingeJoint is created at runtime — no manual joint setup in the inspector needed.
+// Optional: add XRGrabInteractable to the same GameObject for grab-and-push interaction.
+// If XRGrabInteractable is present its movementType is set to VelocityTracking automatically.
 
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MikeNspired.XRIStarterKit
 {
@@ -37,8 +41,10 @@ namespace MikeNspired.XRIStarterKit
 
         private Rigidbody m_Rigidbody;
         private HingeJoint m_Joint;
+        private XRGrabInteractable m_GrabInteractable;
         private float m_PreviousNormalized = -1f;
         private bool m_LeverValue;
+        private bool m_IsGrabbed;
 
         #endregion
 
@@ -46,6 +52,7 @@ namespace MikeNspired.XRIStarterKit
 
         public bool LeverValue => m_LeverValue;
         public float NormalizedAngle { get; private set; }
+        public bool IsGrabbed => m_IsGrabbed;
 
         #endregion
 
@@ -56,6 +63,16 @@ namespace MikeNspired.XRIStarterKit
             m_Rigidbody = GetComponent<Rigidbody>();
             m_Rigidbody.useGravity = false;
             SetupJoint();
+
+            if (TryGetComponent(out m_GrabInteractable))
+                ConfigureGrab();
+        }
+
+        private void OnDestroy()
+        {
+            if (m_GrabInteractable == null) return;
+            m_GrabInteractable.selectEntered.RemoveListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.RemoveListener(OnGrabExited);
         }
 
         private void FixedUpdate()
@@ -89,7 +106,7 @@ namespace MikeNspired.XRIStarterKit
                 m_OnLeverDeactivate.Invoke();
             }
 
-            if (m_LockToValue && !IsGrabbed())
+            if (m_LockToValue && !m_IsGrabbed)
                 SnapToLockedAngle();
         }
 
@@ -126,21 +143,23 @@ namespace MikeNspired.XRIStarterKit
             }
         }
 
-        private bool IsGrabbed()
+        private void ConfigureGrab()
         {
-            // Leverage can only be grabbed via XRI; if no XRGrabInteractable or not selected, return false.
-            // Checked loosely — m_LockToValue snaps on release naturally because the hand no longer pushes.
-            return false;
+            m_GrabInteractable.movementType = XRGrabInteractable.MovementType.VelocityTracking;
+            m_GrabInteractable.throwOnDetach = false;
+            m_GrabInteractable.selectEntered.AddListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.AddListener(OnGrabExited);
         }
+
+        private void OnGrabEntered(SelectEnterEventArgs _args) => m_IsGrabbed = true;
+        private void OnGrabExited(SelectExitEventArgs _args)   => m_IsGrabbed = false;
 
         private void SnapToLockedAngle()
         {
             float targetAngle = m_LeverValue ? m_MaxAngle : m_MinAngle;
             if (Mathf.Abs(m_Joint.angle - targetAngle) < 1f) return;
 
-            // Drive toward locked angle by overriding angular velocity
-            float currentAngle = m_Joint.angle;
-            float delta = Mathf.DeltaAngle(currentAngle, targetAngle);
+            float delta = Mathf.DeltaAngle(m_Joint.angle, targetAngle);
             m_Rigidbody.angularVelocity = transform.TransformDirection(Vector3.right * (delta * 10f * Time.fixedDeltaTime));
         }
 
@@ -162,7 +181,7 @@ namespace MikeNspired.XRIStarterKit
 #if UNITY_EDITOR
         [ContextMenu("Log Current Value")]
         private void LogCurrentValue() =>
-            Debug.Log($"[PhysicsLeverInteractable] angle={m_Joint?.angle:F1}° normalized={NormalizedAngle:F3} active={m_LeverValue}");
+            Debug.Log($"[PhysicsLeverInteractable] angle={m_Joint?.angle:F1}° normalized={NormalizedAngle:F3} active={m_LeverValue} grabbed={m_IsGrabbed}");
 #endif
     }
 }

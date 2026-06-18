@@ -2,8 +2,12 @@
 // The shaft should be a direct child of a static base; do not move the assembly during play.
 // The shaft tilts around its local X (pitch) and Z (roll) axes, mapping to output Y and X axes.
 // A ConfigurableJoint with angular X/Z limits and optional return spring is created at runtime.
+// Optional: add XRGrabInteractable to the same GameObject for grab-and-tilt interaction.
+// If XRGrabInteractable is present its movementType is set to VelocityTracking automatically.
 
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MikeNspired.XRIStarterKit
 {
@@ -36,13 +40,16 @@ namespace MikeNspired.XRIStarterKit
 
         private Rigidbody m_Rigidbody;
         private ConfigurableJoint m_Joint;
+        private XRGrabInteractable m_GrabInteractable;
         private Vector2 m_PreviousValue = new Vector2(-2f, -2f);
+        private bool m_IsGrabbed;
 
         #endregion
 
         #region Public Properties
 
         public Vector2 CurrentValue { get; private set; }
+        public bool IsGrabbed => m_IsGrabbed;
 
         #endregion
 
@@ -53,6 +60,16 @@ namespace MikeNspired.XRIStarterKit
             m_Rigidbody = GetComponent<Rigidbody>();
             m_Rigidbody.useGravity = false;
             SetupJoint();
+
+            if (TryGetComponent(out m_GrabInteractable))
+                ConfigureGrab();
+        }
+
+        private void OnDestroy()
+        {
+            if (m_GrabInteractable == null) return;
+            m_GrabInteractable.selectEntered.RemoveListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.RemoveListener(OnGrabExited);
         }
 
         private void FixedUpdate()
@@ -128,12 +145,23 @@ namespace MikeNspired.XRIStarterKit
             }
         }
 
+        private void ConfigureGrab()
+        {
+            m_GrabInteractable.movementType = XRGrabInteractable.MovementType.VelocityTracking;
+            m_GrabInteractable.throwOnDetach = false;
+            m_GrabInteractable.selectEntered.AddListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.AddListener(OnGrabExited);
+        }
+
+        private void OnGrabEntered(SelectEnterEventArgs _args) => m_IsGrabbed = true;
+        private void OnGrabExited(SelectExitEventArgs _args)   => m_IsGrabbed = false;
+
         #endregion
 
 #if UNITY_EDITOR
         [ContextMenu("Log Current Value")]
         private void LogCurrentValue() =>
-            Debug.Log($"[PhysicsJoystickInteractable] value={CurrentValue}");
+            Debug.Log($"[PhysicsJoystickInteractable] value={CurrentValue} grabbed={m_IsGrabbed}");
 #endif
     }
 }

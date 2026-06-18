@@ -3,8 +3,12 @@
 // Rotation axis is the knob body's local Y axis. Min/max angles define the travel range.
 // The HingeJoint is created at runtime — no manual joint setup in the inspector needed.
 // Cumulative angle is tracked across frames to handle HingeJoint's ±180° wrap-around.
+// Optional: add XRGrabInteractable to the same GameObject for grab-and-twist interaction.
+// If XRGrabInteractable is present its movementType is set to VelocityTracking automatically.
 
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 namespace MikeNspired.XRIStarterKit
 {
@@ -37,11 +41,13 @@ namespace MikeNspired.XRIStarterKit
 
         private Rigidbody m_Rigidbody;
         private HingeJoint m_Joint;
+        private XRGrabInteractable m_GrabInteractable;
         private float m_CumulativeAngle;
         private float m_LastRawAngle;
         private float m_PreviousNormalized = -1f;
         private int m_PreviousStep = int.MinValue;
         private bool m_Initialized;
+        private bool m_IsGrabbed;
 
         #endregion
 
@@ -50,6 +56,7 @@ namespace MikeNspired.XRIStarterKit
         public float CumulativeAngle => m_CumulativeAngle;
         public float Value { get; private set; }
         public int StepValue { get; private set; }
+        public bool IsGrabbed => m_IsGrabbed;
 
         #endregion
 
@@ -63,6 +70,16 @@ namespace MikeNspired.XRIStarterKit
             m_LastRawAngle = m_Joint.angle;
             m_CumulativeAngle = 0f;
             m_Initialized = true;
+
+            if (TryGetComponent(out m_GrabInteractable))
+                ConfigureGrab();
+        }
+
+        private void OnDestroy()
+        {
+            if (m_GrabInteractable == null) return;
+            m_GrabInteractable.selectEntered.RemoveListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.RemoveListener(OnGrabExited);
         }
 
         private void FixedUpdate()
@@ -140,10 +157,20 @@ namespace MikeNspired.XRIStarterKit
                     force = 0f,
                     freeSpin = false
                 };
-                // Angular damping expressed via Rigidbody
                 m_Rigidbody.angularDamping = m_MotorDamper;
             }
         }
+
+        private void ConfigureGrab()
+        {
+            m_GrabInteractable.movementType = XRGrabInteractable.MovementType.VelocityTracking;
+            m_GrabInteractable.throwOnDetach = false;
+            m_GrabInteractable.selectEntered.AddListener(OnGrabEntered);
+            m_GrabInteractable.selectExited.AddListener(OnGrabExited);
+        }
+
+        private void OnGrabEntered(SelectEnterEventArgs _args) => m_IsGrabbed = true;
+        private void OnGrabExited(SelectExitEventArgs _args)   => m_IsGrabbed = false;
 
         #endregion
 
@@ -161,7 +188,7 @@ namespace MikeNspired.XRIStarterKit
 #if UNITY_EDITOR
         [ContextMenu("Log Current Value")]
         private void LogCurrentValue() =>
-            Debug.Log($"[PhysicsKnobInteractable] cumulative={m_CumulativeAngle:F1}° value={Value:F3} step={StepValue}");
+            Debug.Log($"[PhysicsKnobInteractable] cumulative={m_CumulativeAngle:F1}° value={Value:F3} step={StepValue} grabbed={m_IsGrabbed}");
 #endif
     }
 }
