@@ -456,3 +456,56 @@ posing/solver code never references audio, mirroring the IHandPoseSolver discipl
 
 Out of scope: haptics (could share the same event seams later), music / ambience.
 ```
+
+> **Phase 8 outcome (branch `phase-8`).** Implemented the note's "soft-contact tick on the free-hand grasp
+> probe" direction, scoped to **free-hand contact only** (a grabbed object's `GrabAudioEffect` already owns
+> the grab sound, so the hand must not double it):
+> - **`HandGraspProbe.onGraspAcquired`** — a `UnityEvent<int>` (wrapped-finger count) fired once on the
+>   **grasp-acquire transition** (debounced via a `contactReported` latch, re-armed in `HardStop`; rides the
+>   existing `requireRealGrasp` gate, so a hand jammed flat into a surface doesn't fire it). Public for
+>   haptics / VFX; sits alongside the existing `onHandSnapBack` seam.
+> - **`HandContactAudio`** (new, `: AudioRandomize`) — subscribes to that event **in code** (`AddListener`,
+>   no inspector drag-ref), plays a randomized clip with volume scaled by finger count and a re-trigger
+>   cooldown. Per the maintainer's note: events are exposed for others, built-in audio is wired in code.
+> - **Cleanups:** dropped the Odin dependency from `DynamicPoseTester` (`[ContextMenu]` instead of `[Button]`,
+>   so the asset compiles without the paid Sirenix package); removed `HoldInPlaceOnGrab` (superseded Phase 5a
+>   proof mechanic).
+> - **Deferred (still open from the exploration):** per-surface / per-material clip sets; a release sound;
+>   wiring `onHandSnapBack` to a clip; richer grab-event audio.
+> - **In-editor setup:** add an `AudioSource` + `HandContactAudio` on the hand (or a child) with contact
+>   clips; enable `HandGraspProbe` (`GripHoldPose`) with a World Mask. (No Unity here — human verifies.)
+
+---
+
+## Phase 9 — Physics interactables for the new hands
+
+> Separate track from the hand solver: this is about the **interactable objects**, not the hand. The
+> CLAUDE.md "no joints / no physics" rule is a **hand-posing** constraint and does **not** apply here —
+> physics joints (Hinge / Configurable) are the right tool for a door, lever, slider, etc. IP hygiene
+> still applies: build from first principles, never reference third-party hand/interaction assets.
+
+```
+Implement ONLY Phase 9. Branch: phase-9-physics-interactables.
+
+Goal: physics-driven versions of the core interactables so the new dynamic hands can physically
+push / move them (Rigidbody + joints), instead of the current transform/interactor-driven behavior.
+
+Targets (build physics variants; keep the existing ones working):
+  XR Push Button, Axis Drag Interactable, XR Slider, XR Lever, XR Joystick, XR Knob, Door.
+
+What exists today:
+- Official Unity Assets/XRI/Scripts/ holds COPIED official XRI scripts — XRPushButton, XRSlider, XRLever,
+  XRKnob, XRGripButton — transform/interactor-driven, NOT physics. Per AGENTS.md these copies must NOT be
+  edited in place. Add NEW physics versions alongside them.
+- Custom: Interactables/JoystickLever/XRJoystick.cs, Interactables/Door/Door.cs,
+  Scripts/Modified VRBeginner Scripts/AxisDragInteractable.cs.
+
+Approach: Rigidbody + HingeJoint / ConfigurableJoint with drive limits/springs; additive, in the project
+namespace. Expose UnityEvents for value changes (for others to tie into) without requiring inspector
+wiring internally. Likely split across sub-tasks/PRs (one interactable family at a time).
+
+Acceptance (human verifies in Unity): each interactable can be physically actuated by the hand and
+responds with believable physics; the existing (non-physics) versions still work.
+
+Out of scope: per sub-task. Open a PR restating acceptance.
+```
