@@ -1,9 +1,14 @@
 // Physics-driven linear slider. Place this script on the moving handle (Rigidbody required).
 // The handle should be a direct child of a static track; do not move the assembly during play.
-// Place the handle at the value=0 position before entering play mode. Drag direction is local +Z by default.
+// Place the handle at the value=0 end of its travel; it slides along local +Z (m_SliderAxis) by
+// m_TravelDistance to reach value=1. The joint is anchored at the MIDPOINT of travel so the handle
+// cannot overshoot either end of the track (ConfigurableJoint linear limits are symmetric, so a
+// centered anchor is what bounds both ends).
 // The ConfigurableJoint is created at runtime — no manual joint setup in the inspector needed.
-// Optional: add XRGrabInteractable to the same GameObject for grab-and-drag interaction.
-// If XRGrabInteractable is present its movementType is set to VelocityTracking automatically.
+// Optional: add XRGrabInteractable to the same GameObject for grab-and-drag interaction (no hand
+// physics colliders required). When present, its movementType is forced to VelocityTracking so the
+// joint constrains the grab to the track instead of the hand yanking it free.
+// Note: with m_ReturnOnRelease the handle springs to the CENTER of travel (value 0.5), not an end.
 
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -28,7 +33,7 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private float m_RemapValueMin = 0f;
         [SerializeField] private float m_RemapValueMax = 1f;
 
-        [Header("Return Spring")]
+        [Header("Return Spring (returns to center of travel)")]
         [SerializeField] private bool m_ReturnOnRelease = false;
         [SerializeField, Min(0f)] private float m_SpringForce = 100f;
         [SerializeField, Min(0f)] private float m_SpringDamper = 10f;
@@ -50,6 +55,9 @@ namespace MikeNspired.XRIStarterKit
         public float Value { get; private set; }
         public float NormalizedValue { get; private set; }
         public bool IsGrabbed => m_IsGrabbed;
+
+        // Matches XRSlider.OnValueChange so existing integration code can subscribe in code.
+        public UnityEventFloat OnValueChange => m_OnValueChange;
 
         #endregion
 
@@ -98,6 +106,7 @@ namespace MikeNspired.XRIStarterKit
         private void SetupJoint()
         {
             Vector3 slideDir = m_SliderAxis.normalized;
+            Vector3 worldAxis = transform.TransformDirection(slideDir);
 
             Vector3 perp = Vector3.Cross(slideDir, Vector3.up);
             if (perp.sqrMagnitude < 0.01f)
@@ -107,7 +116,9 @@ namespace MikeNspired.XRIStarterKit
             m_Joint = gameObject.AddComponent<ConfigurableJoint>();
             m_Joint.autoConfigureConnectedAnchor = false;
             m_Joint.anchor = Vector3.zero;
-            m_Joint.connectedAnchor = transform.position;
+            // Anchor at the midpoint of travel: a symmetric ±half limit then bounds BOTH ends of the
+            // track exactly, so the handle can never slide off either end.
+            m_Joint.connectedAnchor = transform.position + worldAxis * (m_TravelDistance * 0.5f);
 
             m_Joint.axis = slideDir;
             m_Joint.secondaryAxis = perp;
@@ -118,7 +129,7 @@ namespace MikeNspired.XRIStarterKit
             m_Joint.angularYMotion = ConfigurableJointMotion.Locked;
             m_Joint.angularZMotion = ConfigurableJointMotion.Locked;
 
-            m_Joint.linearLimit = new SoftJointLimit { limit = m_TravelDistance };
+            m_Joint.linearLimit = new SoftJointLimit { limit = m_TravelDistance * 0.5f };
 
             if (m_ReturnOnRelease)
                 SetSpring(true);
@@ -126,6 +137,8 @@ namespace MikeNspired.XRIStarterKit
 
         private void ConfigureGrab()
         {
+            // VelocityTracking (not Kinematic): the hand applies a tracking velocity that the joint can
+            // constrain. Kinematic would make the body ignore the joint and tear off the track.
             m_GrabInteractable.movementType = XRGrabInteractable.MovementType.VelocityTracking;
             m_GrabInteractable.throwOnDetach = false;
             m_GrabInteractable.selectEntered.AddListener(OnGrabEntered);
@@ -135,7 +148,7 @@ namespace MikeNspired.XRIStarterKit
         private void OnGrabEntered(SelectEnterEventArgs _args)
         {
             m_IsGrabbed = true;
-            // Suspend return spring while hand is holding the slider
+            // Suspend the return spring while held so it doesn't fight the hand.
             if (m_ReturnOnRelease)
                 SetSpring(false);
         }
@@ -149,6 +162,9 @@ namespace MikeNspired.XRIStarterKit
 
         private void SetSpring(bool _enabled)
         {
+            // targetPosition stays at its default (0) = the connected anchor = midpoint of travel,
+            // so the drive returns the handle to the center. This avoids ConfigurableJoint's inverted
+            // targetPosition sign convention entirely.
             m_Joint.xDrive = _enabled
                 ? new JointDrive { positionSpring = m_SpringForce, positionDamper = m_SpringDamper, maximumForce = float.MaxValue }
                 : new JointDrive { positionSpring = 0f, positionDamper = 0f, maximumForce = float.MaxValue };
@@ -162,7 +178,8 @@ namespace MikeNspired.XRIStarterKit
         {
             float clampedT = Mathf.Clamp01(_normalizedValue);
             Vector3 targetLocal = m_InitialLocalPosition + m_SliderAxis.normalized * (clampedT * m_TravelDistance);
-            m_Rigidbody.MovePosition(transform.parent.TransformPoint(targetLocal));
+            Vector3 targetWorld = transform.parent != null ? transform.parent.TransformPoint(targetLocal) : targetLocal;
+            m_Rigidbody.MovePosition(targetWorld);
         }
 
         #endregion

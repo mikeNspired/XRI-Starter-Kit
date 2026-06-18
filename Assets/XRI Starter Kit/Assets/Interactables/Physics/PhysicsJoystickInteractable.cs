@@ -51,6 +51,10 @@ namespace MikeNspired.XRIStarterKit
         public Vector2 CurrentValue { get; private set; }
         public bool IsGrabbed => m_IsGrabbed;
 
+        // Match XRJoystick's public events so existing integration code can subscribe in code.
+        public UnityEventVector2 ValueChanged => m_ValueChanged;
+        public UnityEventFloat SingleValueChanged => m_SingleValueChanged;
+
         #endregion
 
         #region Unity Lifecycle

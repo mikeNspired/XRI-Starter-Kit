@@ -2,10 +2,13 @@
 // The arm should be a direct child of a static pivot; do not move the assembly during play.
 // Rotation axis is the lever arm's local X axis. Min/max angles define the travel range.
 // The HingeJoint is created at runtime — no manual joint setup in the inspector needed.
-// Optional: add XRGrabInteractable to the same GameObject for grab-and-push interaction.
-// If XRGrabInteractable is present its movementType is set to VelocityTracking automatically.
+// Optional: add XRGrabInteractable to the same GameObject for grab-and-push interaction (no hand
+// physics colliders required). When present, its movementType is forced to VelocityTracking so the
+// hinge constrains the grab to the arc instead of the hand pulling the arm off its pivot.
+// Use EITHER m_LockToValue OR m_UseSpring, not both — a return spring and a snap-to-end fight.
 
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
@@ -17,6 +20,7 @@ namespace MikeNspired.XRIStarterKit
         #region Constants
 
         private const float c_ValueChangeTolerance = 0.005f;
+        private const float c_MaxSnapDegPerSec = 540f;
 
         #endregion
 
@@ -54,6 +58,11 @@ namespace MikeNspired.XRIStarterKit
         public float NormalizedAngle { get; private set; }
         public bool IsGrabbed => m_IsGrabbed;
 
+        // Match XRLever's public events so existing integration code can subscribe in code.
+        public UnityEvent OnLeverActivate => m_OnLeverActivate;
+        public UnityEvent OnLeverDeactivate => m_OnLeverDeactivate;
+        public UnityEventFloat OnValueChange => m_OnValueChange;
+
         #endregion
 
         #region Unity Lifecycle
@@ -81,19 +90,28 @@ namespace MikeNspired.XRIStarterKit
             float normalized = Mathf.InverseLerp(m_MinAngle, m_MaxAngle, angle);
             NormalizedAngle = normalized;
 
-            if (Mathf.Abs(normalized - m_PreviousNormalized) < c_ValueChangeTolerance)
-                return;
+            if (Mathf.Abs(normalized - m_PreviousNormalized) >= c_ValueChangeTolerance)
+            {
+                m_PreviousNormalized = normalized;
+                m_OnValueChange.Invoke(normalized);
+                UpdateLeverState(normalized);
+            }
 
-            m_PreviousNormalized = normalized;
-            m_OnValueChange.Invoke(normalized);
+            // Run the lock every step (not gated by the value-change guard) so a settled arm is held
+            // exactly at its end instead of resting a few degrees short.
+            if (m_LockToValue && !m_IsGrabbed)
+                SnapToLockedAngle();
+        }
 
+        private void UpdateLeverState(float _normalized)
+        {
             // Dead-zone hysteresis: lever must travel past (0.5 ± deadZone) to switch
             float activateThreshold = 0.5f + m_DeadZone;
             float deactivateThreshold = 0.5f - m_DeadZone;
 
             bool shouldBeActive = m_LeverValue
-                ? normalized > deactivateThreshold
-                : normalized > activateThreshold;
+                ? _normalized > deactivateThreshold
+                : _normalized > activateThreshold;
 
             if (shouldBeActive && !m_LeverValue)
             {
@@ -105,9 +123,6 @@ namespace MikeNspired.XRIStarterKit
                 m_LeverValue = false;
                 m_OnLeverDeactivate.Invoke();
             }
-
-            if (m_LockToValue && !m_IsGrabbed)
-                SnapToLockedAngle();
         }
 
         #endregion
@@ -157,10 +172,19 @@ namespace MikeNspired.XRIStarterKit
         private void SnapToLockedAngle()
         {
             float targetAngle = m_LeverValue ? m_MaxAngle : m_MinAngle;
-            if (Mathf.Abs(m_Joint.angle - targetAngle) < 1f) return;
+            float delta = Mathf.DeltaAngle(m_Joint.angle, targetAngle); // degrees
 
-            float delta = Mathf.DeltaAngle(m_Joint.angle, targetAngle);
-            m_Rigidbody.angularVelocity = transform.TransformDirection(Vector3.right * (delta * 10f * Time.fixedDeltaTime));
+            if (Mathf.Abs(delta) < 1f)
+            {
+                m_Rigidbody.angularVelocity = Vector3.zero;
+                return;
+            }
+
+            // Speed that would close the gap in one step, capped so the arm eases to the end instead
+            // of slamming the hinge limit. Easing falls out naturally as delta shrinks each frame.
+            float speedDeg = Mathf.Clamp(delta / Time.fixedDeltaTime, -c_MaxSnapDegPerSec, c_MaxSnapDegPerSec);
+            Vector3 axisWorld = transform.TransformDirection(Vector3.right);
+            m_Rigidbody.angularVelocity = axisWorld * (speedDeg * Mathf.Deg2Rad);
         }
 
         #endregion

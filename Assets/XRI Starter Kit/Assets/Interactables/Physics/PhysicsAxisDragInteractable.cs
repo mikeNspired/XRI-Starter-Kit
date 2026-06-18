@@ -1,9 +1,12 @@
 // Physics-driven axis drag. Place this script on the draggable Rigidbody.
 // The draggable should be a direct child of a static anchor; do not move the assembly during play.
-// Place the draggable at the value=0 position before entering play mode.
+// Place the draggable at the value=0 (start) end; it travels along m_LocalAxis by m_AxisLength.
+// The joint is anchored at the MIDPOINT of travel so the body cannot overshoot either end
+// (ConfigurableJoint linear limits are symmetric, so a centered anchor bounds both ends).
 // The ConfigurableJoint is created at runtime — no manual joint setup in the inspector needed.
-// Optional: add XRGrabInteractable to the same GameObject for grab-and-drag interaction.
-// If XRGrabInteractable is present its movementType is set to VelocityTracking automatically.
+// Optional: add XRGrabInteractable to the same GameObject for grab-and-drag interaction (no hand
+// physics colliders required). When present, its movementType is forced to VelocityTracking so the
+// joint constrains the grab to the axis instead of the hand pulling it free.
 
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -28,10 +31,9 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField, Min(0)] private int m_Steps = 0;
         [SerializeField] private bool m_SnapOnlyOnRelease = false;
 
-        [Header("Return Spring")]
-        [SerializeField] private bool m_ReturnOnRelease = false;
-        [SerializeField, Min(0f)] private float m_SpringForce = 100f;
-        [SerializeField, Min(0f)] private float m_SpringDamper = 10f;
+        [Header("Return To Start")]
+        [SerializeField] private bool m_ReturnOnFree = false;
+        [SerializeField, Min(0f)] private float m_ReturnSpeed = 0.5f;
 
         [Header("Snap Audio")]
         [SerializeField] private AudioClip m_SnapAudioClip;
@@ -56,6 +58,10 @@ namespace MikeNspired.XRIStarterKit
         public float Distance { get; private set; }
         public int CurrentStep => m_CurrentStep;
         public bool IsGrabbed => m_IsGrabbed;
+
+        // Match AxisDragInteractable's public events so existing integration code can subscribe.
+        public UnityEventFloat OnDragDistance => m_OnDragDistance;
+        public UnityEventInt OnDragStep => m_OnDragStep;
 
         #endregion
 
@@ -82,6 +88,10 @@ namespace MikeNspired.XRIStarterKit
 
         private void FixedUpdate()
         {
+            // Return to start when free: drive position directly (no grab/velocity-tracking is fighting).
+            if (m_ReturnOnFree && !m_IsGrabbed)
+                ReturnTowardStart();
+
             Vector3 localDelta = transform.localPosition - m_InitialLocalPosition;
             float rawDistance = Mathf.Clamp(Vector3.Dot(localDelta, m_LocalAxis.normalized), 0f, m_AxisLength);
 
@@ -106,6 +116,7 @@ namespace MikeNspired.XRIStarterKit
         private void SetupJoint()
         {
             Vector3 axis = m_LocalAxis.normalized;
+            Vector3 worldAxis = transform.TransformDirection(axis);
 
             Vector3 perp = Vector3.Cross(axis, Vector3.up);
             if (perp.sqrMagnitude < 0.01f)
@@ -115,7 +126,8 @@ namespace MikeNspired.XRIStarterKit
             m_Joint = gameObject.AddComponent<ConfigurableJoint>();
             m_Joint.autoConfigureConnectedAnchor = false;
             m_Joint.anchor = Vector3.zero;
-            m_Joint.connectedAnchor = transform.position;
+            // Midpoint anchor — symmetric ±half limit bounds both ends; no overshoot past start/end.
+            m_Joint.connectedAnchor = transform.position + worldAxis * (m_AxisLength * 0.5f);
 
             m_Joint.axis = axis;
             m_Joint.secondaryAxis = perp;
@@ -126,10 +138,7 @@ namespace MikeNspired.XRIStarterKit
             m_Joint.angularYMotion = ConfigurableJointMotion.Locked;
             m_Joint.angularZMotion = ConfigurableJointMotion.Locked;
 
-            m_Joint.linearLimit = new SoftJointLimit { limit = m_AxisLength };
-
-            if (m_ReturnOnRelease)
-                SetSpring(true);
+            m_Joint.linearLimit = new SoftJointLimit { limit = m_AxisLength * 0.5f };
         }
 
         private void ConfigureGrab()
@@ -140,27 +149,23 @@ namespace MikeNspired.XRIStarterKit
             m_GrabInteractable.selectExited.AddListener(OnGrabExited);
         }
 
-        private void OnGrabEntered(SelectEnterEventArgs _args)
-        {
-            m_IsGrabbed = true;
-            if (m_ReturnOnRelease)
-                SetSpring(false);
-        }
+        private void OnGrabEntered(SelectEnterEventArgs _args) => m_IsGrabbed = true;
 
         private void OnGrabExited(SelectExitEventArgs _args)
         {
             m_IsGrabbed = false;
-            if (m_ReturnOnRelease)
-                SetSpring(true);
             if (m_Steps > 0 && m_SnapOnlyOnRelease)
                 ApplySnap(m_PreviousRawDistance);
         }
 
-        private void SetSpring(bool _enabled)
+        private void ReturnTowardStart()
         {
-            m_Joint.xDrive = _enabled
-                ? new JointDrive { positionSpring = m_SpringForce, positionDamper = m_SpringDamper, maximumForce = float.MaxValue }
-                : new JointDrive { positionSpring = 0f, positionDamper = 0f, maximumForce = float.MaxValue };
+            Vector3 startWorld = transform.parent != null
+                ? transform.parent.TransformPoint(m_InitialLocalPosition)
+                : m_InitialLocalPosition;
+            Vector3 next = Vector3.MoveTowards(m_Rigidbody.position, startWorld, m_ReturnSpeed * Time.fixedDeltaTime);
+            m_Rigidbody.linearVelocity = Vector3.zero;
+            m_Rigidbody.MovePosition(next);
         }
 
         private void ApplySnap(float _rawDistance)

@@ -49,6 +49,11 @@ namespace MikeNspired.XRIStarterKit
         public bool IsToggled => m_Toggled;
         public float Value { get; private set; }
 
+        // Match XRPushButton's public events so existing integration code can subscribe in code.
+        public UnityEvent OnPress => m_OnPress;
+        public UnityEvent OnRelease => m_OnRelease;
+        public UnityEventFloat OnValueChange => m_OnValueChange;
+
         #endregion
 
         #region Unity Lifecycle

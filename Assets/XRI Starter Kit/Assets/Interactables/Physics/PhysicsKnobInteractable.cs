@@ -58,6 +58,10 @@ namespace MikeNspired.XRIStarterKit
         public int StepValue { get; private set; }
         public bool IsGrabbed => m_IsGrabbed;
 
+        // Match XRKnob's public events so existing integration code can subscribe in code.
+        public UnityEventFloat OnValueChange => m_OnValueChange;
+        public UnityEventInt OnIncrementValueChange => m_OnIncrementValueChange;
+
         #endregion
 
         #region Unity Lifecycle
@@ -169,8 +173,20 @@ namespace MikeNspired.XRIStarterKit
             m_GrabInteractable.selectExited.AddListener(OnGrabExited);
         }
 
-        private void OnGrabEntered(SelectEnterEventArgs _args) => m_IsGrabbed = true;
-        private void OnGrabExited(SelectExitEventArgs _args)   => m_IsGrabbed = false;
+        private void OnGrabEntered(SelectEnterEventArgs _args)
+        {
+            m_IsGrabbed = true;
+            // Drop the rest damping while held so the knob tracks the hand instead of lagging behind it.
+            if (m_UseMotor)
+                m_Rigidbody.angularDamping = 0f;
+        }
+
+        private void OnGrabExited(SelectExitEventArgs _args)
+        {
+            m_IsGrabbed = false;
+            if (m_UseMotor)
+                m_Rigidbody.angularDamping = m_MotorDamper;
+        }
 
         #endregion
 
