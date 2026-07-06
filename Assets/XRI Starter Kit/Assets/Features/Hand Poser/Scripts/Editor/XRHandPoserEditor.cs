@@ -22,6 +22,19 @@ namespace MikeNspired.XRIStarterKit.Editor
         private SerializedProperty currentRightHand;
         private SerializedProperty interactable;
 
+        // Dynamic posing config
+        private SerializedProperty posePolicy;
+        private SerializedProperty overrideGlobalSettings;
+        private SerializedProperty positionThreshold;
+        private SerializedProperty rotationThreshold;
+        private SerializedProperty solverSettings;
+        private SerializedProperty graspRequireThumb;
+        private SerializedProperty graspRequiredFingers;
+        private SerializedProperty failedGraspResponse;
+        private SerializedProperty seatInPalm;
+        private SerializedProperty seatMaxDistance;
+        private SerializedProperty seatClearance;
+
         private bool hasLeftHand;
         private bool hasRightHand;
         private AnimBool customizeValues;
@@ -44,11 +57,28 @@ namespace MikeNspired.XRIStarterKit.Editor
             currentLeftHand = serializedObject.FindProperty("currentLeftHand");
             currentRightHand = serializedObject.FindProperty("currentRightHand");
             interactable = serializedObject.FindProperty("interactable");
+
+            posePolicy = serializedObject.FindProperty("posePolicy");
+            overrideGlobalSettings = serializedObject.FindProperty("overrideGlobalSettings");
+            positionThreshold = serializedObject.FindProperty("positionThreshold");
+            rotationThreshold = serializedObject.FindProperty("rotationThreshold");
+            solverSettings = serializedObject.FindProperty("solverSettings");
+            graspRequireThumb = serializedObject.FindProperty("graspRequireThumb");
+            graspRequiredFingers = serializedObject.FindProperty("graspRequiredFingers");
+            failedGraspResponse = serializedObject.FindProperty("failedGraspResponse");
+            seatInPalm = serializedObject.FindProperty("seatInPalm");
+            seatMaxDistance = serializedObject.FindProperty("seatMaxDistance");
+            seatClearance = serializedObject.FindProperty("seatClearance");
         }
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+
+            DynamicPoseInfoBox.Draw(
+                "Goes on a GRABBABLE object (not the hand). Sets the hand pose when this object is grabbed: " +
+                "the authored pose near the grip, or the dynamic solver when grabbed off-axis / with no " +
+                "authored pose — see Pose Policy and the Dynamic Posing section below.");
 
             hasLeftHand = currentLeftHand.objectReferenceValue != null;
             hasRightHand = currentRightHand.objectReferenceValue != null;
@@ -124,6 +154,59 @@ namespace MikeNspired.XRIStarterKit.Editor
                 labelToolTip = new GUIContent("Ease In Time Override",
                     "Time till maintain pose starts");
                 handPoseScript.easeInTimeOverride = EditorGUILayout.FloatField(labelToolTip, handPoseScript.easeInTimeOverride);
+            }
+
+            DrawDynamicPosingFields();
+        }
+
+        private void DrawDynamicPosingFields()
+        {
+            GUILayout.Space(8);
+            GUILayout.Label("Dynamic Posing", EditorStyles.boldLabel);
+
+            EditorGUILayout.PropertyField(posePolicy, new GUIContent("Pose Policy",
+                "Auto: authored near the grip, dynamic fallback off-axis. AuthoredOnly: never solve " +
+                "(e.g. a handgun). DynamicOnly: always solve (e.g. a cube). NoPosing: no hand posing."));
+
+            EditorGUILayout.PropertyField(overrideGlobalSettings, new GUIContent("Override Global Settings",
+                "When off, this object uses the global defaults on the HandPoserSettings asset. " +
+                "Turn on to override the thresholds and grasp rule below for this object only."));
+
+            if (overrideGlobalSettings.boolValue)
+            {
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(positionThreshold, new GUIContent("Position Threshold",
+                    "How far (m) a grab can land from the authored grip before it counts as off-axis (DYNAMIC)."));
+                EditorGUILayout.PropertyField(rotationThreshold, new GUIContent("Rotation Threshold",
+                    "How far (deg) a grab can rotate from the authored grip before it counts as off-axis (DYNAMIC)."));
+                EditorGUILayout.PropertyField(solverSettings, new GUIContent("Solver Settings",
+                    "This object's solver tuning, replacing the global block on the HandPoserSettings " +
+                    "asset: solver choice, sweep resolution, probe radius, sampling, rest curls, and the " +
+                    "per-finger calibration."), true);
+                EditorGUILayout.PropertyField(graspRequireThumb, new GUIContent("Grasp Require Thumb",
+                    "Require the thumb to make contact for a dynamic grasp to hold."));
+                EditorGUILayout.PropertyField(graspRequiredFingers, new GUIContent("Grasp Required Fingers",
+                    "Number of non-thumb fingers that must contact for a dynamic grasp to hold."));
+                EditorGUILayout.PropertyField(failedGraspResponse, new GUIContent("Failed Grasp Response",
+                    "What to do when a dynamic grasp fails its contact test."));
+                EditorGUILayout.PropertyField(seatInPalm, new GUIContent("Seat In Palm",
+                    "On a DYNAMIC grab, settle the object a small capped distance toward the palm before " +
+                    "the solve, closing the air gap. Never reintroduces the authored-grip snap."));
+                if (seatInPalm.boolValue)
+                {
+                    EditorGUILayout.PropertyField(seatMaxDistance, new GUIContent("Seat Max Distance",
+                        "Maximum settle distance (m) toward the palm."));
+                    EditorGUILayout.PropertyField(seatClearance, new GUIContent("Seat Clearance",
+                        "Air gap (m) kept between the palm point and the object surface."));
+                }
+                EditorGUI.indentLevel--;
+            }
+            else
+            {
+                EditorGUILayout.HelpBox(
+                    "Using global dynamic-pose defaults from the HandPoserSettings asset " +
+                    "(Resources/HandPoserSettings). Enable Override Global Settings to tune this object.",
+                    MessageType.None);
             }
         }
         private void DrawPoseSection()

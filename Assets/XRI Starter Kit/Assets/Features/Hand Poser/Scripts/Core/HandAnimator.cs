@@ -32,6 +32,13 @@ namespace MikeNspired.XRIStarterKit
         public float triggerAnimationValue, gripAnimationValue;
         public bool isGrabbingObject;
 
+        // Last dynamic-solve telemetry for this hand, assigned by whoever solved (XRHandPoser grab or
+        // HandGraspProbe). Read by HandPoseSolveDebugDrawer for gizmos. Null when not solving / debugging.
+        public HandSolveDebug LastSolveDebug;
+        // Set by a HandPoseSolveDebugDrawer to ask the solver to record telemetry this hand can visualize.
+        // Solve consumers OR this with the global HandPoserSettings.drawSolveDebug switch.
+        [System.NonSerialized] public bool requestSolveDebug;
+
         public List<Transform> currentJoints = new List<Transform>();
         List<Transform> goalPoseJoints = new List<Transform>();
 
@@ -78,16 +85,89 @@ namespace MikeNspired.XRIStarterKit
         public void StartSecondaryPosing() => StartAnimationByButtonValue(ControllerButtons.Grip);
         public void SetSecondaryValue(float val) => gripAnimationValue = val;
 
+        // Stops the live grip/trigger value-driven animation in place (without changing the current
+        // pose), so a system like dynamic posing can take over from the hand's current shape instead
+        // of the grip clench continuing to fist the hand for a frame before the solved pose lands.
+        public void StopButtonValueAnimation()
+        {
+            if (AnimateByTriggerValue != null)
+            {
+                StopCoroutine(AnimateByTriggerValue);
+                AnimateByTriggerValue = null;
+            }
+        }
+
         public void ReturnToDefaultPosing()
         {
             isGrabbingObject = false;
             BeginNewPoses(DefaultPose, AnimationPose, false);
         }
 
+        [System.Serializable]
+        public class HandFingerMap
+        {
+            public List<Transform> thumb  = new List<Transform>();
+            public List<Transform> index  = new List<Transform>();
+            public List<Transform> middle = new List<Transform>();
+            public List<Transform> ring   = new List<Transform>();
+            public List<Transform> pinky  = new List<Transform>();
+
+            public List<Transform> Finger(int i) => i switch
+            {
+                0 => thumb, 1 => index, 2 => middle, 3 => ring, 4 => pinky, _ => null
+            };
+        }
+
+        public HandFingerMap fingerMap = new HandFingerMap();
+
         public void SetBones()
         {
             currentJoints.Clear();
             JointUtility.GatherTransformsForPose(RootBone.transform, currentJoints);
+            BuildFingerMap();
+        }
+
+        void BuildFingerMap()
+        {
+            fingerMap.thumb.Clear();
+            fingerMap.index.Clear();
+            fingerMap.middle.Clear();
+            fingerMap.ring.Clear();
+            fingerMap.pinky.Clear();
+
+            BuildFingerChain(thumbTopTransform,  "thumb",  fingerMap.thumb);
+            BuildFingerChain(indexTopTransform,  "index",  fingerMap.index);
+            BuildFingerChain(middleTopTransform, "middle", fingerMap.middle);
+            BuildFingerChain(ringTopTransform,   "ring",   fingerMap.ring);
+            BuildFingerChain(pinkyTopTransform,  "pinky",  fingerMap.pinky);
+        }
+
+        /// <summary>
+        /// Builds a finger's joint chain (the finger's base joint plus all of its
+        /// descendants). Prefers the explicitly-assigned base transform (the
+        /// "Finger Parent Transform" fields); if none is assigned, falls back to a
+        /// name match against the root bone's direct children, so the map still
+        /// builds on hands where those fields were never wired up. Walks DOWN the
+        /// hierarchy via the same JointUtility used by SetBones / SetPoseByValue.
+        /// </summary>
+        void BuildFingerChain(Transform assignedBase, string nameKeyword, List<Transform> chain)
+        {
+            var baseJoint = assignedBase ? assignedBase : FindFingerBaseByName(nameKeyword);
+            if (!baseJoint) return;
+            JointUtility.GatherTransformsForPose(baseJoint, chain);
+        }
+
+        Transform FindFingerBaseByName(string nameKeyword)
+        {
+            if (!RootBone) return null;
+            var root = RootBone.transform;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                var child = root.GetChild(i);
+                if (child.name.ToLowerInvariant().Contains(nameKeyword))
+                    return child;
+            }
+            return null;
         }
 
         public void SetPoses(PoseScriptableObject primaryPose, PoseScriptableObject animationPose)
@@ -102,13 +182,13 @@ namespace MikeNspired.XRIStarterKit
             NewPoseStarting.Invoke(isGrabbingObject);
 
             SetJointPositions(DefaultPose, goalPoseJoints);
-            TransformStruct[] oldPose = CopyTransformData(goalPoseJoints);
+            TransformStruct[] oldPose = CopyTransformData(currentJoints);
 
             AnimationPose = animationPose;
             DefaultPose = primaryPose;
 
             SetJointPositions(primaryPose, goalPoseJoints);
-            TransformStruct[] newPose = CopyTransformData(goalPoseJoints);
+            TransformStruct[] newPose = CopyTransformData(currentJoints);
 
             if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
             if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);
@@ -130,7 +210,7 @@ namespace MikeNspired.XRIStarterKit
             StartCoroutine(AnimateByTriggerValue);
         }
 
-        IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose)
+        protected IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose)
         {
             float timer = 0;
             while (timer <= animationTimeToNewPose + Time.deltaTime)
@@ -142,6 +222,38 @@ namespace MikeNspired.XRIStarterKit
 
                     var pos = Vector3.Lerp(originalPose[i].position, newPose[i].position, timer / animationTimeToNewPose);
                     var rot = Quaternion.Lerp(originalPose[i].rotation, newPose[i].rotation, timer / animationTimeToNewPose);
+                    SetNewJoint(ref joint, pos, rot);
+                }
+                timer += Time.deltaTime;
+                yield return new WaitForSeconds(Time.deltaTime);
+            }
+        }
+
+        // Overload used by SetJointsDirect so callers can specify an explicit blend duration
+        // without touching animationTimeToNewPose (which BeginNewPoses relies on).
+        protected IEnumerator AnimateToPoseOverTime(TransformStruct[] originalPose, TransformStruct[] newPose, float _duration)
+        {
+            if (_duration <= 0f)
+            {
+                for (int i = 0; i < currentJoints.Count; i++)
+                {
+                    var joint = currentJoints[i];
+                    if (!joint) continue;
+                    SetNewJoint(ref joint, newPose[i].position, newPose[i].rotation);
+                }
+                yield break;
+            }
+
+            float timer = 0;
+            while (timer <= _duration + Time.deltaTime)
+            {
+                for (int i = 0; i < currentJoints.Count; i++)
+                {
+                    var joint = currentJoints[i];
+                    if (!joint) continue;
+
+                    var pos = Vector3.Lerp(originalPose[i].position, newPose[i].position, timer / _duration);
+                    var rot = Quaternion.Lerp(originalPose[i].rotation, newPose[i].rotation, timer / _duration);
                     SetNewJoint(ref joint, pos, rot);
                 }
                 timer += Time.deltaTime;
@@ -258,27 +370,6 @@ namespace MikeNspired.XRIStarterKit
             transform.SetPositionAndRotation(newTransform.position, newTransform.rotation);
         }
 
-        IEnumerator AnimateHandTransformLocal(float animationLength, TransformStruct newTransform)
-        {
-            float timer = 0;
-            var startPos = transform.localPosition;
-            var startRot = transform.localRotation;
-
-            while (timer < animationLength + Time.deltaTime)
-            {
-                var newPosition = Vector3.Lerp(startPos, newTransform.position, timer / animationLength);
-                var newRotation = Quaternion.Lerp(startRot, newTransform.rotation, timer / animationLength);
-
-                transform.localPosition = newPosition;
-                transform.localRotation = newRotation;
-
-                yield return new WaitForSeconds(Time.deltaTime);
-                timer += Time.deltaTime;
-            }
-            transform.localPosition = newTransform.position;
-            transform.localRotation = newTransform.rotation;
-        }
-
         void StartHandPositionTracking(Transform target)
         {
             setPosition = true;
@@ -301,13 +392,13 @@ namespace MikeNspired.XRIStarterKit
                 transform.SetPositionAndRotation(handPositionTarget.position, handPositionTarget.rotation);
         }
 
-        void SetNewJoint(ref Transform joint, Vector3 newPosition, Quaternion newRotation)
+        protected void SetNewJoint(ref Transform joint, Vector3 newPosition, Quaternion newRotation)
         {
             joint.localPosition = newPosition;
             joint.localEulerAngles = newRotation.eulerAngles;
         }
 
-        TransformStruct[] CopyTransformData(List<Transform> joints)
+        protected TransformStruct[] CopyTransformData(List<Transform> joints)
         {
             var transforms = new TransformStruct[joints.Count];
             for (int i = 0; i < joints.Count; i++)
@@ -318,7 +409,7 @@ namespace MikeNspired.XRIStarterKit
             return transforms;
         }
 
-        void SetJointPositions(PoseScriptableObject poseAsset, List<Transform> jointList)
+        protected void SetJointPositions(PoseScriptableObject poseAsset, List<Transform> jointList)
         {
             if (!poseAsset)
             {
@@ -413,7 +504,110 @@ namespace MikeNspired.XRIStarterKit
         }
 
 
-       
+        #region DynamicPosing
+
+        /// <summary>
+        /// Animates the hand to an arbitrary pose defined by raw joint data, blending over
+        /// _animationTime seconds. Joints not present in _jointData keep their current position.
+        /// This is the handoff point for all procedural posing phases.
+        /// </summary>
+        public void SetJointsDirect(PoseScriptableObject.JointData[] _jointData, float _animationTime)
+        {
+            if (_jointData == null || _jointData.Length == 0) return;
+
+            if (currentJoints.Count == 0 || !currentJoints[0])
+                SetBones();
+
+            // Snapshot the current live state as the blend start
+            TransformStruct[] oldPose = CopyTransformData(currentJoints);
+
+            // Build target array parallel to currentJoints, matched by name
+            var newPose = new TransformStruct[currentJoints.Count];
+            for (int i = 0; i < currentJoints.Count; i++)
+            {
+                var joint = currentJoints[i];
+                if (!joint) { newPose[i] = oldPose[i]; continue; }
+
+                bool found = false;
+                for (int j = 0; j < _jointData.Length; j++)
+                {
+                    if (_jointData[j].jointName == joint.name)
+                    {
+                        newPose[i].SetTransformStruct(_jointData[j].localPosition, _jointData[j].localRotation, Vector3.one);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    newPose[i] = oldPose[i];
+            }
+
+            if (AnimateByTriggerValue != null) StopCoroutine(AnimateByTriggerValue);
+            if (AnimateToPoseAnimation != null) StopCoroutine(AnimateToPoseAnimation);
+
+            AnimateToPoseAnimation = AnimateToPoseOverTime(oldPose, newPose, _animationTime);
+            StartCoroutine(AnimateToPoseAnimation);
+        }
+
+        /// <summary>
+        /// Applies a computed joint pose to the live joints immediately this frame — no blend coroutine.
+        /// Same name-matched mapping as <see cref="SetJointsDirect"/>, but writes transforms directly via
+        /// <see cref="SetNewJoint"/> (mirrors the per-frame writes in AnimateToPoseByValue2). Joints not
+        /// present in the supplied data are left untouched. Intended for per-frame drivers (free-hand touch).
+        /// <paramref name="_lerp"/> 1 = snap to the supplied pose; &lt;1 eases from the current pose toward it
+        /// (per-frame exponential smoothing supplied by the caller) to damp single-frame solver jitter.
+        /// </summary>
+        public void SetJointsImmediate(PoseScriptableObject.JointData[] _jointData, float _lerp = 1f)
+        {
+            if (_jointData == null || _jointData.Length == 0) return;
+
+            if (currentJoints.Count == 0 || !currentJoints[0])
+                SetBones();
+
+            bool snap = _lerp >= 1f;
+            for (int i = 0; i < currentJoints.Count; i++)
+            {
+                var joint = currentJoints[i];
+                if (!joint) continue;
+
+                for (int j = 0; j < _jointData.Length; j++)
+                {
+                    if (_jointData[j].jointName == joint.name)
+                    {
+                        if (snap)
+                            SetNewJoint(ref joint, _jointData[j].localPosition, _jointData[j].localRotation);
+                        else
+                            SetNewJoint(ref joint,
+                                Vector3.Lerp(joint.localPosition, _jointData[j].localPosition, _lerp),
+                                Quaternion.Slerp(joint.localRotation, _jointData[j].localRotation, _lerp));
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Poses a single finger to the lerp between openPose (t=0) and closedPose (t=1) using
+        /// explicitly-supplied poses (the dynamic solver's Open/Closed from HandDynamicPoses). A solver
+        /// sweeps with this so the poses it curls through are exactly the poses it lerps the result from.
+        /// fingerIndex: 0=thumb, 1=index, 2=middle, 3=ring, 4=pinky.
+        /// </summary>
+        public void SetFingerCurl(int fingerIndex, float t, PoseScriptableObject openPose, PoseScriptableObject closedPose)
+        {
+            if (!openPose || !closedPose)
+            {
+                Debug.LogWarning("[HandAnimator] SetFingerCurl: openPose or closedPose is not assigned. Assign DefaultPose and a fist/grip ClosedPose to enable per-finger curl.");
+                return;
+            }
+
+            var chain = fingerMap.Finger(fingerIndex);
+            if (chain == null || chain.Count == 0) return;
+
+            // chain[0] is the finger's base joint; SetPoseByValue walks its descendants
+            SetPoseByValue(chain[0], openPose, closedPose, t);
+        }
+
+        #endregion
 
         private void OnDrawGizmosSelected()
         {
