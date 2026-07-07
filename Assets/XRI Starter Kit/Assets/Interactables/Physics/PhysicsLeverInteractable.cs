@@ -1,11 +1,15 @@
 // Physics-driven lever. Place this script on the moving lever arm (Rigidbody required).
 // The arm should be a direct child of a static pivot; do not move the assembly during play.
-// Rotation axis is the lever arm's local X axis. Min/max angles define the travel range.
+// Rotation axis is the lever arm's local X axis. Min/max angles define the travel range and are
+// RELATIVE TO THE AUTHORED POSE — the hinge reads 0° wherever the arm sits in the scene, so an
+// arm authored at its "on" end should use e.g. min -120 / max 0. The lever state is seeded from
+// that authored angle at startup.
 // The HingeJoint is created at runtime — no manual joint setup in the inspector needed.
 // Optional: add XRGrabInteractable to the same GameObject for grab-and-push interaction (no hand
 // physics colliders required). When present, its movementType is forced to VelocityTracking so the
 // hinge constrains the grab to the arc instead of the hand pulling the arm off its pivot.
 // Use EITHER m_LockToValue OR m_UseSpring, not both — a return spring and a snap-to-end fight.
+// If both are enabled, the lock wins and the return spring is disabled with a warning.
 
 using UnityEngine;
 using UnityEngine.Events;
@@ -20,7 +24,6 @@ namespace MikeNspired.XRIStarterKit
         #region Constants
 
         private const float c_ValueChangeTolerance = 0.005f;
-        private const float c_MaxSnapDegPerSec = 540f;
 
         #endregion
 
@@ -30,7 +33,10 @@ namespace MikeNspired.XRIStarterKit
         [SerializeField] private float m_MinAngle = -60f;
         [SerializeField] private float m_MaxAngle = 60f;
         [SerializeField, Range(0f, 0.49f)] private float m_DeadZone = 0.1f;
+        [SerializeField, Min(0f)] private float m_AngularDamping = 1f;
         [SerializeField] private bool m_LockToValue = true;
+        [SerializeField, Min(0f)] private float m_LockSpringForce = 50f;
+        [SerializeField, Min(0f)] private float m_LockSpringDamper = 5f;
 
         [Header("Return Spring")]
         [SerializeField] private bool m_UseSpring = false;
@@ -49,6 +55,8 @@ namespace MikeNspired.XRIStarterKit
         private float m_PreviousNormalized = -1f;
         private bool m_LeverValue;
         private bool m_IsGrabbed;
+        private bool m_LockSpringActive;
+        private float m_LockSpringTarget = float.NaN;
 
         #endregion
 
@@ -71,7 +79,26 @@ namespace MikeNspired.XRIStarterKit
         {
             m_Rigidbody = GetComponent<Rigidbody>();
             m_Rigidbody.useGravity = false;
+            m_Rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            m_Rigidbody.angularDamping = m_AngularDamping;
+
+            if (m_MinAngle >= m_MaxAngle)
+                Debug.LogWarning($"[PhysicsLeverInteractable] Min Angle ({m_MinAngle}) must be less than Max Angle ({m_MaxAngle}).", this);
+
+            if (m_LockToValue && m_UseSpring)
+            {
+                Debug.LogWarning("[PhysicsLeverInteractable] Lock To Value and Use Spring are both enabled and fight each other; using the lock and disabling the return spring.", this);
+                m_UseSpring = false;
+            }
+
             SetupJoint();
+
+            // The hinge reads 0° at the authored pose, so seed the lever state from where the arm
+            // was placed (no events) — otherwise the lock would drag an arm authored at its "on"
+            // end down to MinAngle on scene start.
+            float initialNormalized = Mathf.InverseLerp(m_MinAngle, m_MaxAngle, 0f);
+            m_LeverValue = initialNormalized > 0.5f;
+            m_PreviousNormalized = initialNormalized;
 
             if (TryGetComponent(out m_GrabInteractable))
                 ConfigureGrab();
@@ -97,10 +124,8 @@ namespace MikeNspired.XRIStarterKit
                 UpdateLeverState(normalized);
             }
 
-            // Run the lock every step (not gated by the value-change guard) so a settled arm is held
-            // exactly at its end instead of resting a few degrees short.
-            if (m_LockToValue && !m_IsGrabbed)
-                SnapToLockedAngle();
+            if (m_LockToValue)
+                UpdateLockSpring();
         }
 
         private void UpdateLeverState(float _normalized)
@@ -169,22 +194,29 @@ namespace MikeNspired.XRIStarterKit
         private void OnGrabEntered(SelectEnterEventArgs _args) => m_IsGrabbed = true;
         private void OnGrabExited(SelectExitEventArgs _args)   => m_IsGrabbed = false;
 
-        private void SnapToLockedAngle()
+        // The lock is a hinge spring toward the active end: spring torque composes with contact
+        // impulses, so a hand collider can push the arm through the lock (a direct angularVelocity
+        // write would overwrite the push every step), and the damped spring parks a settled arm
+        // exactly at its end against the limit. Disabled while grabbed so it never fights the hand.
+        private void UpdateLockSpring()
         {
-            float targetAngle = m_LeverValue ? m_MaxAngle : m_MinAngle;
-            float delta = Mathf.DeltaAngle(m_Joint.angle, targetAngle); // degrees
-
-            if (Mathf.Abs(delta) < 1f)
-            {
-                m_Rigidbody.angularVelocity = Vector3.zero;
+            bool active = !m_IsGrabbed;
+            float target = m_LeverValue ? m_MaxAngle : m_MinAngle;
+            if (active == m_LockSpringActive && Mathf.Approximately(target, m_LockSpringTarget))
                 return;
-            }
 
-            // Speed that would close the gap in one step, capped so the arm eases to the end instead
-            // of slamming the hinge limit. Easing falls out naturally as delta shrinks each frame.
-            float speedDeg = Mathf.Clamp(delta / Time.fixedDeltaTime, -c_MaxSnapDegPerSec, c_MaxSnapDegPerSec);
-            Vector3 axisWorld = transform.TransformDirection(Vector3.right);
-            m_Rigidbody.angularVelocity = axisWorld * (speedDeg * Mathf.Deg2Rad);
+            m_LockSpringActive = active;
+            m_LockSpringTarget = target;
+            m_Joint.useSpring = active;
+            if (active)
+            {
+                m_Joint.spring = new JointSpring
+                {
+                    spring = m_LockSpringForce,
+                    damper = m_LockSpringDamper,
+                    targetPosition = target
+                };
+            }
         }
 
         #endregion
