@@ -37,7 +37,7 @@ namespace MikeNspired.XRIStarterKit
         private Rigidbody m_Rigidbody;
         private ConfigurableJoint m_Joint;
         private Vector3 m_InitialLocalPosition;
-        private float m_PreviousValue = -1f;
+        private float m_PreviousValue; // starts at 0 = the rest value, so no startup OnValueChange fires
         private bool m_Pressed;
         private bool m_Toggled;
 
@@ -103,7 +103,10 @@ namespace MikeNspired.XRIStarterKit
             m_Joint = gameObject.AddComponent<ConfigurableJoint>();
             m_Joint.autoConfigureConnectedAnchor = false;
             m_Joint.anchor = Vector3.zero;
-            m_Joint.connectedAnchor = transform.position;
+            // Anchor at the MIDPOINT of travel: ConfigurableJoint linear limits are symmetric, so a
+            // rest-position anchor let the cap be pulled OUT of the housing by a full press distance.
+            // A centered anchor with a ±half limit bounds both flush and fully-pressed.
+            m_Joint.connectedAnchor = transform.position + transform.TransformDirection(pressDir) * (m_PressDistance * 0.5f);
 
             // Primary axis = press direction; xMotion = the constrained axis
             m_Joint.axis = pressDir;
@@ -115,9 +118,14 @@ namespace MikeNspired.XRIStarterKit
             m_Joint.angularYMotion = ConfigurableJointMotion.Locked;
             m_Joint.angularZMotion = ConfigurableJointMotion.Locked;
 
-            m_Joint.linearLimit = new SoftJointLimit { limit = m_PressDistance };
+            m_Joint.linearLimit = new SoftJointLimit { limit = m_PressDistance * 0.5f };
 
-            // Drive springs the cap back to rest (targetPosition = Vector3.zero = connected anchor)
+            // Drive springs the cap back to rest. Rest sits at -half press distance from the
+            // mid-travel anchor along the joint x-axis; Unity's drive convention moves the body
+            // toward -targetPosition, so +half targets rest.
+            // MANUAL VERIFY: cap must rest flush, not hover mid-travel — if it rests pressed-in,
+            // flip this sign.
+            m_Joint.targetPosition = new Vector3(m_PressDistance * 0.5f, 0f, 0f);
             m_Joint.xDrive = new JointDrive
             {
                 positionSpring = m_SpringForce,
