@@ -47,8 +47,10 @@ namespace MikeNspired.XRIStarterKit
         private ConfigurableJoint m_Joint;
         private XRGrabInteractable m_GrabInteractable;
         private Vector3 m_InitialLocalPosition;
-        private float m_PreviousRawDistance = -1f;
-        private int m_CurrentStep = -1;
+        // Both trackers start at their rest values so the first FixedUpdate fires no
+        // OnDragDistance/OnDragStep events and no snap audio at scene load.
+        private float m_PreviousRawDistance;
+        private int m_CurrentStep;
         private bool m_IsGrabbed;
 
         #endregion
@@ -154,7 +156,10 @@ namespace MikeNspired.XRIStarterKit
         private void OnGrabExited(SelectExitEventArgs _args)
         {
             m_IsGrabbed = false;
-            if (m_Steps > 0 && m_SnapOnlyOnRelease)
+            // Re-seat on release in BOTH snap modes: in continuous mode the raw-change gate in
+            // FixedUpdate goes quiet once the handle settles, so without this a handle released
+            // between detents would rest there forever.
+            if (m_Steps > 0)
                 ApplySnap(m_PreviousRawDistance);
         }
 
@@ -163,9 +168,18 @@ namespace MikeNspired.XRIStarterKit
             Vector3 startWorld = transform.parent != null
                 ? transform.parent.TransformPoint(m_InitialLocalPosition)
                 : m_InitialLocalPosition;
-            Vector3 next = Vector3.MoveTowards(m_Rigidbody.position, startWorld, m_ReturnSpeed * Time.fixedDeltaTime);
-            m_Rigidbody.linearVelocity = Vector3.zero;
-            m_Rigidbody.MovePosition(next);
+
+            // Already home: do nothing, so a resting handle stays an ordinary pushable body
+            // instead of being pinned by a MovePosition + velocity zero every step.
+            if ((startWorld - m_Rigidbody.position).sqrMagnitude < 1e-8f)
+                return;
+
+            // While returning, cancel only the along-axis velocity so a hand-collider push can
+            // still interrupt the return.
+            Vector3 worldAxis = transform.TransformDirection(m_LocalAxis.normalized);
+            Vector3 velocity = m_Rigidbody.linearVelocity;
+            m_Rigidbody.linearVelocity = velocity - Vector3.Dot(velocity, worldAxis) * worldAxis;
+            m_Rigidbody.MovePosition(Vector3.MoveTowards(m_Rigidbody.position, startWorld, m_ReturnSpeed * Time.fixedDeltaTime));
         }
 
         private void ApplySnap(float _rawDistance)
@@ -185,13 +199,15 @@ namespace MikeNspired.XRIStarterKit
                 m_CurrentStep = newStep;
                 m_OnDragStep.Invoke(m_CurrentStep);
                 PlaySnapAudio();
-
-                Vector3 targetLocal = m_InitialLocalPosition + m_LocalAxis.normalized * snappedDistance;
-                m_Rigidbody.MovePosition(transform.parent != null
-                    ? transform.parent.TransformPoint(targetLocal)
-                    : targetLocal);
-                m_Rigidbody.linearVelocity = Vector3.zero;
             }
+
+            // Always re-seat on the detent (not only when the step index changed) so the handle
+            // never rests between steps while Distance reports the snapped value.
+            Vector3 targetLocal = m_InitialLocalPosition + m_LocalAxis.normalized * snappedDistance;
+            m_Rigidbody.MovePosition(transform.parent != null
+                ? transform.parent.TransformPoint(targetLocal)
+                : targetLocal);
+            m_Rigidbody.linearVelocity = Vector3.zero;
         }
 
         private void PlaySnapAudio()
